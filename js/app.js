@@ -96,6 +96,12 @@ class VastuApp {
   replayIntro() {
     const introContainer = document.getElementById('cinematic-intro-wrapper');
     if (!introContainer) return;
+    if (this.introInstance && typeof this.introInstance.finishIntro === 'function') {
+      this.introInstance.stopAmbientAudio();
+      if (this.introInstance.timeline) this.introInstance.timeline.kill();
+      if (this.introInstance.animFrameId) cancelAnimationFrame(this.introInstance.animFrameId);
+      if (this.introInstance.renderer) this.introInstance.renderer.dispose();
+    }
     introContainer.style.display = 'block';
     introContainer.style.opacity = '1';
     introContainer.style.transform = 'scale(1)';
