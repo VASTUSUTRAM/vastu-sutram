@@ -68,8 +68,8 @@ class VastuCinematicIntro {
       <div id="intro-logo-reveal" class="absolute inset-0 z-50 flex flex-col items-center justify-center p-6 bg-gradient-to-b from-[#12080B]/90 via-[#481C25]/80 to-[#12080B]/95 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-1000">
         <div class="max-w-2xl text-center flex flex-col items-center transform transition-transform duration-1000 scale-95" id="logo-reveal-content">
           <!-- Logo Image -->
-          <div class="w-72 md:w-96 mb-6 drop-shadow-[0_0_35px_rgba(198,161,91,0.45)]">
-            <img src="assets/logo.svg" alt="VASTU SUTRAM" class="w-full h-auto" />
+          <div class="w-64 md:w-80 mb-6">
+            <img src="assets/logo.png" alt="VASTU SUTRAM – Rajni Singh" class="w-full h-auto object-contain original-brand-logo" />
           </div>
 
           <!-- Tagline & Quote -->

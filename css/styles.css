@@ -328,6 +328,13 @@ h1, h2, h3, h4, h5, .font-serif {
   color: #F8F3E9;
 }
 
+/* Original Brand Logo Presentation */
+.original-brand-logo {
+  filter: drop-shadow(0 0 1.5px rgba(255, 253, 248, 0.95))
+          drop-shadow(0 0 5px rgba(248, 243, 233, 0.7))
+          drop-shadow(0 2px 14px rgba(198, 161, 91, 0.4));
+}
+
 /* Print Styles */
 @media print {
   body * {

@@ -8,8 +8,8 @@ const VASTU_DATA = {
     name: "VASTU SUTRAM",
     tagline: "THE PRINCIPLES OF VASTU",
     subTagline: "Where Ancient Wisdom Meets Harmonious Living.",
-    logoPath: "assets/logo.svg",
-    logoIconPath: "assets/logo-icon.svg",
+    logoPath: "assets/logo.png",
+    logoIconPath: "assets/logo.png",
     mandalaBg: "assets/mandala-bg.svg",
     colors: {
       burgundy: "#481C25",

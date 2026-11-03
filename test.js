@@ -18,6 +18,7 @@ const requiredFiles = [
   'js/booking.js',
   'js/admin.js',
   'js/app.js',
+  'assets/logo.png',
   'assets/logo.svg',
   'assets/logo-icon.svg',
   'assets/rajni-singh.jpg',

@@ -52,7 +52,7 @@ class VastuAdminDashboard {
         <!-- Top Nav -->
         <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-[#C6A15B]/20 pb-4 mb-6 gap-4">
           <div class="flex items-center gap-3">
-            <img src="assets/logo-icon.svg" alt="Vastu Sutram" class="w-10 h-10 drop-shadow" />
+            <img src="assets/logo.png" alt="Vastu Sutram" class="h-12 w-auto object-contain original-brand-logo" />
             <div>
               <div class="flex items-center gap-2">
                 <h2 class="font-serif text-xl md:text-2xl text-[#C6A15B] font-bold">Vastu Sutram Admin Portal</h2>
@@ -109,7 +109,7 @@ class VastuAdminDashboard {
     this.container.innerHTML = `
       <div class="max-w-md mx-auto p-8 bg-[#171717]/95 backdrop-blur-xl border border-[#C6A15B]/40 rounded-2xl shadow-2xl text-[#F8F3E9] text-center relative">
         <button id="admin-login-close" class="absolute top-4 right-4 text-[#C6A15B] hover:text-[#F8F3E9]">✕</button>
-        <img src="assets/logo.svg" alt="Vastu Sutram" class="w-48 mx-auto mb-4 drop-shadow" />
+        <img src="assets/logo.png" alt="Vastu Sutram" class="w-48 mx-auto mb-4 object-contain original-brand-logo" />
         <h3 class="font-serif text-xl font-bold text-[#F9E29B] mb-1">Owner Admin Portal</h3>
         <p class="text-xs text-[#DCCBB0] mb-6">Enter your master security PIN to access appointment bookings and content controls.</p>
 

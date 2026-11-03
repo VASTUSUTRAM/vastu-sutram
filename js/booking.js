@@ -71,7 +71,7 @@ class VastuBookingSystem {
         <!-- Header -->
         <div class="flex items-center justify-between border-b border-[#C6A15B]/20 pb-4 mb-6">
           <div class="flex items-center gap-3">
-            <img src="assets/logo-icon.svg" alt="Vastu Sutram" class="w-10 h-10 drop-shadow" />
+            <img src="assets/logo.png" alt="Vastu Sutram" class="h-12 w-auto object-contain original-brand-logo" />
             <div>
               <h2 class="font-serif text-xl md:text-2xl text-[#C6A15B] font-bold">Book a Vastu Consultation</h2>
               <p class="text-xs text-[#DCCBB0]">Step ${this.currentStep} of ${this.totalSteps} • Confidential & Personalized</p>
