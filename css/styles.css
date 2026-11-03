@@ -454,6 +454,100 @@ h1, h2, h3, h4, h5, .font-serif {
   }
 }
 
+/* ==============================================================
+   VASTU KNOWLEDGE PAGE – LUXURY ARCHITECTURAL IMAGE CARDS & 3D TILT
+   ============================================================== */
+.vastu-knowledge-card {
+  position: relative;
+  border-radius: 20px;
+  background: linear-gradient(155deg, rgba(36, 17, 23, 0.92) 0%, rgba(18, 14, 16, 0.96) 100%);
+  border: 1px solid rgba(198, 161, 91, 0.32);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(249, 226, 155, 0.14);
+  overflow: hidden;
+  transform-style: preserve-3d;
+  will-change: transform, box-shadow;
+  transition: border-color 0.45s ease, box-shadow 0.45s ease, transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.vastu-knowledge-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  padding: 1.2px;
+  background: linear-gradient(
+    135deg,
+    rgba(249, 226, 155, 0.78) 0%,
+    rgba(198, 161, 91, 0.18) 38%,
+    rgba(72, 28, 37, 0.4) 65%,
+    rgba(249, 226, 155, 0.72) 100%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.48;
+  transition: opacity 0.45s ease;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.vastu-knowledge-card:hover {
+  border-color: rgba(249, 226, 155, 0.8);
+  box-shadow:
+    0 24px 52px rgba(0, 0, 0, 0.72),
+    0 0 28px rgba(198, 161, 91, 0.32),
+    inset 0 1px 0 rgba(249, 226, 155, 0.3);
+}
+
+.vastu-knowledge-card:hover::before {
+  opacity: 1;
+}
+
+.vastu-card-img-wrap {
+  position: relative;
+  height: 215px;
+  width: 100%;
+  overflow: hidden;
+  background: #140B0E;
+}
+
+.vastu-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.01);
+  transition: transform 0.75s cubic-bezier(0.16, 1, 0.3, 1), filter 0.6s ease;
+}
+
+.vastu-knowledge-card:hover .vastu-card-img {
+  transform: scale(1.09);
+  filter: brightness(1.07) contrast(1.03);
+}
+
+.vastu-card-learn-arrow {
+  display: inline-block;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.vastu-knowledge-card:hover .vastu-card-learn-arrow {
+  transform: translateX(5px);
+}
+
+.vastu-card-book-btn {
+  background: linear-gradient(135deg, rgba(72, 28, 37, 0.9) 0%, rgba(38, 14, 20, 0.95) 100%);
+  border: 1px solid rgba(198, 161, 91, 0.55);
+  color: #F9E29B;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.vastu-knowledge-card:hover .vastu-card-book-btn,
+.vastu-card-book-btn:hover {
+  background: linear-gradient(135deg, #D9A52D 0%, #F9E29B 50%, #C6A15B 100%);
+  color: #16070B;
+  border-color: #FFF2C2;
+  box-shadow: 0 6px 20px rgba(198, 161, 91, 0.45);
+}
+
 /* Print Styles */
 @media print {
   body * {

@@ -382,28 +382,53 @@
   </section>
 
   <!-- ============================================================== -->
-  <!-- 5. SERVICES SECTION (6 MANDATED SERVICE CATEGORIES)            -->
+  <!-- 5. SERVICES & VASTU KNOWLEDGE ARCHITECTURAL CARDS              -->
   <!-- ============================================================== -->
-  <section id="services" class="py-24 px-4 md:px-8 relative bg-gradient-to-b from-[#121011] via-[#1E1117] to-[#121011]">
-    <div class="max-w-7xl mx-auto">
-      <div class="text-center max-w-3xl mx-auto mb-14">
-        <span class="text-xs uppercase tracking-widest text-[#C6A15B] font-bold">Comprehensive Spatial Advisory</span>
-        <h2 class="font-serif text-3xl md:text-5xl font-bold text-[#F8F3E9] mt-2 mb-4">
-          Core Vastu <span class="text-gold-gradient">Consultation Services</span>
+  <section id="services" class="py-24 px-4 md:px-8 relative overflow-hidden bg-gradient-to-b from-[#121011] via-[#220D14] to-[#121011] border-t border-[#C6A15B]/25">
+    <!-- Subtle Vastu Sacred Geometry Mandala Backdrop -->
+    <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-0 opacity-[0.045]">
+      <svg class="w-[700px] h-[700px] md:w-[960px] md:h-[960px] text-[#C6A15B] animate-slow-spin" viewBox="0 0 600 600" fill="none">
+        <circle cx="300" cy="300" r="280" stroke="currentColor" stroke-width="1" stroke-dasharray="4 6" />
+        <circle cx="300" cy="300" r="230" stroke="currentColor" stroke-width="1" />
+        <circle cx="300" cy="300" r="175" stroke="currentColor" stroke-width="0.8" />
+        <rect x="134" y="134" width="332" height="332" stroke="currentColor" stroke-width="0.9" />
+        <rect x="134" y="134" width="332" height="332" stroke="currentColor" stroke-width="0.9" transform="rotate(45 300 300)" />
+        <line x1="300" y1="20" x2="300" y2="580" stroke="currentColor" stroke-width="0.6" />
+        <line x1="20" y1="300" x2="580" y2="300" stroke="currentColor" stroke-width="0.6" />
+      </svg>
+    </div>
+
+    <!-- Ambient Golden Glow & Floating Particles -->
+    <canvas id="knowledge-particles-canvas" class="absolute inset-0 w-full h-full pointer-events-none z-0 opacity-60"></canvas>
+
+    <div class="max-w-7xl mx-auto relative z-10">
+      <!-- Attractive Vastu Knowledge Hero Header -->
+      <div id="vastu-knowledge-hero" class="text-center max-w-3xl mx-auto mb-14">
+        <span class="text-xs uppercase tracking-[0.28em] text-[#C6A15B] font-bold block mb-2">
+          Sthapatya Veda &bull; Architectural Wisdom
+        </span>
+        <h2 class="font-serif text-4xl sm:text-5xl md:text-6xl font-bold uppercase tracking-[0.16em] brand-title-gold mt-1 mb-4">
+          VASTU KNOWLEDGE
         </h2>
-        <div class="gold-divider-ornate"></div>
-        <p class="text-sm md:text-base text-[#DCCBB0] font-light leading-relaxed">
-          Classical Vedic spatial auditing tailored for luxury homes, corporate headquarters, manufacturing plants, and detailed blueprint evaluations.
+        <div class="relative w-56 sm:w-72 h-[2px] mx-auto my-4 flex items-center justify-center">
+          <div class="w-full h-[1.5px] bg-gradient-to-r from-transparent via-[#C6A15B] to-transparent shadow-[0_0_12px_#F9E29B]"></div>
+          <div class="absolute w-2.5 h-2.5 rotate-45 bg-[#F9E29B] shadow-[0_0_10px_#F9E29B]"></div>
+        </div>
+        <p class="font-editorial italic text-xl sm:text-2xl md:text-3xl text-[#F8F3E9] leading-relaxed mt-3">
+          Discover the Timeless Wisdom of Vastu for a Balanced and Harmonious Life.
+        </p>
+        <p class="text-xs sm:text-sm text-[#DCCBB0]/85 font-light max-w-2xl mx-auto mt-3 leading-relaxed">
+          Explore our 12 core architectural Vastu domains—from luxury residences and zero-demolition home remedies to commercial headquarters and industrial plants.
         </p>
       </div>
 
-      <!-- Service Pillar Tabs -->
-      <div class="flex items-center justify-center gap-3 overflow-x-auto pb-4 mb-10" id="services-tabs">
+      <!-- Filter Pillar Tabs (Featured 12 Core Domains + Complete Directory) -->
+      <div class="flex items-center justify-center gap-2.5 overflow-x-auto pb-4 mb-10" id="services-tabs">
         <!-- Rendered by js/app.js -->
       </div>
 
-      <!-- Service Sub-items Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="services-grid">
+      <!-- Premium 3-Column Architectural Image Cards Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7" id="services-grid">
         <!-- Rendered by js/app.js -->
       </div>
     </div>
@@ -1048,6 +1073,20 @@
   <div id="booking-modal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
     <div id="booking-modal-body" class="w-full">
       <!-- Injected by js/booking.js -->
+    </div>
+  </div>
+
+  <!-- Modal 7: Vastu Knowledge & Service Category Detail Modal -->
+  <div id="service-detail-modal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+    <div id="service-detail-content" class="w-full flex items-center justify-center">
+      <!-- Rendered dynamically by js/app.js -->
+    </div>
+  </div>
+
+  <!-- Modal 8: Article Detail Modal -->
+  <div id="article-modal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+    <div id="article-modal-content" class="w-full flex items-center justify-center">
+      <!-- Rendered dynamically by js/app.js -->
     </div>
   </div>
 
