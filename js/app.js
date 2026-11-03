@@ -1091,74 +1091,421 @@ class VastuApp {
     `;
   }
 
-  // 8. CONSULTATION PACKAGES
+  // 8. CONSULTATION PACKAGES (ULTRA-PREMIUM 3D FLOATING CARDS & INTERACTIVE BOOKING)
+  getPackageIconSVG(pkg) {
+    const id = pkg.id || '';
+    if (id === 'pkg-res-basic' || pkg.iconType === 'home-basic') {
+      // Minimalist Luxury Architectural Home Blueprint Icon
+      return `
+        <svg class="w-7 h-7 text-[#F9E29B]" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 15L16 5l12 10"/>
+          <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 12.5V26h17V12.5"/>
+          <rect x="13" y="18" width="6" height="8" stroke="#C6A15B" stroke-width="1.4"/>
+          <circle cx="16" cy="12" r="2.2" stroke="#F9E29B" stroke-width="1.3"/>
+        </svg>
+      `;
+    }
+    if (id === 'pkg-res-complete' || pkg.iconType === 'mandala-complete' || pkg.popular) {
+      // Sacred Vastu Mandala & 16-Zone Blueprint Grid Icon
+      return `
+        <svg class="w-7 h-7 text-[#FFF2C2]" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6">
+          <circle cx="16" cy="16" r="12" stroke="#F9E29B" stroke-width="1.5"/>
+          <rect x="8.5" y="8.5" width="15" height="15" stroke="#C6A15B" stroke-width="1.3"/>
+          <rect x="8.5" y="8.5" width="15" height="15" transform="rotate(45 16 16)" stroke="#F9E29B" stroke-width="1.3"/>
+          <circle cx="16" cy="16" r="2.6" fill="#F9E29B"/>
+        </svg>
+      `;
+    }
+    if (id === 'pkg-res-premium' || pkg.iconType === 'estate-premium') {
+      // Luxury Multi-Level Estate & Architectural Sanctuary Icon
+      return `
+        <svg class="w-7 h-7 text-[#F9E29B]" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 27h26"/>
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 27V14l10-8 10 8v13"/>
+          <path stroke-linecap="round" stroke-linejoin="round" d="M11 27V18h10v9"/>
+          <path stroke-linecap="round" stroke-linejoin="round" d="M16 6V3m-5 9h10"/>
+          <circle cx="16" cy="14" r="1.8" fill="#F9E29B"/>
+        </svg>
+      `;
+    }
+    if (pkg.category === 'commercial') {
+      // Executive Corporate Tower & Showroom Geometry Icon
+      return `
+        <svg class="w-7 h-7 text-[#F9E29B]" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6">
+          <rect x="6" y="5" width="13" height="22" stroke-linecap="round" stroke-linejoin="round"/>
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19 12h7v15h-7"/>
+          <line x1="10" y1="10" x2="15" y2="10"/><line x1="10" y1="14" x2="15" y2="14"/><line x1="10" y1="18" x2="15" y2="18"/>
+          <path stroke-linecap="round" stroke-linejoin="round" d="M11 27v-4h3v4"/>
+        </svg>
+      `;
+    }
+    if (pkg.category === 'industrial') {
+      // Industrial Plant & Thermodynamic Energy Grid Icon
+      return `
+        <svg class="w-7 h-7 text-[#F9E29B]" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 27V13l7 4V13l7 4V9l10-3v21H4z"/>
+          <circle cx="23" cy="16" r="3" stroke="#F9E29B" stroke-width="1.4"/>
+          <path stroke-linecap="round" d="M9 22h6"/>
+        </svg>
+      `;
+    }
+    // Land & Plot / Default Compass Survey Icon
+    return `
+      <svg class="w-7 h-7 text-[#F9E29B]" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6">
+        <polygon points="16,4 28,11 24,26 8,26 4,11" stroke-linejoin="round"/>
+        <circle cx="16" cy="16" r="5" stroke="#C6A15B" stroke-width="1.3"/>
+        <path stroke-linecap="round" stroke-linejoin="round" d="M16 9v14M9 16h14"/>
+      </svg>
+    `;
+  }
+
   renderPackages() {
     const tabsContainer = document.getElementById('packages-tabs');
     const cardsContainer = document.getElementById('packages-cards');
     if (!tabsContainer || !cardsContainer) return;
 
+    this.initPackagesParticles();
+
     const categories = [
-      { id: 'residential', label: 'Residential Packages' },
-      { id: 'commercial', label: 'Commercial Packages' },
-      { id: 'industrial', label: 'Industrial Packages' },
-      { id: 'land', label: 'Land & Plot Packages' }
+      { id: 'residential', label: 'RESIDENTIAL PACKAGES', icon: '🏛️' },
+      { id: 'commercial', label: 'COMMERCIAL PACKAGES', icon: '🏢' },
+      { id: 'industrial', label: 'INDUSTRIAL PACKAGES', icon: '⚙️' },
+      { id: 'land', label: 'LAND & PLOT PACKAGES', icon: '🧭' }
     ];
 
-    tabsContainer.innerHTML = categories.map(c => `
-      <button data-package-tab="${c.id}" class="px-5 py-2.5 rounded-full font-serif text-xs uppercase tracking-wider font-semibold whitespace-nowrap transition-all ${
-        this.currentPackageTab === c.id
-          ? 'bg-gradient-to-r from-[#D9A52D] to-[#C6A15B] text-[#171717] shadow-lg shadow-[#C6A15B]/30'
-          : 'border border-[#C6A15B]/30 text-[#DCCBB0] hover:bg-[#481C25]/50 hover:text-[#F8F3E9]'
-      }">
-        ${c.label}
-      </button>
-    `).join('');
+    tabsContainer.innerHTML = categories.map(c => {
+      const isActive = this.currentPackageTab === c.id;
+      return `
+        <button
+          type="button"
+          role="tab"
+          aria-selected="${isActive ? 'true' : 'false'}"
+          data-package-tab="${c.id}"
+          class="vastu-pkg-pill ${isActive ? 'active' : ''}"
+        >
+          <span>${c.label}</span>
+        </button>
+      `;
+    }).join('');
 
-    const matched = VASTU_DATA.packages.filter(p => p.category === this.currentPackageTab);
+    const matched = (VASTU_DATA.packages || []).filter(p => p.category === this.currentPackageTab);
 
-    cardsContainer.innerHTML = matched.map(p => `
-      <div class="p-6 md:p-8 rounded-2xl bg-gradient-to-b from-[#171717] to-[#12080B] border border-[#C6A15B]/30 hover:border-[#C6A15B] transition-all duration-300 hover:-translate-y-1.5 flex flex-col justify-between shadow-xl relative overflow-hidden group">
-        ${p.popular ? `<div class="absolute top-0 right-0 bg-gradient-to-l from-[#F9E29B] to-[#C6A15B] text-[#171717] text-[10px] uppercase font-bold tracking-widest px-4 py-1 rounded-bl-xl shadow-md">Most Preferred</div>` : ''}
+    cardsContainer.innerHTML = matched.map((p, idx) => {
+      const isPopular = Boolean(p.popular);
+      const badges = Array.isArray(p.badges) && p.badges.length
+        ? p.badges
+        : [p.duration, p.mode].filter(Boolean);
+      const tierTag = p.tierTag || (isPopular ? 'SIGNATURE COMPREHENSIVE DOSSIER' : 'VEDIC ARCHITECTURAL CONSULTATION');
+      const deliverables = Array.isArray(p.deliverables) ? p.deliverables.filter(Boolean) : [];
 
-        <div>
-          <span class="text-[10px] uppercase tracking-widest font-semibold text-[#C6A15B] block mb-1">${p.duration} • ${p.mode}</span>
-          <h3 class="font-serif text-xl font-bold text-[#F8F3E9] mb-3 group-hover:text-[#F9E29B] transition-colors">${p.name}</h3>
-          
-          <div class="mb-4">
-            <span class="text-3xl font-serif font-bold text-[#F9E29B]">${p.price}</span>
-            <span class="text-xs text-[#DCCBB0] block mt-0.5">${p.priceNote}</span>
+      return `
+        <article
+          class="vastu-pricing-card ${isPopular ? 'vastu-pricing-card-featured' : ''} p-7 md:p-8 flex flex-col justify-between group"
+          data-pkg-card-index="${idx}"
+        >
+          ${isPopular ? `
+            <div class="absolute top-0 right-0 z-20 bg-gradient-to-r from-[#D9A52D] via-[#FFF2C2] to-[#C6A15B] text-[#16070B] font-serif text-[10px] uppercase font-extrabold tracking-[0.2em] px-4 py-1.5 rounded-bl-2xl shadow-[0_6px_20px_rgba(217,165,45,0.45)] flex items-center gap-1.5">
+              <span>★</span>
+              <span>MOST PREFERRED</span>
+            </div>
+          ` : ''}
+
+          <div class="relative z-10">
+            <!-- Top Header: Custom Architectural SVG Icon Orb & Tier Tag -->
+            <div class="flex items-center gap-4 mb-5">
+              <div class="vastu-pkg-icon-orb shrink-0">
+                ${this.getPackageIconSVG(p)}
+              </div>
+              <div>
+                <span class="text-[10px] uppercase tracking-[0.2em] text-[#C6A15B] font-bold block mb-0.5">${tierTag}</span>
+                <h3 class="font-serif text-xl md:text-[1.35rem] font-bold text-[#F8F3E9] group-hover:text-[#F9E29B] transition-colors leading-snug">
+                  ${p.name}
+                </h3>
+              </div>
+            </div>
+
+            <!-- Duration & Consultation Mode Badges -->
+            <div class="flex flex-wrap gap-2 mb-6">
+              ${badges.map(b => `
+                <span class="px-3 py-1 rounded-full text-[10px] font-medium tracking-wider uppercase bg-[#481C25]/65 text-[#F9E29B] border border-[#C6A15B]/35">
+                  ${b}
+                </span>
+              `).join('')}
+            </div>
+
+            <!-- Prominent Luxury Price Box -->
+            <div class="p-4 rounded-2xl bg-[#12080B]/75 border border-[#C6A15B]/30 mb-6 relative overflow-hidden">
+              <div class="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-[#C6A15B]/10 blur-xl pointer-events-none"></div>
+              <span class="text-[10px] uppercase tracking-[0.2em] text-[#DCCBB0] block mb-1">Consultation Fee</span>
+              <div class="font-serif text-2xl md:text-3xl font-bold text-[#F9E29B] tracking-wide">
+                ${p.price}
+              </div>
+              <span class="text-[11px] text-[#DCCBB0]/85 block mt-1 font-light">
+                ${p.priceNote || 'Includes personalized Vedic spatial diagnostics'}
+              </span>
+            </div>
+
+            <!-- Golden Architectural Divider -->
+            <div class="flex items-center gap-2 mb-5">
+              <span class="text-[10px] uppercase tracking-[0.2em] text-[#C6A15B] font-semibold">Included Deliverables</span>
+              <span class="flex-1 h-[1px] bg-gradient-to-r from-[#C6A15B]/45 to-transparent"></span>
+            </div>
+
+            <!-- Features & Deliverables List with Golden Checkmarks -->
+            <ul class="space-y-3 text-xs md:text-[13px] text-[#F8F3E9]/90 mb-8">
+              ${deliverables.map(d => `
+                <li class="flex items-start gap-3 leading-relaxed">
+                  <span class="w-5 h-5 rounded-full bg-[#481C25]/90 border border-[#C6A15B]/60 text-[#F9E29B] flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5 shadow-[0_0_10px_rgba(198,161,91,0.25)]">✓</span>
+                  <span>${d}</span>
+                </li>
+              `).join('')}
+            </ul>
           </div>
 
-          <div class="w-full h-[1px] bg-[#C6A15B]/20 mb-6"></div>
+          <!-- Dual Action Footer: Primary WhatsApp Consultation Pre-Fill + Instant Online Gateway -->
+          <div class="relative z-10 pt-2 space-y-2.5">
+            <button
+              type="button"
+              data-prefill-package-id="${p.id}"
+              class="vastu-pkg-cta-btn w-full py-3.5 px-5 rounded-full font-serif text-xs font-bold uppercase tracking-[0.16em] flex items-center justify-center gap-2"
+            >
+              <span>Book This Package</span>
+              <span class="vastu-pkg-cta-arrow">➔</span>
+            </button>
 
-          <ul class="space-y-2.5 text-xs text-[#F8F3E9]/85 mb-8">
-            ${p.deliverables.map(d => `
-              <li class="flex items-start gap-2">
-                <span class="text-[#C6A15B] font-bold">✓</span>
-                <span>${d}</span>
-              </li>
-            `).join('')}
-          </ul>
-        </div>
+            <button
+              type="button"
+              data-book-package-id="${p.id}"
+              class="w-full py-2 rounded-full border border-[#C6A15B]/35 hover:border-[#F9E29B] bg-[#12080B]/60 hover:bg-[#481C25]/50 text-[#DCCBB0] hover:text-[#F9E29B] font-serif text-[10px] uppercase tracking-[0.18em] transition-all flex items-center justify-center gap-1.5"
+            >
+              <span>🔒 Instant Online Payment / Gateway</span>
+            </button>
+          </div>
+        </article>
+      `;
+    }).join('');
 
-        <button data-book-package-id="${p.id}" class="w-full py-3 rounded-full bg-gradient-to-r from-[#D9A52D] via-[#F9E29B] to-[#C6A15B] text-[#171717] font-serif text-xs font-bold uppercase tracking-wider hover:shadow-[0_0_20px_rgba(217,165,45,0.6)] transition-all">
-          Book This Package ➔
-        </button>
-      </div>
-    `).join('');
-
-    // Bind package tabs
+    // Bind category navigation pills with smooth transition
     tabsContainer.querySelectorAll('[data-package-tab]').forEach(btn => {
       btn.addEventListener('click', (e) => {
-        this.currentPackageTab = e.currentTarget.getAttribute('data-package-tab');
+        const nextTab = e.currentTarget.getAttribute('data-package-tab');
+        if (nextTab === this.currentPackageTab) return;
+        this.currentPackageTab = nextTab;
         this.renderPackages();
       });
     });
 
-    // Bind Book buttons
-    cardsContainer.querySelectorAll('[data-book-package-id]').forEach(btn => {
-      btn.addEventListener('click', () => this.openBookingModal());
+    // Bind Primary "Book This Package" button -> Pre-fill WhatsApp Consultation Form & Smooth Scroll
+    cardsContainer.querySelectorAll('[data-prefill-package-id]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const pkgId = e.currentTarget.getAttribute('data-prefill-package-id');
+        const pkg = (VASTU_DATA.packages || []).find(item => item.id === pkgId);
+        if (pkg) {
+          this.navigateToWhatsAppBookingForPackage(pkg);
+        }
+      });
     });
+
+    // Initialize 3D Mouse Tilt + Cursor Spotlight on Cards
+    this.initPackageCards3DTilt();
+
+    // Scroll-triggered entrance animation for the Packages section (runs once on first scroll into view)
+    this.initPackagesScrollReveal();
+
+    // Animate newly rendered cards when switching tabs
+    if (window.gsap && this.packagesSectionRevealed) {
+      const cards = cardsContainer.querySelectorAll('.vastu-pricing-card');
+      window.gsap.fromTo(
+        cards,
+        { opacity: 0, y: 28, scale: 0.97 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.65, stagger: 0.11, ease: 'power3.out', clearProps: 'transform' }
+      );
+    }
+  }
+
+  initPackagesScrollReveal() {
+    if (this.packagesScrollObserverInitialized) return;
+    const section = document.getElementById('packages');
+    if (!section) return;
+    this.packagesScrollObserverInitialized = true;
+
+    const triggerReveal = () => {
+      if (this.packagesSectionRevealed) return;
+      this.packagesSectionRevealed = true;
+      if (!window.gsap) return;
+
+      const header = document.getElementById('packages-hero-header');
+      const pills = document.querySelectorAll('#packages-tabs .vastu-pkg-pill');
+      const cards = document.querySelectorAll('#packages-cards .vastu-pricing-card');
+
+      const tl = window.gsap.timeline({ defaults: { ease: 'power3.out' } });
+      if (header) {
+        tl.fromTo(header, { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.85 }, 0);
+      }
+      if (pills.length) {
+        tl.fromTo(pills, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.55, stagger: 0.08 }, 0.2);
+      }
+      if (cards.length) {
+        tl.fromTo(
+          cards,
+          { opacity: 0, y: 34, scale: 0.96 },
+          { opacity: 1, y: 0, scale: 1, duration: 0.75, stagger: 0.12, clearProps: 'transform' },
+          0.35
+        );
+      }
+    };
+
+    if ('IntersectionObserver' in window) {
+      const obs = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            triggerReveal();
+            obs.disconnect();
+          }
+        });
+      }, { threshold: 0.12 });
+      obs.observe(section);
+    } else {
+      triggerReveal();
+    }
+  }
+
+  navigateToWhatsAppBookingForPackage(pkg) {
+    if (!pkg) return;
+
+    const consultSelect = document.getElementById('wa-consultation-type');
+    const propSelect = document.getElementById('wa-property-type');
+    const msgInput = document.getElementById('wa-message');
+
+    if (consultSelect) {
+      const optionLabel = `${pkg.name} (${pkg.price})`;
+      let found = false;
+      for (const opt of consultSelect.options) {
+        if (opt.value === optionLabel || opt.textContent === optionLabel) {
+          consultSelect.value = opt.value;
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        const customOpt = document.createElement('option');
+        customOpt.value = optionLabel;
+        customOpt.textContent = optionLabel;
+        consultSelect.prepend(customOpt);
+        consultSelect.value = optionLabel;
+      }
+    }
+
+    if (propSelect) {
+      const catToProperty = {
+        residential: 'Residential House / Villa / Flat',
+        commercial: 'Commercial Office / Retail Shop',
+        industrial: 'Factory / Industrial Plant / Warehouse',
+        land: 'Open Plot / Land Selection'
+      };
+      const targetProp = catToProperty[pkg.category];
+      if (targetProp) {
+        for (const opt of propSelect.options) {
+          if (opt.value === targetProp) {
+            propSelect.value = targetProp;
+            break;
+          }
+        }
+      }
+    }
+
+    if (msgInput) {
+      msgInput.value = `I would like to book the "${pkg.name}" package (${pkg.price} • ${pkg.duration}). Please share available consultation slots and blueprint submission steps.`;
+    }
+
+    const bookingSection = document.getElementById('booking-section');
+    if (bookingSection) {
+      bookingSection.scrollIntoView({ behavior: 'smooth' });
+      const nameInput = document.getElementById('wa-name');
+      if (nameInput) {
+        setTimeout(() => nameInput.focus({ preventScroll: true }), 650);
+      }
+    } else {
+      this.openBookingModal();
+    }
+  }
+
+  initPackageCards3DTilt() {
+    const cardsContainer = document.getElementById('packages-cards');
+    if (!cardsContainer) return;
+
+    const isTouch = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+    const cards = cardsContainer.querySelectorAll('.vastu-pricing-card');
+
+    cards.forEach(card => {
+      if (isTouch) return;
+      const isFeatured = card.classList.contains('vastu-pricing-card-featured');
+
+      card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        card.style.setProperty('--mouse-x', `${x}px`);
+        card.style.setProperty('--mouse-y', `${y}px`);
+
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        const rotateX = ((y - centerY) / centerY) * -4.5;
+        const rotateY = ((x - centerX) / centerX) * 4.5;
+        const baseLift = isFeatured ? -12 : -6;
+
+        card.style.transform = `perspective(1100px) translateY(${baseLift}px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) scale(${isFeatured ? 1.03 : 1.01})`;
+      });
+
+      card.addEventListener('mouseleave', () => {
+        card.style.transform = '';
+      });
+    });
+  }
+
+  initPackagesParticles() {
+    const canvas = document.getElementById('packages-particles-canvas');
+    if (!canvas || canvas.dataset.initialized === 'true') return;
+    canvas.dataset.initialized = 'true';
+
+    const ctx = canvas.getContext('2d');
+    let width = (canvas.width = canvas.parentElement.offsetWidth || window.innerWidth);
+    let height = (canvas.height = canvas.parentElement.offsetHeight || 800);
+
+    window.addEventListener('resize', () => {
+      if (!canvas.parentElement) return;
+      width = canvas.width = canvas.parentElement.offsetWidth;
+      height = canvas.height = canvas.parentElement.offsetHeight;
+    });
+
+    const count = 34;
+    const particles = Array.from({ length: count }, () => ({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      r: Math.random() * 1.9 + 0.6,
+      vx: (Math.random() - 0.5) * 0.22,
+      vy: -Math.random() * 0.32 - 0.08,
+      alpha: Math.random() * 0.55 + 0.2
+    }));
+
+    const draw = () => {
+      ctx.clearRect(0, 0, width, height);
+      for (const pt of particles) {
+        pt.x += pt.vx;
+        pt.y += pt.vy;
+        if (pt.y < -10) pt.y = height + 10;
+        if (pt.x < -10) pt.x = width + 10;
+        if (pt.x > width + 10) pt.x = -10;
+
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, pt.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(249, 226, 155, ${pt.alpha})`;
+        ctx.fill();
+      }
+      requestAnimationFrame(draw);
+    };
+    draw();
   }
 
   // 9. GALLERY & ARCHITECTURAL VISUALS

@@ -548,6 +548,248 @@ h1, h2, h3, h4, h5, .font-serif {
   box-shadow: 0 6px 20px rgba(198, 161, 91, 0.45);
 }
 
+/* ==============================================================
+   ULTRA-PREMIUM CONSULTATION PACKAGES & PRICING SECTION
+   ============================================================== */
+@keyframes packagesMandalaRotate {
+  0% {
+    transform: translate(-50%, 0) rotate(0deg);
+  }
+  100% {
+    transform: translate(-50%, 0) rotate(360deg);
+  }
+}
+
+.packages-bg-mandala {
+  animation: packagesMandalaRotate 110s linear infinite;
+}
+
+/* Category Navigation Pills */
+.vastu-pkg-pill {
+  position: relative;
+  padding: 0.72rem 1.45rem;
+  border-radius: 9999px;
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border: 1px solid rgba(198, 161, 91, 0.42);
+  background: linear-gradient(145deg, rgba(44, 16, 23, 0.78) 0%, rgba(20, 12, 15, 0.92) 100%);
+  color: #E5D5BC;
+  backdrop-filter: blur(12px);
+  transition: all 0.38s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+
+.vastu-pkg-pill:hover {
+  border-color: rgba(249, 226, 155, 0.85);
+  color: #FFF6D6;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(198, 161, 91, 0.25), 0 0 14px rgba(249, 226, 155, 0.2);
+}
+
+.vastu-pkg-pill.active {
+  background: linear-gradient(135deg, #D9A52D 0%, #F9E29B 50%, #C6A15B 100%);
+  color: #16070B;
+  border-color: #FFF2C2;
+  box-shadow: 0 10px 30px rgba(217, 165, 45, 0.45), 0 0 20px rgba(249, 226, 155, 0.38), inset 0 1px 1px rgba(255, 255, 255, 0.55);
+  transform: translateY(-2px);
+}
+
+/* Floating 3D Luxury Pricing Cards */
+@keyframes pricingCardFloat {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.vastu-pricing-card {
+  --mouse-x: 50%;
+  --mouse-y: 25%;
+  position: relative;
+  border-radius: 24px;
+  background: linear-gradient(160deg, rgba(42, 17, 24, 0.88) 0%, rgba(20, 13, 16, 0.96) 52%, rgba(14, 10, 12, 0.98) 100%);
+  border: 1px solid rgba(198, 161, 91, 0.36);
+  box-shadow:
+    0 22px 48px rgba(0, 0, 0, 0.65),
+    0 0 24px rgba(198, 161, 91, 0.08),
+    inset 0 1px 0 rgba(249, 226, 155, 0.18);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  overflow: hidden;
+  transform-style: preserve-3d;
+  will-change: transform, box-shadow;
+  transition:
+    transform 0.38s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.4s ease,
+    box-shadow 0.4s ease;
+}
+
+/* Cursor-Following Golden Ambient Spotlight Inside Card */
+.vastu-pricing-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    480px circle at var(--mouse-x) var(--mouse-y),
+    rgba(249, 226, 155, 0.13),
+    rgba(198, 161, 91, 0.04) 40%,
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.vastu-pricing-card:hover::before {
+  opacity: 1;
+}
+
+/* Subtle Golden Rim Mask */
+.vastu-pricing-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 24px;
+  padding: 1.3px;
+  background: linear-gradient(
+    135deg,
+    rgba(249, 226, 155, 0.85) 0%,
+    rgba(198, 161, 91, 0.2) 38%,
+    rgba(72, 28, 37, 0.35) 65%,
+    rgba(249, 226, 155, 0.8) 100%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.42;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.vastu-pricing-card:hover {
+  border-color: rgba(249, 226, 155, 0.82);
+  box-shadow:
+    0 30px 64px rgba(0, 0, 0, 0.78),
+    0 0 36px rgba(198, 161, 91, 0.32),
+    inset 0 1px 0 rgba(249, 226, 155, 0.35);
+}
+
+.vastu-pricing-card:hover::after {
+  opacity: 1;
+}
+
+/* Highlighted Card 2 — COMPLETE HOME VASTU ANALYSIS (Most Preferred) */
+.vastu-pricing-card-featured {
+  background: linear-gradient(160deg, rgba(64, 23, 33, 0.94) 0%, rgba(28, 13, 18, 0.97) 52%, rgba(16, 10, 13, 0.99) 100%);
+  border: 1.5px solid rgba(249, 226, 155, 0.78);
+  box-shadow:
+    0 28px 65px rgba(0, 0, 0, 0.78),
+    0 0 42px rgba(217, 165, 45, 0.26),
+    inset 0 1px 0 rgba(255, 246, 214, 0.38);
+}
+
+@media (min-width: 1024px) {
+  .vastu-pricing-card-featured {
+    transform: translateY(-10px) scale(1.025);
+    z-index: 10;
+  }
+}
+
+.vastu-pricing-card-featured::after {
+  opacity: 0.92;
+  background: linear-gradient(
+    135deg,
+    #FFF6D6 0%,
+    #D9A52D 32%,
+    #C6A15B 65%,
+    #FFF2C2 100%
+  );
+}
+
+.vastu-pricing-card-featured:hover {
+  border-color: #FFF6D6;
+  box-shadow:
+    0 34px 75px rgba(0, 0, 0, 0.85),
+    0 0 52px rgba(249, 226, 155, 0.45),
+    inset 0 1px 0 rgba(255, 246, 214, 0.55);
+}
+
+/* Custom Architectural Icon Orb on Pricing Cards */
+.vastu-pkg-icon-orb {
+  width: 54px;
+  height: 54px;
+  border-radius: 16px;
+  background: radial-gradient(circle at 30% 30%, rgba(249, 226, 155, 0.22), rgba(72, 28, 37, 0.85) 70%);
+  border: 1px solid rgba(249, 226, 155, 0.48);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.45s ease, border-color 0.45s ease;
+}
+
+.vastu-pricing-card:hover .vastu-pkg-icon-orb {
+  transform: scale(1.08) rotate(3deg);
+  border-color: #FFF2C2;
+  box-shadow: 0 10px 28px rgba(217, 165, 45, 0.42), 0 0 18px rgba(249, 226, 155, 0.32);
+}
+
+/* Luxury Champagne-Gold Booking CTA Button Inside Card */
+.vastu-pkg-cta-btn {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #D9A52D 0%, #F9E29B 50%, #C6A15B 100%);
+  color: #16070B;
+  border: 1px solid rgba(255, 246, 214, 0.85);
+  box-shadow: 0 8px 24px rgba(198, 161, 91, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  transition: all 0.38s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.vastu-pkg-cta-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 65%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.55),
+    transparent
+  );
+  transform: skewX(-25deg);
+  transition: left 0.65s ease;
+  pointer-events: none;
+}
+
+.vastu-pricing-card:hover .vastu-pkg-cta-btn::before,
+.vastu-pkg-cta-btn:hover::before {
+  left: 140%;
+}
+
+.vastu-pkg-cta-btn:hover {
+  transform: translateY(-2.5px);
+  box-shadow: 0 14px 32px rgba(217, 165, 45, 0.55), 0 0 20px rgba(249, 226, 155, 0.45);
+  filter: brightness(1.04);
+}
+
+.vastu-pkg-cta-arrow {
+  display: inline-block;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.vastu-pkg-cta-btn:hover .vastu-pkg-cta-arrow {
+  transform: translateX(5px);
+}
+
 /* Print Styles */
 @media print {
   body * {
