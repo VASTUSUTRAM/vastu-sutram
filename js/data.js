@@ -1575,93 +1575,131 @@ const VASTU_DATA = {
     }
   ],
 
-  // Professional Media & Field Work Gallery (9 Categories from Section 13)
+  // Gallery Categories & Professional Image Gallery
+  galleryCategories: [
+    { slug: "all", name: "All Works" },
+    { slug: "residential", name: "Residential Vastu" },
+    { slug: "commercial", name: "Commercial Vastu" },
+    { slug: "factory", name: "Factory Vastu" },
+    { slug: "mapping", name: "Vastu Mapping" },
+    { slug: "consultation", name: "Vastu Consultation" },
+    { slug: "diagrams", name: "Architectural & Vastu Diagrams" }
+  ],
+
   gallery: [
     {
-      id: "gal-1",
-      title: "The Cosmic Space Podcast: Deconstructing Brahmasthan",
-      category: "Podcast Appearances",
-      categorySlug: "podcast",
-      type: "video",
-      videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-      image: "assets/mandala-bg.svg",
-      description: "In-depth podcast dialogue on why modern high-rise apartments must preserve central etheric breathing space."
-    },
-    {
-      id: "gal-2",
-      title: "National Architectural Conclave Keynote",
-      category: "Seminars and Workshops",
-      categorySlug: "seminars",
+      id: "gal-res-1",
+      title: "Luxury Villa 16-Zone Shakti Chakra Blueprint",
+      category: "Residential Vastu",
+      categorySlug: "residential",
       type: "image",
-      image: "assets/mandala-bg.svg",
-      description: "Delivering the keynote address on 'Non-Demolition Vastu Harmonization' before leading Indian architects."
+      image: "assets/gallery/gallery-residential.svg",
+      description: "Superimposing 16-zone cardinal and ordinal energy sectors onto a 4,500 sq.ft luxury villa blueprint to harmonize living quarters."
     },
     {
-      id: "gal-3",
-      title: "Industrial Manufacturing Plant Energy Audit",
-      category: "Site Visits",
-      categorySlug: "site-visits",
+      id: "gal-com-1",
+      title: "Corporate Executive Headquarters Spatial Planning",
+      category: "Commercial Vastu",
+      categorySlug: "commercial",
       type: "image",
-      image: "assets/mandala-bg.svg",
-      description: "Conducting geopathic stress field measurements and machine vibration zoning at a 12-acre manufacturing complex."
+      image: "assets/gallery/gallery-commercial.svg",
+      description: "Zoning executive cabins in the South-West plinth and accounts in North-East to enhance financial influx and decision authority."
     },
     {
-      id: "gal-4",
-      title: "Architectural Digest Panel: Vedic Geometry in Luxury Living",
-      category: "Interviews and Media",
-      categorySlug: "interviews",
-      type: "video",
-      videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-      image: "assets/mandala-bg.svg",
-      description: "Featured panel discussion on harmonizing floor-to-ceiling glass facades with classical Vastu orientations."
-    },
-    {
-      id: "gal-5",
-      title: "Residential Villa Blueprint Consecration Session",
-      category: "Vastu Consultations",
-      categorySlug: "consultations",
+      id: "gal-fac-1",
+      title: "Manufacturing Plant Thermodynamic Flow Layout",
+      category: "Factory Vastu",
+      categorySlug: "factory",
       type: "image",
-      image: "assets/mandala-bg.svg",
-      description: "Collaborative consultation with homeowners aligning 16-zone energy divisions on architectural floor plans."
+      image: "assets/gallery/gallery-factory.svg",
+      description: "Clockwise production movement from heavy South-West raw material storage towards active North-West dispatch."
     },
     {
-      id: "gal-6",
-      title: "Real Estate Developers Leadership Roundtable",
-      category: "Professional Events",
-      categorySlug: "events",
+      id: "gal-map-1",
+      title: "16-Zone Shakti Chakra & 32-Gate Degree Calibration",
+      category: "Vastu Mapping",
+      categorySlug: "mapping",
       type: "image",
-      image: "assets/mandala-bg.svg",
-      description: "Advising tier-1 real estate developers on designing Vastu-compliant master township master plans."
+      image: "assets/gallery/gallery-mapping.svg",
+      description: "Precision compass declination mapping identifying auspicious entrance thresholds (Jayanta, Indra, Kuber) for modern developments."
     },
     {
-      id: "gal-7",
-      title: "Executive Director Corporate Chamber Consultation",
-      category: "Client Meetings",
-      categorySlug: "meetings",
+      id: "gal-con-1",
+      title: "Vedic Spatial Audit & Non-Demolition Harmonization",
+      category: "Vastu Consultation",
+      categorySlug: "consultation",
       type: "image",
-      image: "assets/mandala-bg.svg",
-      description: "Private executive consultation optimizing CEO cabin, boardrooms, and finance lockers."
+      image: "assets/gallery/gallery-consultation.svg",
+      description: "Zero-demolition elemental balancing using sacred geometry, copper helixes, and brass threshold strips for established spaces."
     },
     {
-      id: "gal-8",
-      title: "Masterclass: The 32 Padavinyasa Gates Explained",
-      category: "Educational Videos",
-      categorySlug: "educational",
-      type: "video",
-      videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-      image: "assets/mandala-bg.svg",
-      description: "Comprehensive educational masterclass demystifying the 32 perimeter gates of the Vastu Purusha Mandala."
-    },
-    {
-      id: "gal-9",
-      title: "National Media Coverage: Science of Sacred Living",
-      category: "Media Coverage",
-      categorySlug: "media",
+      id: "gal-dia-1",
+      title: "81-Pada Paramasayika Vastu Purusha Mandala",
+      category: "Architectural & Vastu Diagrams",
+      categorySlug: "diagrams",
       type: "image",
-      image: "assets/mandala-bg.svg",
-      description: "National newspaper feature profiling Rajni Singh's non-demolition scientific spatial balance methodologies."
+      image: "assets/gallery/gallery-diagrams.svg",
+      description: "Authentic classical 9x9 grid demarcating the 45 Vedic Devta energy fields and the sacred 9-pada central Brahmasthan."
     }
   ],
+
+  // Instagram Official Feed Integration (@vastu_sutram)
+  instagramPosts: [
+    {
+      id: "insta-1",
+      title: "Harmonizing North-East (Ishanya) Water Vortex in Luxury Homes",
+      image: "assets/instagram/insta-1.svg",
+      caption: "In classical Sthapatya Veda, Ishanya (North-East) represents the divine water and cosmic ether vortex. Ensuring this quadrant remains light, clean, and uncluttered cultivates profound mental clarity.",
+      url: "https://www.instagram.com/vastu_sutram?cplk=b3dwajhwdXFmZzds"
+    },
+    {
+      id: "insta-2",
+      title: "Zero-Demolition Elemental Balancing for Manufacturing Lines",
+      image: "assets/instagram/insta-2.svg",
+      caption: "Factory layouts demand thermodynamic alignment: heavy raw materials in South-West, thermodynamic furnaces in South-East (Agni), and smooth clockwise product throughput.",
+      url: "https://www.instagram.com/vastu_sutram?cplk=b3dwajhwdXFmZzds"
+    },
+    {
+      id: "insta-3",
+      title: "Why Brahmasthan Must Remain Unencumbered",
+      image: "assets/instagram/insta-3.svg",
+      caption: "The central core (Brahmasthan) of any dwelling is its energetic lungs. Discover how high-rise apartments can preserve central spatial breathing room.",
+      url: "https://www.instagram.com/vastu_sutram?cplk=b3dwajhwdXFmZzds"
+    },
+    {
+      id: "insta-4",
+      title: "Mastering the 32 Padavinyasa Entrance Gates",
+      image: "assets/instagram/insta-4.svg",
+      caption: "Not all East-facing doors are auspicious. Ancient texts divide the perimeter into 32 gates, of which only specific sectors like Jayanta, Indra, and Mukhya yield prosperity.",
+      url: "https://www.instagram.com/vastu_sutram?cplk=b3dwajhwdXFmZzds"
+    },
+    {
+      id: "insta-5",
+      title: "South-West (Nairiti) Earth Stabilization",
+      image: "assets/instagram/insta-5.svg",
+      caption: "Anchoring executive authority and family stability through heavy plinths and master suites in the South-West quadrant.",
+      url: "https://www.instagram.com/vastu_sutram?cplk=b3dwajhwdXFmZzds"
+    },
+    {
+      id: "insta-6",
+      title: "Sacred Geometry & Copper Energy Grids",
+      image: "assets/instagram/insta-6.svg",
+      caption: "When physical demolition is impractical, sacred geometric grids and copper threshold neutralizers correct elemental defects invisibly and elegantly.",
+      url: "https://www.instagram.com/vastu_sutram?cplk=b3dwajhwdXFmZzds"
+    }
+  ],
+
+  // Central Verified Contact & Business Configuration
+  config: {
+    brandName: "VASTU SUTRAM",
+    tagline: "THE PRINCIPLES OF VASTU",
+    officialEmail: "vastusutram@gmail.com",
+    whatsappNumber: "9181457155",
+    whatsappDisplay: "+91 81457 155",
+    whatsappNotice: "WhatsApp business number 91814 57155 is configured (pending owner confirmation of complete 10-digit format).",
+    instagramUrl: "https://www.instagram.com/vastu_sutram?cplk=b3dwajhwdXFmZzds",
+    coverage: "Pan-India On-Site Consultations & Global Remote Video Sessions"
+  },
 
   // Client Testimonials (Clearly Marked Placeholders ready for Owner authorization)
   testimonials: [

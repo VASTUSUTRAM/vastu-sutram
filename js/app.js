@@ -25,9 +25,12 @@ class VastuApp {
     this.initKnowledgeExplorer();
     this.renderPackages();
     this.renderGallery();
+    this.renderInstagram();
     this.renderTestimonials();
     this.renderArticles();
+    this.initWhatsAppBookingForm();
     this.initContactForm();
+    this.initRazorpayPayment();
     this.initFloatingElements();
     this.initModals();
     this.bindGlobalEvents();
@@ -597,52 +600,56 @@ class VastuApp {
     });
   }
 
-  // 9. GALLERY & MEDIA
+  // 9. GALLERY & ARCHITECTURAL VISUALS
   renderGallery() {
     const filtersContainer = document.getElementById('gallery-filters');
     const gridContainer = document.getElementById('gallery-grid');
     if (!filtersContainer || !gridContainer) return;
 
-    const categories = [
+    const categories = VASTU_DATA.galleryCategories || [
       'All',
-      'Podcast Appearances',
-      'Interviews and Media',
-      'Vastu Consultations',
-      'Site Visits',
-      'Seminars and Workshops'
+      'Residential',
+      'Commercial',
+      'Factory',
+      'Vastu Mapping',
+      'Vastu Consultation',
+      'Architectural & Vastu Diagrams'
     ];
 
     filtersContainer.innerHTML = categories.map(cat => `
       <button data-gallery-filter="${cat}" class="px-4 py-1.5 rounded-full text-xs font-serif tracking-wider uppercase transition-all whitespace-nowrap ${
         this.currentGalleryFilter === cat
-          ? 'bg-[#C6A15B] text-[#171717] font-bold'
+          ? 'bg-[#C6A15B] text-[#171717] font-bold shadow-md shadow-[#C6A15B]/30'
           : 'border border-[#C6A15B]/30 text-[#DCCBB0] hover:bg-[#481C25]/40'
       }">
         ${cat}
       </button>
     `).join('');
 
-    let items = VASTU_DATA.gallery;
+    let items = VASTU_DATA.gallery || [];
     if (this.currentGalleryFilter !== 'All') {
       items = items.filter(i => i.category === this.currentGalleryFilter);
     }
 
     gridContainer.innerHTML = items.map(item => `
-      <div data-gallery-item-id="${item.id}" class="group cursor-pointer rounded-2xl overflow-hidden bg-[#12080B] border border-[#C6A15B]/25 hover:border-[#C6A15B] transition-all duration-300 relative">
-        <div class="aspect-video w-full bg-[#481C25]/40 relative overflow-hidden flex items-center justify-center p-6">
-          <img src="${item.src}" alt="${item.title}" class="w-24 h-24 object-contain opacity-50 group-hover:scale-110 group-hover:opacity-90 transition-all duration-500" />
-          ${item.type === 'video' ? `
-            <div class="absolute inset-0 flex items-center justify-center bg-black/40">
-              <div class="w-12 h-12 rounded-full bg-[#C6A15B] text-[#171717] flex items-center justify-center text-lg pl-1 shadow-lg group-hover:scale-110 transition-transform">
-                ▶
-              </div>
-            </div>
-          ` : ''}
+      <div data-gallery-item-id="${item.id}" class="group cursor-pointer rounded-2xl overflow-hidden bg-[#181416] border border-[#C6A15B]/25 hover:border-[#C6A15B] transition-all duration-300 relative shadow-xl hover:-translate-y-1">
+        <div class="aspect-video w-full bg-[#121011] relative overflow-hidden flex items-center justify-center p-2">
+          <img src="${item.image || item.src}" alt="${item.title}" class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500" />
+          <div class="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-serif uppercase tracking-wider font-bold bg-[#481C25]/90 text-[#F9E29B] border border-[#C6A15B]/40">
+            ${item.badge || item.category}
+          </div>
         </div>
-        <div class="p-4 bg-[#171717]/90">
-          <span class="text-[10px] uppercase tracking-wider text-[#C6A15B] font-semibold">${item.category}</span>
-          <h4 class="font-serif text-sm font-bold text-[#F8F3E9] mt-1 group-hover:text-[#F9E29B] transition-colors">${item.title}</h4>
-          <p class="text-[11px] text-[#DCCBB0] mt-1 line-clamp-2">${item.description}</p>
+        <div class="p-5 bg-gradient-to-b from-[#181416] to-[#121011] border-t border-[#C6A15B]/15">
+          <div class="flex items-center justify-between text-[10px] text-[#C6A15B] font-mono mb-1">
+            <span>${item.category}</span>
+            <span>${item.metrics || 'Precision Audit'}</span>
+          </div>
+          <h4 class="font-serif text-base font-bold text-[#F8F3E9] group-hover:text-[#F9E29B] transition-colors leading-snug">${item.title}</h4>
+          <p class="text-xs text-[#DCCBB0] mt-1.5 line-clamp-2 font-light leading-relaxed">${item.description}</p>
+          <div class="mt-3 pt-3 border-t border-[#C6A15B]/10 flex items-center justify-between text-xs text-[#C6A15B] group-hover:text-[#F9E29B]">
+            <span>View Full Blueprint</span>
+            <span>🔍</span>
+          </div>
         </div>
       </div>
     `).join('');
@@ -665,7 +672,7 @@ class VastuApp {
   }
 
   openLightbox(id) {
-    const item = VASTU_DATA.gallery.find(i => i.id === id);
+    const item = (VASTU_DATA.gallery || []).find(i => i.id === id);
     if (!item) return;
 
     const modal = document.getElementById('lightbox-modal');
@@ -673,21 +680,60 @@ class VastuApp {
     if (!modal || !content) return;
 
     content.innerHTML = `
-      <div class="max-w-3xl w-full p-6 rounded-2xl bg-[#171717] border border-[#C6A15B]/40 text-[#F8F3E9]">
-        <div class="flex justify-between items-center border-b border-[#C6A15B]/20 pb-3 mb-4">
-          <span class="text-xs uppercase tracking-widest text-[#C6A15B] font-bold">${item.category}</span>
-          <button id="lightbox-close" class="text-lg text-[#C6A15B] hover:text-[#F8F3E9]">✕</button>
+      <div class="max-w-4xl w-full p-6 md:p-8 rounded-3xl bg-[#181416] border border-[#C6A15B]/40 text-[#F8F3E9] shadow-2xl relative">
+        <div class="flex justify-between items-center border-b border-[#C6A15B]/20 pb-4 mb-4">
+          <div class="flex items-center gap-3">
+            <span class="px-3 py-1 rounded-full text-xs font-serif uppercase tracking-wider font-bold bg-[#481C25] text-[#F9E29B] border border-[#C6A15B]/40">
+              ${item.category}
+            </span>
+            <span class="text-xs text-[#DCCBB0] font-mono">${item.metrics || ''}</span>
+          </div>
+          <button id="lightbox-close" class="text-2xl text-[#C6A15B] hover:text-[#F8F3E9] font-bold">✕</button>
         </div>
-        <div class="aspect-video w-full bg-[#12080B] rounded-xl overflow-hidden flex items-center justify-center mb-4 border border-[#C6A15B]/20">
-          <img src="${item.src}" alt="${item.title}" class="max-h-full max-w-full object-contain" />
+        <div class="w-full bg-[#121011] rounded-2xl overflow-hidden flex items-center justify-center mb-6 border border-[#C6A15B]/20 p-4">
+          <img src="${item.image || item.src}" alt="${item.title}" class="max-h-[60vh] max-w-full object-contain" />
         </div>
-        <h3 class="font-serif text-xl font-bold text-[#F9E29B] mb-2">${item.title}</h3>
-        <p class="text-xs text-[#DCCBB0] leading-relaxed">${item.description}</p>
+        <h3 class="font-serif text-2xl font-bold text-[#F9E29B] mb-2">${item.title}</h3>
+        <p class="text-xs md:text-sm text-[#DCCBB0] leading-relaxed mb-6 font-light">${item.description}</p>
+        <div class="flex flex-col sm:flex-row gap-3 pt-4 border-t border-[#C6A15B]/20">
+          <button id="lightbox-book-btn" class="flex-1 py-3 rounded-full bg-gradient-to-r from-[#D9A52D] via-[#F9E29B] to-[#C6A15B] text-[#171717] font-serif text-xs font-bold uppercase tracking-wider hover:shadow-lg transition-all">
+            Schedule Consultation for This Architecture ➔
+          </button>
+        </div>
       </div>
     `;
 
     modal.classList.remove('hidden');
     document.getElementById('lightbox-close').addEventListener('click', () => modal.classList.add('hidden'));
+    const bookBtn = document.getElementById('lightbox-book-btn');
+    if (bookBtn) {
+      bookBtn.addEventListener('click', () => {
+        modal.classList.add('hidden');
+        const formEl = document.getElementById('booking-section');
+        if (formEl) formEl.scrollIntoView({ behavior: 'smooth' });
+      });
+    }
+  }
+
+  // 10. DEDICATED INSTAGRAM SECTION
+  renderInstagram() {
+    const gridContainer = document.getElementById('instagram-grid');
+    if (!gridContainer) return;
+
+    const posts = VASTU_DATA.instagramPosts || [];
+    gridContainer.innerHTML = posts.map(post => `
+      <a href="${post.url}" target="_blank" rel="noopener noreferrer" class="group block relative rounded-2xl overflow-hidden bg-[#181416] border border-[#C6A15B]/30 hover:border-[#C6A15B] transition-all duration-300 hover:-translate-y-1 shadow-lg aspect-square">
+        <img src="${post.image}" alt="${post.caption}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+        <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3.5 text-left">
+          <span class="text-[10px] text-[#F9E29B] font-serif font-bold uppercase tracking-wider">${post.tag}</span>
+          <p class="text-[11px] text-[#F8F3E9] line-clamp-2 mt-1 leading-snug font-light">${post.caption}</p>
+          <div class="flex items-center gap-1 text-[10px] text-[#C6A15B] mt-2 font-mono">
+            <span>View on Instagram</span>
+            <span>↗</span>
+          </div>
+        </div>
+      </a>
+    `).join('');
   }
 
   // 10. TESTIMONIALS CAROUSEL
@@ -829,7 +875,241 @@ class VastuApp {
     });
   }
 
-  // 12. CONTACT FORM
+  // 12. WHATSAPP BOOKING DOSSIER & DIRECT CHAT
+  initWhatsAppBookingForm() {
+    const form = document.getElementById('whatsapp-consultation-form');
+    if (!form) return;
+
+    const modal = document.getElementById('whatsapp-review-modal');
+    const previewContent = document.getElementById('whatsapp-preview-content');
+    const closeBtn = document.getElementById('whatsapp-review-close');
+    const editBtn = document.getElementById('whatsapp-edit-btn');
+    const sendBtn = document.getElementById('whatsapp-send-btn');
+    const statusNotice = document.getElementById('whatsapp-handoff-status');
+
+    let currentPayload = null;
+    let formattedMessage = '';
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const name = document.getElementById('wa-name') ? document.getElementById('wa-name').value.trim() : '';
+      const phone = document.getElementById('wa-phone') ? document.getElementById('wa-phone').value.trim() : '';
+      const email = document.getElementById('wa-email') ? document.getElementById('wa-email').value.trim() : '';
+      const consultationType = document.getElementById('wa-consultation-type') ? document.getElementById('wa-consultation-type').value : '';
+      const propertyType = document.getElementById('wa-property-type') ? document.getElementById('wa-property-type').value : '';
+      const city = document.getElementById('wa-city') ? document.getElementById('wa-city').value.trim() : '';
+      const date = document.getElementById('wa-date') ? document.getElementById('wa-date').value : '';
+      const timeSlot = document.getElementById('wa-time-slot') ? document.getElementById('wa-time-slot').value : '';
+      const message = document.getElementById('wa-message') ? document.getElementById('wa-message').value.trim() : '';
+
+      if (!name || !phone || !email || !city || !date) {
+        alert('Please fill out all required fields marked with *.');
+        return;
+      }
+
+      currentPayload = {
+        name,
+        phone,
+        email,
+        serviceName: consultationType,
+        propertyType,
+        city,
+        appointmentDate: date,
+        appointmentTime: timeSlot,
+        message,
+        source: 'WhatsApp Booking Form'
+      };
+
+      formattedMessage = 
+`*VASTU SUTRAM – CONSULTATION ENQUIRY DOSSIER*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+• *Client Name:* ${name}
+• *WhatsApp Number:* ${phone}
+• *Email Address:* ${email}
+• *Consultation Type:* ${consultationType}
+• *Property Type:* ${propertyType}
+• *Location / City:* ${city}
+• *Preferred Date:* ${date}
+• *Preferred Time Slot:* ${timeSlot}
+• *Client Query / Specific Concerns:*
+${message ? message : 'Standard spatial evaluation and energetic alignment requested.'}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*Platform:* https://vastu-sutram.vercel.app`;
+
+      if (previewContent) {
+        previewContent.textContent = formattedMessage;
+      }
+
+      if (statusNotice) statusNotice.classList.add('hidden');
+      if (modal) modal.classList.remove('hidden');
+    });
+
+    const closeModal = () => {
+      if (modal) modal.classList.add('hidden');
+    };
+
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+    if (editBtn) editBtn.addEventListener('click', closeModal);
+
+    if (sendBtn) {
+      sendBtn.addEventListener('click', async () => {
+        const rawWaNumber = (VASTU_DATA.config && VASTU_DATA.config.whatsappNumber) || '9181457155';
+        const cleanNumber = rawWaNumber.replace(/\D/g, '');
+        const encodedText = encodeURIComponent(formattedMessage);
+        const waUrl = `https://api.whatsapp.com/send?phone=${cleanNumber}&text=${encodedText}`;
+
+        // Open WhatsApp in new window/tab
+        window.open(waUrl, '_blank', 'noopener,noreferrer');
+
+        if (statusNotice) {
+          statusNotice.classList.remove('hidden');
+        }
+
+        // Persist booking to backend database
+        try {
+          if (currentPayload) {
+            await fetch('/api/bookings', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(currentPayload)
+            });
+          }
+        } catch (err) {
+          console.warn('Booking record logged locally:', err);
+        }
+      });
+    }
+  }
+
+  // 13. RAZORPAY INTEGRATION & PAYMENT WORKFLOW
+  initRazorpayPayment() {
+    const modal = document.getElementById('razorpay-modal');
+    const modalContent = document.getElementById('razorpay-modal-content');
+    const closeBtn = document.getElementById('razorpay-modal-close');
+
+    if (closeBtn && modal) {
+      closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
+    }
+
+    // Attach to package card buttons
+    document.addEventListener('click', (e) => {
+      const target = e.target.closest('[data-book-package-id]');
+      if (!target) return;
+
+      const pkgId = target.getAttribute('data-book-package-id');
+      const pkg = (VASTU_DATA.packages || []).find(p => p.id === pkgId);
+      if (!pkg) return;
+
+      if (!modal || !modalContent) {
+        this.openBookingModal();
+        return;
+      }
+
+      modalContent.innerHTML = `
+        <div class="p-4 rounded-xl bg-[#121011] border border-[#C6A15B]/30 space-y-2">
+          <div class="flex justify-between items-start">
+            <div>
+              <span class="text-[10px] uppercase tracking-widest text-[#C6A15B] font-bold">${pkg.duration} • ${pkg.mode}</span>
+              <h4 class="font-serif text-lg font-bold text-[#F8F3E9]">${pkg.name}</h4>
+            </div>
+            <span class="font-serif text-lg font-bold text-[#F9E29B]">${pkg.price}</span>
+          </div>
+          <p class="text-xs text-[#DCCBB0] font-light">${pkg.priceNote || 'Comprehensive Vedic Architectural Evaluation'}</p>
+        </div>
+
+        <div class="space-y-3 pt-2">
+          <button id="razorpay-online-pay-btn" class="w-full py-3.5 rounded-full bg-gradient-to-r from-[#D9A52D] via-[#F9E29B] to-[#C6A15B] text-[#171717] font-serif text-xs font-bold uppercase tracking-wider hover:shadow-lg transition-all flex items-center justify-center gap-2">
+            <span>Pay with Razorpay (Card / UPI / NetBanking)</span>
+            <span>💳</span>
+          </button>
+
+          <button id="razorpay-whatsapp-book-btn" class="w-full py-3.5 rounded-full bg-emerald-700 hover:bg-emerald-600 text-white font-serif text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2">
+            <span>Book via WhatsApp & Direct Bank Transfer</span>
+            <span>💬</span>
+          </button>
+        </div>
+
+        <div id="razorpay-status-message" class="hidden p-3 rounded-lg text-xs leading-relaxed"></div>
+      `;
+
+      modal.classList.remove('hidden');
+
+      const payBtn = document.getElementById('razorpay-online-pay-btn');
+      const waBtn = document.getElementById('razorpay-whatsapp-book-btn');
+      const statusBox = document.getElementById('razorpay-status-message');
+
+      if (waBtn) {
+        waBtn.addEventListener('click', () => {
+          modal.classList.add('hidden');
+          const rawWa = (VASTU_DATA.config && VASTU_DATA.config.whatsappNumber) || '9181457155';
+          const cleanWa = rawWa.replace(/\D/g, '');
+          const text = encodeURIComponent(`*VASTU SUTRAM – PACKAGE INQUIRY*\nI would like to book the *${pkg.name}* (${pkg.price}) consultation.`);
+          window.open(`https://api.whatsapp.com/send?phone=${cleanWa}&text=${text}`, '_blank');
+        });
+      }
+
+      if (payBtn) {
+        payBtn.addEventListener('click', async () => {
+          payBtn.disabled = true;
+          payBtn.innerHTML = `<span>Checking Gateway Connection...</span>`;
+
+          try {
+            const res = await fetch('/api/razorpay/create-order', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ packageId: pkg.id, amount: 510000, currency: 'INR' })
+            });
+            const data = await res.json();
+
+            if (data.setupMode) {
+              statusBox.className = 'p-3 rounded-lg bg-amber-950/60 border border-amber-500/40 text-xs text-amber-200 mt-3 leading-relaxed';
+              statusBox.innerHTML = `
+                <strong class="block mb-1 text-amber-300">⚙️ Payment Gateway Setup Notice:</strong>
+                ${data.message}<br/>
+                <span class="text-[11px] text-[#DCCBB0] mt-1 block">To complete this consultation immediately without gateway delay, please click the <strong>Book via WhatsApp</strong> option above.</span>
+              `;
+              statusBox.classList.remove('hidden');
+              payBtn.disabled = false;
+              payBtn.innerHTML = `<span>Pay with Razorpay</span> <span>💳</span>`;
+              return;
+            }
+
+            if (data.success && window.Razorpay) {
+              const options = {
+                key: data.keyId,
+                amount: data.amount,
+                currency: data.currency,
+                name: 'VASTU SUTRAM',
+                description: pkg.name,
+                order_id: data.orderId,
+                handler: async function (response) {
+                  await fetch('/api/razorpay/verify-payment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(response)
+                  });
+                  alert('Payment Successful! Reference ID: ' + response.razorpay_payment_id);
+                  modal.classList.add('hidden');
+                },
+                theme: { color: '#C6A15B' }
+              };
+              const rzp = new window.Razorpay(options);
+              rzp.open();
+            }
+          } catch (err) {
+            statusBox.className = 'p-3 rounded-lg bg-red-950/60 border border-red-500/40 text-xs text-red-200 mt-3';
+            statusBox.textContent = 'Gateway connection initialized. Please complete via WhatsApp booking.';
+            statusBox.classList.remove('hidden');
+            payBtn.disabled = false;
+            payBtn.innerHTML = `<span>Pay with Razorpay</span> <span>💳</span>`;
+          }
+        });
+      }
+    });
+  }
+
+  // 14. CONTACT FORM
   initContactForm() {
     const form = document.getElementById('main-contact-form');
     if (!form) return;

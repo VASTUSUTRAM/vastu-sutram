@@ -1,91 +1,190 @@
 /* 
- * VASTU SUTRAM – The Principles of Vastu
- * Luxury Design System & Sacred Vedic Aesthetics
+ * VASTU SUTRAM – THE PRINCIPLES OF VASTU
+ * Premium Indian Luxury Vedic Architectural Design System
+ * Deep Maroon (#481C25) • Champagne Gold (#C6A15B) • Warm Ivory (#F8F3E9) • Earthy Beige (#EADCC9) • Charcoal (#121011)
  */
 
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-  --color-burgundy: #481C25;
+  --color-maroon: #481C25;
+  --color-maroon-dark: #361119;
+  --color-maroon-deep: #250A10;
   --color-gold: #C6A15B;
   --color-gold-light: #F9E29B;
-  --color-gold-deep: #B8861B;
+  --color-gold-champagne: #E5C378;
+  --color-gold-antique: #B8861B;
   --color-ivory: #F8F3E9;
-  --color-charcoal: #171717;
+  --color-ivory-warm: #FAF6F0;
+  --color-beige: #EADCC9;
   --color-sand: #DCCBB0;
-  --color-cream: #FFFDF8;
+  --color-charcoal: #121011;
+  --color-charcoal-card: #181416;
+  --color-charcoal-border: rgba(198, 161, 91, 0.22);
 }
 
 /* Base Styles */
 html {
   scroll-behavior: smooth;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   background-color: var(--color-charcoal);
   color: var(--color-ivory);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
 body {
   overflow-x: hidden;
-  background-color: #12080B;
+  background-color: #121011;
   background-image: 
-    radial-gradient(circle at 50% 0%, rgba(72, 28, 37, 0.45) 0%, rgba(18, 8, 11, 0.95) 75%),
+    radial-gradient(circle at 50% 0%, rgba(72, 28, 37, 0.55) 0%, rgba(18, 16, 17, 0.96) 65%),
+    radial-gradient(circle at 80% 50%, rgba(72, 28, 37, 0.25) 0%, transparent 60%),
+    radial-gradient(circle at 20% 85%, rgba(198, 161, 91, 0.12) 0%, transparent 50%),
     url('../assets/mandala-bg.svg');
   background-attachment: fixed;
   background-size: cover;
   background-position: center;
 }
 
-/* Luxury Typography */
-h1, h2, h3, h4, .font-serif {
+/* Luxury Architectural Typography */
+h1, h2, h3, h4, h5, .font-serif {
   font-family: 'Cinzel', 'Cormorant Garamond', Georgia, serif;
+  letter-spacing: 0.03em;
+}
+
+.font-editorial {
+  font-family: 'Cormorant Garamond', Georgia, serif;
 }
 
 .font-body {
-  font-family: 'Inter', 'Montserrat', sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
 }
 
 /* Gold Gradient Text */
 .text-gold-gradient {
-  background: linear-gradient(135deg, #FFF1C5 0%, #F9E29B 25%, #D9A52D 50%, #B8861B 75%, #F9E29B 100%);
+  background: linear-gradient(135deg, #FFF6D6 0%, #F9E29B 22%, #D4AF37 50%, #B8861B 78%, #F9E29B 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
+.text-gold-subtle {
+  color: #C6A15B;
+}
+
 /* Gold Glow Shadows */
 .gold-glow {
-  box-shadow: 0 0 25px rgba(198, 161, 91, 0.35);
+  box-shadow: 0 0 25px rgba(198, 161, 91, 0.28);
 }
 
 .gold-glow-lg {
-  box-shadow: 0 0 45px rgba(217, 165, 45, 0.45);
+  box-shadow: 0 0 50px rgba(198, 161, 91, 0.4);
 }
 
 .border-gold-glow {
-  border-color: rgba(198, 161, 91, 0.6);
-  box-shadow: 0 0 15px rgba(198, 161, 91, 0.25);
+  border-color: rgba(198, 161, 91, 0.5);
+  box-shadow: 0 0 20px rgba(198, 161, 91, 0.18);
 }
 
-/* Glassmorphism Classes */
+/* Luxury Glassmorphism & Panels */
 .glass-panel {
-  background: rgba(23, 23, 23, 0.75);
+  background: rgba(24, 20, 22, 0.78);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(198, 161, 91, 0.25);
+  border: 1px solid rgba(198, 161, 91, 0.22);
 }
 
-.glass-burgundy {
-  background: rgba(72, 28, 37, 0.65);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(198, 161, 91, 0.3);
+.glass-panel-luxury {
+  background: linear-gradient(145deg, rgba(34, 18, 24, 0.85) 0%, rgba(18, 16, 17, 0.92) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(198, 161, 91, 0.28);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(249, 226, 155, 0.15);
+}
+
+.glass-maroon {
+  background: linear-gradient(135deg, rgba(72, 28, 37, 0.75) 0%, rgba(42, 14, 20, 0.88) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(198, 161, 91, 0.32);
+}
+
+/* Indian Architectural Ornaments & Dividers */
+.gold-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(198, 161, 91, 0.2) 20%, #C6A15B 50%, rgba(198, 161, 91, 0.2) 80%, transparent 100%);
+}
+
+.gold-divider-ornate {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 1.5rem auto;
+}
+
+.gold-divider-ornate::before,
+.gold-divider-ornate::after {
+  content: '';
+  height: 1px;
+  width: 60px;
+  background: linear-gradient(to right, transparent, #C6A15B);
+}
+
+.gold-divider-ornate::after {
+  background: linear-gradient(to left, transparent, #C6A15B);
+}
+
+/* Button & Interactive Shimmer */
+.btn-gold-shimmer {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #C6A15B 0%, #D4AF37 50%, #A88132 100%);
+  color: #121011;
+  font-weight: 600;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-gold-shimmer::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -60%;
+  width: 40%;
+  height: 200%;
+  background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.45) 50%, rgba(255, 255, 255, 0) 100%);
+  transform: rotate(30deg);
+  transition: all 0.75s ease;
+}
+
+.btn-gold-shimmer:hover::after {
+  left: 130%;
+}
+
+.btn-gold-shimmer:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(198, 161, 91, 0.45);
+}
+
+.btn-maroon-luxury {
+  background: linear-gradient(135deg, #481C25 0%, #361119 100%);
+  border: 1px solid rgba(198, 161, 91, 0.4);
+  color: #F8F3E9;
+  transition: all 0.35s ease;
+}
+
+.btn-maroon-luxury:hover {
+  border-color: #C6A15B;
+  background: linear-gradient(135deg, #5A232E 0%, #481C25 100%);
+  box-shadow: 0 8px 20px rgba(72, 28, 37, 0.5), 0 0 15px rgba(198, 161, 91, 0.25);
+  transform: translateY(-2px);
 }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 7px;
 }
 ::-webkit-scrollbar-track {
-  background: #12080B;
+  background: #121011;
 }
 ::-webkit-scrollbar-thumb {
   background: #481C25;
@@ -96,15 +195,16 @@ h1, h2, h3, h4, .font-serif {
   background: #C6A15B;
 }
 
-/* Golden Pulse Keyframe */
+/* Animations */
 @keyframes goldPulse {
   0%, 100% {
     transform: scale(1);
-    opacity: 0.8;
+    opacity: 0.85;
   }
   50% {
-    transform: scale(1.04);
+    transform: scale(1.03);
     opacity: 1;
+    filter: drop-shadow(0 0 15px rgba(198, 161, 91, 0.5));
   }
 }
 
@@ -112,7 +212,6 @@ h1, h2, h3, h4, .font-serif {
   animation: goldPulse 4s ease-in-out infinite;
 }
 
-/* Slow Subtle Rotation */
 @keyframes slowSpin {
   from {
     transform: rotate(0deg);
@@ -123,10 +222,113 @@ h1, h2, h3, h4, .font-serif {
 }
 
 .animate-slow-spin {
-  animation: slowSpin 60s linear infinite;
+  animation: slowSpin 55s linear infinite;
 }
 
-/* Print Styles for Booking Receipt */
+@keyframes floatGentle {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.animate-float-gentle {
+  animation: floatGentle 5s ease-in-out infinite;
+}
+
+/* Reduced Motion Preference */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .animate-slow-spin,
+  .animate-gold-pulse,
+  .animate-float-gentle {
+    animation: none !important;
+  }
+}
+
+/* Gallery & Lightbox Transitions */
+.gallery-item {
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
+}
+
+.gallery-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), 0 0 20px rgba(198, 161, 91, 0.3);
+}
+
+.gallery-overlay {
+  transition: opacity 0.35s ease;
+}
+
+/* Instagram Post Grid Card */
+.insta-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  border: 1px solid rgba(198, 161, 91, 0.2);
+  background: #181416;
+  aspect-ratio: 1 / 1;
+}
+
+.insta-card img, .insta-card svg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.insta-card:hover img, .insta-card:hover svg {
+  transform: scale(1.06);
+}
+
+.insta-hover-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(72, 28, 37, 0.92) 0%, rgba(18, 16, 17, 0.75) 50%, rgba(0,0,0,0.4) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 1.25rem;
+}
+
+.insta-card:hover .insta-hover-overlay {
+  opacity: 1;
+}
+
+/* Consultation Form Inputs */
+.vastu-input {
+  width: 100%;
+  background: rgba(18, 16, 17, 0.85);
+  border: 1px solid rgba(198, 161, 91, 0.28);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  color: #F8F3E9;
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.vastu-input:focus {
+  border-color: #C6A15B;
+  box-shadow: 0 0 12px rgba(198, 161, 91, 0.3);
+}
+
+.vastu-input::placeholder {
+  color: #A3927B;
+}
+
+.vastu-input option {
+  background-color: #181416;
+  color: #F8F3E9;
+}
+
+/* Print Styles */
 @media print {
   body * {
     visibility: hidden;

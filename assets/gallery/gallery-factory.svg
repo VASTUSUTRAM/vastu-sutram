@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="100%" height="100%">
+  <defs>
+    <linearGradient id="gFacBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#110A0E" />
+      <stop offset="60%" stop-color="#241017" />
+      <stop offset="100%" stop-color="#0F0C0E" />
+    </linearGradient>
+    <linearGradient id="gGold3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#F9E29B" />
+      <stop offset="50%" stop-color="#C6A15B" />
+      <stop offset="100%" stop-color="#B8861B" />
+    </linearGradient>
+  </defs>
+
+  <rect width="800" height="600" fill="url(#gFacBg)" />
+
+  <!-- Factory Perimeter -->
+  <rect x="100" y="90" width="600" height="420" fill="rgba(28,15,20,0.6)" stroke="url(#gGold3)" stroke-width="2.5" />
+
+  <!-- Heavy Raw Materials in South-West -->
+  <rect x="120" y="370" width="180" height="120" fill="rgba(72,28,37,0.75)" stroke="#C6A15B" stroke-width="1.5" />
+  <text x="210" y="425" fill="#F8F3E9" font-family="'Cinzel', serif" font-size="11" font-weight="bold" text-anchor="middle">RAW MATERIAL STOCK</text>
+  <text x="210" y="445" fill="#C6A15B" font-family="'Plus Jakarta Sans', sans-serif" font-size="9" text-anchor="middle">Heavy Load South-West Plinth</text>
+
+  <!-- Production Furnaces & Boilers in South-East (Agni) -->
+  <rect x="500" y="370" width="180" height="120" fill="rgba(120,30,40,0.75)" stroke="#C6A15B" stroke-width="1.5" />
+  <text x="590" y="425" fill="#F8F3E9" font-family="'Cinzel', serif" font-size="11" font-weight="bold" text-anchor="middle">BOILERS & FURNACES</text>
+  <text x="590" y="445" fill="#C6A15B" font-family="'Plus Jakarta Sans', sans-serif" font-size="9" text-anchor="middle">Agni Zone Thermodynamic Flow</text>
+
+  <!-- Finished Goods Dispatch in North-West (Vayu) -->
+  <rect x="120" y="110" width="180" height="110" fill="rgba(72,28,37,0.75)" stroke="#C6A15B" stroke-width="1.5" />
+  <text x="210" y="160" fill="#F8F3E9" font-family="'Cinzel', serif" font-size="11" font-weight="bold" text-anchor="middle">DISPATCH & LOGISTICS</text>
+  <text x="210" y="180" fill="#C6A15B" font-family="'Plus Jakarta Sans', sans-serif" font-size="9" text-anchor="middle">Vayu Velocity Movement</text>
+
+  <!-- Water Reservoir in North-East (Ishanya) -->
+  <circle cx="590" cy="165" r="50" fill="rgba(20,50,90,0.7)" stroke="#C6A15B" stroke-width="1.5" />
+  <text x="590" y="162" fill="#F8F3E9" font-family="'Cinzel', serif" font-size="10" font-weight="bold" text-anchor="middle">WATER RESERVOIR</text>
+  <text x="590" y="178" fill="#F9E29B" font-family="'Plus Jakarta Sans', sans-serif" font-size="8" text-anchor="middle">Jal Tattva Depressed Basin</text>
+
+  <!-- Clockwise Production Arrow -->
+  <path d="M 230 350 L 230 250 L 570 250 L 570 350" fill="none" stroke="url(#gGold3)" stroke-width="2" stroke-dasharray="6,6" />
+  <text x="400" y="240" fill="#F9E29B" font-family="'Cinzel', serif" font-size="10" letter-spacing="2" text-anchor="middle">CLOCKWISE MATERIAL THROUGHPUT FLOW</text>
+
+  <!-- Title Badge -->
+  <rect x="250" y="30" width="300" height="34" rx="17" fill="rgba(18,16,17,0.85)" stroke="url(#gGold3)" stroke-width="1" />
+  <text x="400" y="52" fill="#F8F3E9" font-family="'Cinzel', serif" font-size="11" letter-spacing="2" text-anchor="middle" font-weight="bold">INDUSTRIAL PLANT VASTU LAYOUT</text>
+</svg>

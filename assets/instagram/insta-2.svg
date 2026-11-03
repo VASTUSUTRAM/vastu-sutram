@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
+  <defs>
+    <linearGradient id="iBg2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1A0B10" />
+      <stop offset="60%" stop-color="#3D1815" />
+      <stop offset="100%" stop-color="#121011" />
+    </linearGradient>
+  </defs>
+  <rect width="500" height="500" fill="url(#iBg2)" />
+  <rect x="100" y="80" width="300" height="260" fill="none" stroke="#C6A15B" stroke-width="2" rx="4" />
+  <path d="M 140 280 L 140 180 L 360 180 L 360 280" fill="none" stroke="#F9E29B" stroke-width="2.5" stroke-dasharray="6,4" />
+  <polygon points="360,285 355,275 365,275" fill="#F9E29B" />
+  <circle cx="140" cy="280" r="16" fill="#C6A15B" />
+  <circle cx="360" cy="280" r="16" fill="#A72F32" />
+  <text x="250" y="395" fill="#F8F3E9" font-family="'Cinzel', Georgia, serif" font-size="14" font-weight="bold" letter-spacing="2" text-anchor="middle">FACTORY THERMODYNAMICS</text>
+  <text x="250" y="420" fill="#C6A15B" font-family="'Plus Jakarta Sans', sans-serif" font-size="11" text-anchor="middle">Zero-Demolition Industrial Flow</text>
+  <text x="250" y="450" fill="#DCCBB0" font-family="'Plus Jakarta Sans', sans-serif" font-size="10" text-anchor="middle">@vastu_sutram</text>
+</svg>

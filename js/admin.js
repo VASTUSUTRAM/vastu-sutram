@@ -426,8 +426,8 @@ class VastuAdminDashboard {
           </div>
 
           <div>
-            <label class="block text-xs font-medium text-[#C6A15B] uppercase tracking-wider mb-1">Office Consulting Chambers Address</label>
-            <input type="text" id="set-address" value="${s.officeAddress || 'Suite 702, Vedic Heritage Tower, Golf Course Road, Sector 54, Gurugram, Haryana 122002'}" class="w-full px-3.5 py-2 rounded-lg bg-[#12080B] border border-[#C6A15B]/30 text-xs text-[#F8F3E9] outline-none" />
+            <label class="block text-xs font-medium text-[#C6A15B] uppercase tracking-wider mb-1">Consultation Coverage & Regional Availability</label>
+            <input type="text" id="set-coverage" value="${s.consultationCoverage || 'Pan-India On-Site Consultations & Global Remote Video Sessions'}" class="w-full px-3.5 py-2 rounded-lg bg-[#12080B] border border-[#C6A15B]/30 text-xs text-[#F8F3E9] outline-none" />
           </div>
 
           <div class="p-4 rounded-xl bg-[#481C25]/40 border border-[#C6A15B]/30 space-y-3">
@@ -585,7 +585,7 @@ class VastuAdminDashboard {
           whatsapp: document.getElementById('set-whatsapp').value,
           email: document.getElementById('set-email').value,
           workingHours: document.getElementById('set-hours').value,
-          officeAddress: document.getElementById('set-address').value,
+          consultationCoverage: document.getElementById('set-coverage').value,
           razorpayKeyId: document.getElementById('set-rzp-key').value,
           razorpaySecret: document.getElementById('set-rzp-secret').value,
           ownerPin: document.getElementById('set-pin').value

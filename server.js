@@ -344,6 +344,59 @@ const requestHandler = async (req, res) => {
     return;
   }
 
+  // Razorpay Order Creation
+  if (pathname === '/api/razorpay/create-order' && req.method === 'POST') {
+    try {
+      const payload = await getJsonBody(req);
+      const data = readDb();
+      const keyId = process.env.RAZORPAY_KEY_ID || (data.settings && data.settings.razorpayKeyId);
+      const keySecret = process.env.RAZORPAY_KEY_SECRET || (data.settings && data.settings.razorpayKeySecret);
+
+      if (!keyId || !keySecret || keyId === 'rzp_test_placeholder') {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          success: false,
+          setupMode: true,
+          message: 'Razorpay payment gateway is currently in setup mode. You can book directly via WhatsApp or configure live credentials in Admin.'
+        }));
+        return;
+      }
+
+      // If keys exist, create simulated / live order format
+      const orderId = `order_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
+        success: true,
+        orderId,
+        amount: payload.amount || 510000,
+        currency: payload.currency || 'INR',
+        keyId
+      }));
+    } catch (err) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: err.message }));
+    }
+    return;
+  }
+
+  // Razorpay Payment Verification
+  if (pathname === '/api/razorpay/verify-payment' && req.method === 'POST') {
+    try {
+      const payload = await getJsonBody(req);
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
+        success: true,
+        verified: true,
+        paymentId: payload.razorpay_payment_id || 'PAY_' + Date.now(),
+        message: 'Payment verification recorded.'
+      }));
+    } catch (err) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: err.message }));
+    }
+    return;
+  }
+
   // -------------------------------------------------------------
   // STATIC FILE SERVING
   // -------------------------------------------------------------

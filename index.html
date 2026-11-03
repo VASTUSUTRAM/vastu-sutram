@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VASTU SUTRAM – The Principles of Vastu | Luxury Vedic Consultation & Booking</title>
-  <meta name="description" content="Vastu Sutram – Where Ancient Wisdom Meets Harmonious Living. Premium Vedic architecture, residential, commercial, industrial and land Vastu consultations." />
+  <title>VASTU SUTRAM – The Principles of Vastu | Luxury Vedic Consultation & Space Planning</title>
+  <meta name="description" content="VASTU SUTRAM – Where Ancient Wisdom Meets Harmonious Living. Premium Vedic architecture, residential, commercial, factory, and precision Vastu mapping consultations. Non-demolition spatial energy harmonization." />
   
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="assets/logo-icon.svg" />
@@ -16,23 +16,30 @@
       theme: {
         extend: {
           colors: {
-            burgundy: '#481C25',
+            maroon: '#481C25',
+            'maroon-dark': '#361119',
             gold: '#C6A15B',
             'gold-light': '#F9E29B',
-            'gold-deep': '#B8861B',
+            'gold-champagne': '#E5C378',
+            'gold-antique': '#B8861B',
             ivory: '#F8F3E9',
-            charcoal: '#171717',
+            beige: '#EADCC9',
             sand: '#DCCBB0',
-            cream: '#FFFDF8',
+            charcoal: '#121011',
+            'charcoal-card': '#181416',
           },
           fontFamily: {
             serif: ['Cinzel', 'Cormorant Garamond', 'Georgia', 'serif'],
-            body: ['Inter', 'Montserrat', 'sans-serif'],
+            editorial: ['Cormorant Garamond', 'Georgia', 'serif'],
+            body: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
           }
         }
       }
     }
   </script>
+
+  <!-- Razorpay Checkout SDK -->
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
   <!-- Three.js Library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -40,55 +47,68 @@
   <!-- Custom Stylesheet -->
   <link rel="stylesheet" href="css/styles.css" />
 </head>
-<body class="bg-[#12080B] text-[#F8F3E9] font-body selection:bg-[#C6A15B] selection:text-[#171717]">
+<body class="bg-[#121011] text-[#F8F3E9] font-body selection:bg-[#C6A15B] selection:text-[#121011]">
 
   <!-- Scroll Progress Indicator -->
   <div class="fixed top-0 left-0 w-full h-[3px] z-[100] bg-transparent pointer-events-none">
-    <div id="scroll-progress-bar" class="h-full bg-gradient-to-r from-[#D9A52D] via-[#F9E29B] to-[#C6A15B] w-0 transition-all duration-75 shadow-[0_0_8px_#F9E29B]"></div>
+    <div id="scroll-progress-bar" class="h-full bg-gradient-to-r from-[#B8861B] via-[#F9E29B] to-[#C6A15B] w-0 transition-all duration-75 shadow-[0_0_10px_#F9E29B]"></div>
   </div>
 
   <!-- ============================================================== -->
-  <!-- 3. CINEMATIC 3D OPENING ANIMATION (12-18 SEC STORYTELLING)      -->
+  <!-- 3D CINEMATIC INTRO STORYTELLING                                -->
   <!-- ============================================================== -->
-  <div id="cinematic-intro-wrapper" class="fixed inset-0 z-[999] w-full h-full bg-[#12080B]">
-    <!-- Injected dynamically by js/intro3d.js -->
+  <div id="cinematic-intro-wrapper" class="fixed inset-0 z-[999] w-full h-full bg-[#121011]">
+    <!-- Managed by js/intro3d.js -->
   </div>
 
   <!-- ============================================================== -->
-  <!-- 4. NAVIGATION BAR                                             -->
+  <!-- 2. ORIGINAL LOGO & STICKY LUXURY HEADER                        -->
   <!-- ============================================================== -->
   <header id="main-navbar" class="fixed top-0 left-0 w-full z-40 transition-all duration-300 py-3.5 px-4 md:px-8">
     <div class="max-w-7xl mx-auto flex items-center justify-between">
       <!-- Original Logo -->
-      <a href="#" class="flex items-center gap-3 group">
-        <div class="w-44 md:w-56 transition-transform duration-300 group-hover:scale-105">
-          <img src="assets/logo.svg" alt="VASTU SUTRAM – The Principles of Vastu" class="w-full h-auto drop-shadow-[0_2px_10px_rgba(198,161,91,0.3)]" />
+      <a href="#home" class="flex items-center gap-3 group">
+        <div class="w-44 md:w-56 transition-transform duration-300 group-hover:scale-102">
+          <img src="assets/logo.svg" alt="VASTU SUTRAM – The Principles of Vastu" class="w-full h-auto drop-shadow-[0_2px_12px_rgba(198,161,91,0.35)]" />
         </div>
       </a>
 
-      <!-- Desktop Navigation Menu -->
+      <!-- Desktop Navigation Menu (Mandated: Home | About | Services | Vastu Knowledge | Gallery | Book Consultation | Contact) -->
       <nav class="hidden xl:flex items-center gap-6 text-xs uppercase tracking-widest font-serif font-medium text-[#DCCBB0]">
-        <a href="#about" class="hover:text-[#F9E29B] transition-colors py-1">About Us</a>
-        <a href="#consultant" class="hover:text-[#F9E29B] transition-colors py-1">Consultant</a>
+        <a href="#home" class="hover:text-[#F9E29B] transition-colors py-1">Home</a>
+        <a href="#about" class="hover:text-[#F9E29B] transition-colors py-1">About</a>
         <a href="#services" class="hover:text-[#F9E29B] transition-colors py-1">Services</a>
-        <a href="#knowledge" class="hover:text-[#F9E29B] transition-colors py-1">Vastu Chakra</a>
-        <a href="#packages" class="hover:text-[#F9E29B] transition-colors py-1">Packages</a>
+        <a href="#knowledge" class="hover:text-[#F9E29B] transition-colors py-1">Vastu Knowledge</a>
         <a href="#gallery" class="hover:text-[#F9E29B] transition-colors py-1">Gallery</a>
-        <a href="#articles" class="hover:text-[#F9E29B] transition-colors py-1">Articles</a>
+        <a href="#booking-section" class="hover:text-[#F9E29B] transition-colors py-1">Book Consultation</a>
         <a href="#contact" class="hover:text-[#F9E29B] transition-colors py-1">Contact</a>
       </nav>
 
-      <!-- Right CTAs -->
+      <!-- Right Action Items (Instagram, WhatsApp, Booking CTA) -->
       <div class="hidden sm:flex items-center gap-3">
-        <!-- Replay 3D Intro Button -->
+        <!-- Official Instagram Icon -->
+        <a href="https://www.instagram.com/vastu_sutram?cplk=b3dwajhwdXFmZzds" target="_blank" rel="noopener noreferrer" class="w-9 h-9 rounded-full border border-[#C6A15B]/40 flex items-center justify-center text-[#C6A15B] hover:text-[#F9E29B] hover:border-[#F9E29B] hover:bg-[#481C25]/60 transition-all" title="Follow @vastu_sutram on Instagram">
+          <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+          </svg>
+        </a>
+
+        <!-- Official WhatsApp Quick Button -->
+        <a href="https://wa.me/9181457155?text=Hello%20Vastu%20Sutram,%20I%20would%20like%20to%20inquire%20about%20a%20Vastu%20consultation." target="_blank" rel="noopener noreferrer" class="w-9 h-9 rounded-full border border-emerald-600/40 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-950/40 flex items-center justify-center transition-all" title="Chat on WhatsApp">
+          <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
+          </svg>
+        </a>
+
+        <!-- Replay 3D Intro -->
         <button data-replay-intro class="px-3.5 py-2 rounded-full border border-[#C6A15B]/40 text-[#C6A15B] text-xs font-serif uppercase tracking-wider hover:bg-[#481C25]/80 hover:text-[#F9E29B] transition-all flex items-center gap-1.5" title="Replay 3D Cinematic Story">
           <span>✨</span> <span class="hidden md:inline">3D Intro</span>
         </button>
 
         <!-- Prominent Book Consultation CTA -->
-        <button data-open-booking class="px-6 py-2.5 rounded-full bg-gradient-to-r from-[#D9A52D] via-[#F9E29B] to-[#C6A15B] text-[#171717] font-serif text-xs font-bold uppercase tracking-wider shadow-[0_0_15px_rgba(198,161,91,0.4)] hover:shadow-[0_0_25px_rgba(217,165,45,0.7)] transform hover:-translate-y-0.5 transition-all">
+        <a href="#booking-section" class="btn-gold-shimmer px-6 py-2.5 rounded-full text-xs font-serif font-bold uppercase tracking-wider shadow-lg">
           Book Consultation
-        </button>
+        </a>
       </div>
 
       <!-- Mobile Hamburger Button -->
@@ -100,44 +120,61 @@
     </div>
 
     <!-- Mobile Drawer -->
-    <div id="mobile-drawer" class="hidden xl:hidden fixed inset-x-0 top-[68px] bg-[#171717]/98 backdrop-blur-2xl border-b border-[#C6A15B]/30 p-6 shadow-2xl transition-all">
+    <div id="mobile-drawer" class="hidden xl:hidden fixed inset-x-0 top-[68px] bg-[#121011]/98 backdrop-blur-2xl border-b border-[#C6A15B]/30 p-6 shadow-2xl transition-all">
       <nav class="flex flex-col gap-4 text-sm font-serif uppercase tracking-wider text-[#DCCBB0]">
-        <a href="#about" class="hover:text-[#F9E29B] py-1 border-b border-[#C6A15B]/10">About Us</a>
-        <a href="#consultant" class="hover:text-[#F9E29B] py-1 border-b border-[#C6A15B]/10">Meet Consultant</a>
-        <a href="#services" class="hover:text-[#F9E29B] py-1 border-b border-[#C6A15B]/10">All Consultation Services</a>
-        <a href="#knowledge" class="hover:text-[#F9E29B] py-1 border-b border-[#C6A15B]/10">Interactive 3D Vastu Chakra</a>
-        <a href="#packages" class="hover:text-[#F9E29B] py-1 border-b border-[#C6A15B]/10">Consultation Packages & Pricing</a>
-        <a href="#gallery" class="hover:text-[#F9E29B] py-1 border-b border-[#C6A15B]/10">Media & Video Gallery</a>
-        <a href="#articles" class="hover:text-[#F9E29B] py-1 border-b border-[#C6A15B]/10">Vastu Articles & Insights</a>
-        <a href="#contact" class="hover:text-[#F9E29B] py-1 border-b border-[#C6A15B]/10">Contact Us</a>
+        <a href="#home" class="hover:text-[#F9E29B] py-1 border-b border-[#C6A15B]/10">Home</a>
+        <a href="#about" class="hover:text-[#F9E29B] py-1 border-b border-[#C6A15B]/10">About</a>
+        <a href="#services" class="hover:text-[#F9E29B] py-1 border-b border-[#C6A15B]/10">Services</a>
+        <a href="#knowledge" class="hover:text-[#F9E29B] py-1 border-b border-[#C6A15B]/10">Vastu Knowledge</a>
+        <a href="#gallery" class="hover:text-[#F9E29B] py-1 border-b border-[#C6A15B]/10">Gallery</a>
+        <a href="#booking-section" class="hover:text-[#F9E29B] py-1 border-b border-[#C6A15B]/10">Book Consultation</a>
+        <a href="#contact" class="hover:text-[#F9E29B] py-1 border-b border-[#C6A15B]/10">Contact</a>
         <div class="pt-2 flex flex-col gap-2">
-          <button data-open-booking class="w-full py-3 rounded-full bg-gradient-to-r from-[#D9A52D] to-[#C6A15B] text-[#171717] font-serif text-xs font-bold uppercase tracking-wider">
+          <a href="#booking-section" class="btn-gold-shimmer w-full py-3 rounded-full text-center text-xs font-serif font-bold uppercase tracking-wider">
             Book Consultation
-          </button>
-          <button data-replay-intro class="w-full py-2.5 rounded-full border border-[#C6A15B]/40 text-[#C6A15B] font-serif text-xs uppercase">
-            Replay 3D Cinematic Story
-          </button>
+          </a>
+          <div class="flex items-center justify-center gap-3 pt-2">
+            <a href="https://www.instagram.com/vastu_sutram?cplk=b3dwajhwdXFmZzds" target="_blank" class="px-4 py-2 rounded-full border border-[#C6A15B]/40 text-xs text-[#C6A15B] flex items-center gap-2">
+              <span>Instagram</span>
+            </a>
+            <a href="https://wa.me/9181457155" target="_blank" class="px-4 py-2 rounded-full border border-emerald-600/40 text-xs text-emerald-400 flex items-center gap-2">
+              <span>WhatsApp</span>
+            </a>
+          </div>
         </div>
       </nav>
     </div>
   </header>
 
   <!-- ============================================================== -->
-  <!-- 5. HOMEPAGE HERO SECTION                                       -->
+  <!-- 1. HOMEPAGE HERO SECTION                                       -->
   <!-- ============================================================== -->
-  <section class="relative min-h-screen flex items-center justify-center pt-28 pb-20 px-4 md:px-8 overflow-hidden">
+  <section id="home" class="relative min-h-screen flex items-center justify-center pt-32 pb-20 px-4 md:px-8 overflow-hidden">
     <!-- Interactive Canvas Particle / 3D Grid Backdrop -->
     <div class="absolute inset-0 z-0">
       <canvas id="hero-canvas" class="w-full h-full"></canvas>
     </div>
 
     <!-- Radial Glows -->
-    <div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#481C25]/40 rounded-full blur-[140px] pointer-events-none"></div>
-    <div class="absolute bottom-10 right-10 w-[400px] h-[400px] bg-[#C6A15B]/10 rounded-full blur-[120px] pointer-events-none"></div>
+    <div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[650px] h-[650px] bg-[#481C25]/45 rounded-full blur-[140px] pointer-events-none"></div>
+    <div class="absolute bottom-10 right-10 w-[420px] h-[420px] bg-[#C6A15B]/12 rounded-full blur-[130px] pointer-events-none"></div>
 
     <div class="relative z-10 max-w-5xl mx-auto text-center flex flex-col items-center">
+      <!-- Centered Original Logo Showcase (Requirement 2) -->
+      <div class="flex flex-col items-center mb-6 group">
+        <div class="w-20 h-20 md:w-24 md:h-24 mb-3 drop-shadow-[0_0_25px_rgba(198,161,91,0.5)] transform group-hover:scale-105 transition-transform duration-500 animate-gold-pulse">
+          <img src="assets/logo-icon.svg" alt="Vastu Sutram Sacred Emblem" class="w-full h-full object-contain" />
+        </div>
+        <span class="font-serif text-2xl md:text-3xl font-bold tracking-[0.25em] text-[#F8F3E9] uppercase drop-shadow">
+          VASTU SUTRAM
+        </span>
+        <span class="font-serif text-[10px] md:text-xs text-[#C6A15B] tracking-[0.35em] uppercase font-semibold mt-1">
+          THE PRINCIPLES OF VASTU
+        </span>
+      </div>
+
       <!-- Sacred Vedic Badge -->
-      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#481C25]/80 border border-[#C6A15B]/40 backdrop-blur-md mb-6 shadow-lg shadow-black/40">
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#481C25]/85 border border-[#C6A15B]/40 backdrop-blur-md mb-6 shadow-xl">
         <span class="w-2 h-2 rounded-full bg-[#F9E29B] animate-ping"></span>
         <span class="font-serif text-[11px] md:text-xs text-[#F9E29B] uppercase tracking-widest font-semibold">
           Ancient Vedic Wisdom × Modern Luxury Architecture
@@ -152,129 +189,83 @@
 
       <!-- Subtitle -->
       <p class="text-sm md:text-lg text-[#DCCBB0] max-w-3xl mx-auto font-light leading-relaxed mb-10">
-        Discover the principles of Vastu Shastra with personalised guidance for your home, workplace, land and commercial spaces. Grounded in Vedic science, solar geometry and zero structural demolition.
+        Personalised Vedic architectural advisory for luxury residences, commercial enterprises, industrial plants, and land parcels. Grounded in Sthapatya Veda, solar trajectories, and zero structural demolition.
       </p>
 
       <!-- Action Buttons -->
       <div class="flex flex-col sm:flex-row items-center gap-4 mb-14 w-full sm:w-auto">
-        <button data-open-booking class="w-full sm:w-auto px-8 py-4 rounded-full bg-gradient-to-r from-[#D9A52D] via-[#F9E29B] to-[#C6A15B] text-[#171717] font-serif text-xs md:text-sm font-bold uppercase tracking-widest shadow-[0_0_30px_rgba(198,161,91,0.5)] hover:shadow-[0_0_45px_rgba(217,165,45,0.8)] transform hover:-translate-y-1 transition-all">
-          Book a Vastu Consultation ➔
-        </button>
-        <a href="#services" class="w-full sm:w-auto px-8 py-4 rounded-full border border-[#C6A15B] bg-[#481C25]/50 backdrop-blur-md text-[#F8F3E9] font-serif text-xs md:text-sm font-semibold uppercase tracking-widest hover:bg-[#C6A15B]/20 hover:border-[#F9E29B] transform hover:-translate-y-1 transition-all">
-          Explore Our Services
+        <a href="#booking-section" class="btn-gold-shimmer w-full sm:w-auto px-8 py-4 rounded-full text-xs md:text-sm font-serif font-bold uppercase tracking-widest shadow-xl">
+          Book a Consultation ➔
+        </a>
+        <a href="#services" class="w-full sm:w-auto px-8 py-4 rounded-full border border-[#C6A15B] bg-[#481C25]/50 backdrop-blur-md text-[#F8F3E9] font-serif text-xs md:text-sm font-semibold uppercase tracking-widest hover:bg-[#C6A15B]/20 hover:border-[#F9E29B] transition-all">
+          Explore Services
+        </a>
+        <a href="#knowledge" class="w-full sm:w-auto px-6 py-4 rounded-full border border-[#C6A15B]/40 text-[#C6A15B] font-serif text-xs md:text-sm font-semibold uppercase tracking-wider hover:text-[#F9E29B] hover:border-[#F9E29B] transition-all">
+          Interactive Vastu Chakra 🧭
         </a>
       </div>
 
       <!-- Key Trust Pillars Bar -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-4xl pt-8 border-t border-[#C6A15B]/20">
-        <div class="p-4 rounded-xl bg-[#171717]/60 backdrop-blur-md border border-[#C6A15B]/15 text-center">
+        <div class="p-4 rounded-xl bg-[#181416]/80 backdrop-blur-md border border-[#C6A15B]/20 text-center">
+          <div class="font-serif text-xl md:text-2xl font-bold text-[#F9E29B]">15+ Years</div>
+          <div class="text-[11px] text-[#DCCBB0] uppercase tracking-wider font-medium mt-0.5">Vedic Architectural Practice</div>
+        </div>
+        <div class="p-4 rounded-xl bg-[#181416]/80 backdrop-blur-md border border-[#C6A15B]/20 text-center">
           <div class="font-serif text-xl md:text-2xl font-bold text-[#F9E29B]">1,200+</div>
           <div class="text-[11px] text-[#DCCBB0] uppercase tracking-wider font-medium mt-0.5">Spaces Harmonized</div>
         </div>
-        <div class="p-4 rounded-xl bg-[#171717]/60 backdrop-blur-md border border-[#C6A15B]/15 text-center">
+        <div class="p-4 rounded-xl bg-[#181416]/80 backdrop-blur-md border border-[#C6A15B]/20 text-center">
           <div class="font-serif text-xl md:text-2xl font-bold text-[#F9E29B]">100%</div>
-          <div class="text-[11px] text-[#DCCBB0] uppercase tracking-wider font-medium mt-0.5">Non-Demolition Remedies</div>
+          <div class="text-[11px] text-[#DCCBB0] uppercase tracking-wider font-medium mt-0.5">Zero-Demolition Remedies</div>
         </div>
-        <div class="p-4 rounded-xl bg-[#171717]/60 backdrop-blur-md border border-[#C6A15B]/15 text-center">
-          <div class="font-serif text-xl md:text-2xl font-bold text-[#F9E29B]">32 Gates</div>
-          <div class="text-[11px] text-[#DCCBB0] uppercase tracking-wider font-medium mt-0.5">Padavinyasa Precision</div>
-        </div>
-        <div class="p-4 rounded-xl bg-[#171717]/60 backdrop-blur-md border border-[#C6A15B]/15 text-center">
+        <div class="p-4 rounded-xl bg-[#181416]/80 backdrop-blur-md border border-[#C6A15B]/20 text-center">
           <div class="font-serif text-xl md:text-2xl font-bold text-[#F9E29B]">Pan-India</div>
-          <div class="text-[11px] text-[#DCCBB0] uppercase tracking-wider font-medium mt-0.5">& Global Site Audits</div>
+          <div class="text-[11px] text-[#DCCBB0] uppercase tracking-wider font-medium mt-0.5">& Global Consultations</div>
         </div>
       </div>
     </div>
   </section>
 
   <!-- ============================================================== -->
-  <!-- 6. ABOUT VASTU SUTRAM & INTERACTIVE PANCHABHUTAS               -->
+  <!-- 3. ABOUT VASTU SUTRAM & INTERACTIVE PANCHABHUTAS               -->
   <!-- ============================================================== -->
-  <section id="about" class="py-24 px-4 md:px-8 relative bg-gradient-to-b from-[#12080B] via-[#1A0B10] to-[#12080B]">
+  <section id="about" class="py-24 px-4 md:px-8 relative bg-gradient-to-b from-[#121011] via-[#1E1117] to-[#121011]">
     <div class="max-w-7xl mx-auto">
       <div class="text-center max-w-3xl mx-auto mb-16">
-        <span class="text-xs uppercase tracking-widest text-[#C6A15B] font-bold">Vedic Spatial Science</span>
+        <span class="text-xs uppercase tracking-widest text-[#C6A15B] font-bold">Vedic Spatial Philosophy</span>
         <h2 class="font-serif text-3xl md:text-5xl font-bold text-[#F8F3E9] mt-2 mb-4">
-          Understanding the Ancient Science of <span class="text-gold-gradient">Vastu Shastra</span>
+          Where Ancient Wisdom Meets <span class="text-gold-gradient">Harmonious Living</span>
         </h2>
-        <div class="w-24 h-[1px] bg-gradient-to-r from-transparent via-[#C6A15B] to-transparent mx-auto mb-6"></div>
+        <div class="gold-divider-ornate"></div>
         <p class="text-sm md:text-base text-[#DCCBB0] font-light leading-relaxed">
-          Rooted in Sthapatya Veda, Vastu Shastra is the world's most ancient environmental design framework. It harmonizes the physical habitat with the five primordial elements (Panchabhutas), the solar trajectory, and the Earth's geomagnetic flux lines.
+          Vastu Shastra is the ancient Indian architectural science of aligning physical dwellings with geomagnetic lines, solar trajectories, and cosmic elemental frequencies.
         </p>
       </div>
 
-      <!-- Core Philosophical Pillars -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20">
-        <div class="p-8 rounded-2xl bg-[#171717]/80 backdrop-blur-md border border-[#C6A15B]/20 hover:border-[#C6A15B] transition-all">
-          <div class="w-12 h-12 rounded-xl bg-[#481C25] border border-[#C6A15B]/40 flex items-center justify-center text-xl text-[#F9E29B] mb-5">
-            ☀️
-          </div>
-          <h3 class="font-serif text-xl font-bold text-[#F8F3E9] mb-3">Solar Trajectory & Light</h3>
-          <p class="text-xs md:text-sm text-[#DCCBB0] font-light leading-relaxed">
-            Harnessing the vital morning ultraviolet & infrared solar rays from the East to infuse physical vitality, natural sterilization, and calm mental states throughout the household.
-          </p>
-        </div>
-
-        <div class="p-8 rounded-2xl bg-[#171717]/80 backdrop-blur-md border border-[#C6A15B]/20 hover:border-[#C6A15B] transition-all">
-          <div class="w-12 h-12 rounded-xl bg-[#481C25] border border-[#C6A15B]/40 flex items-center justify-center text-xl text-[#F9E29B] mb-5">
-            🧭
-          </div>
-          <h3 class="font-serif text-xl font-bold text-[#F8F3E9] mb-3">Geomagnetic Flux Lines</h3>
-          <p class="text-xs md:text-sm text-[#DCCBB0] font-light leading-relaxed">
-            The Earth behaves as a giant magnetic dipole flowing from South to North. Aligning sleeping axes and headboards to this natural field reduces arterial resistance and promotes deep rest.
-          </p>
-        </div>
-
-        <div class="p-8 rounded-2xl bg-[#171717]/80 backdrop-blur-md border border-[#C6A15B]/20 hover:border-[#C6A15B] transition-all">
-          <div class="w-12 h-12 rounded-xl bg-[#481C25] border border-[#C6A15B]/40 flex items-center justify-center text-xl text-[#F9E29B] mb-5">
-            ☸️
-          </div>
-          <h3 class="font-serif text-xl font-bold text-[#F8F3E9] mb-3">Brahmasthan & Prana</h3>
-          <p class="text-xs md:text-sm text-[#DCCBB0] font-light leading-relaxed">
-            The central 1/9th zone of any structure is the cosmic nexus—the navel of the Vastu Purusha. Keeping this space light and uncluttered allows unhindered distribution of vital energy.
-          </p>
-        </div>
-      </div>
-
-      <!-- Interactive 3D Panchabhuta Explorer -->
-      <div class="rounded-3xl p-6 md:p-10 bg-[#171717]/60 backdrop-blur-xl border border-[#C6A15B]/30 shadow-2xl">
-        <div class="text-center mb-8">
-          <span class="text-xs uppercase tracking-widest text-[#C6A15B] font-bold">Interactive Spatial Explorer</span>
-          <h3 class="font-serif text-2xl md:text-3xl font-bold text-[#F9E29B] mt-1">The Five Primeval Elements (Panchabhutas)</h3>
-          <p class="text-xs text-[#DCCBB0] mt-1">Click an element to explore its directional quadrant, sacred geometry and architectural guidelines:</p>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          <!-- Element Selectors -->
-          <div class="lg:col-span-4 space-y-3" id="panchabhuta-list">
-            <!-- Rendered by js/app.js -->
-          </div>
-
-          <!-- Dynamic Display Card -->
-          <div class="lg:col-span-8" id="panchabhuta-display">
-            <!-- Rendered by js/app.js -->
-          </div>
-        </div>
+      <!-- Five Elements (Panchabhutas) Interactive Explorer -->
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-16" id="panchabhutas-grid">
+        <!-- Rendered by js/app.js -->
       </div>
     </div>
   </section>
 
   <!-- ============================================================== -->
-  <!-- 7. MEET THE VASTU CONSULTANT                                  -->
+  <!-- 4. MEET THE CONSULTANT (OWNER'S AUTHENTIC PHOTOGRAPH)          -->
   <!-- ============================================================== -->
-  <section id="consultant" class="py-24 px-4 md:px-8 relative bg-[#12080B] border-t border-b border-[#C6A15B]/20">
+  <section id="consultant" class="py-24 px-4 md:px-8 relative bg-[#121011] border-t border-b border-[#C6A15B]/20">
     <div class="max-w-7xl mx-auto">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-        <!-- Actual Owner Photograph / SVG Portrait Asset -->
+        <!-- Actual Owner Photograph Asset (Requirement 3: Authentic photograph preserved) -->
         <div class="lg:col-span-5 flex justify-center">
-          <div class="relative w-full max-w-md rounded-2xl overflow-hidden border-2 border-[#C6A15B]/60 shadow-[0_0_40px_rgba(198,161,91,0.3)] bg-[#171717] group">
+          <div class="relative w-full max-w-md rounded-2xl overflow-hidden border-2 border-[#C6A15B]/60 shadow-[0_0_40px_rgba(198,161,91,0.25)] bg-[#181416] group">
             <img id="consultant-photo" src="assets/rajni-singh.svg" alt="Rajni Singh – Senior Vastu Consultant" class="w-full h-auto object-cover transform group-hover:scale-102 transition-transform duration-700" />
-            <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-[#12080B] via-[#12080B]/80 to-transparent p-6 text-center">
-              <span class="inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#C6A15B] text-[#171717] mb-1">
+            <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-[#121011] via-[#121011]/85 to-transparent p-6 text-center">
+              <span class="inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#C6A15B] text-[#121011] mb-1">
                 Verified Vedic Consultant
               </span>
               <h4 class="font-serif text-xl font-bold text-[#F8F3E9]">Rajni Singh</h4>
-              <p class="text-xs text-[#DCCBB0]">Vastu Acharya • Space Planning Scholar</p>
+              <p class="text-xs text-[#C6A15B]">Vastu Acharya • Master in Sthapatya Veda</p>
             </div>
           </div>
         </div>
@@ -287,7 +278,7 @@
             Senior Vastu Consultant & Vedic Space Planner
           </p>
 
-          <!-- Exact Introduction Mandated by Brand Prompt -->
+          <!-- Introduction Statement -->
           <div class="p-5 rounded-xl bg-[#481C25]/50 border-l-4 border-[#C6A15B] mb-6">
             <p id="consultant-intro" class="font-serif text-sm md:text-base text-[#F8F3E9] italic leading-relaxed">
               "With a deep understanding of traditional Vastu principles and their practical application, our consultant provides personalised guidance to help individuals and organisations make informed decisions about their spaces."
@@ -296,11 +287,11 @@
 
           <!-- Credentials Grid -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs mb-6">
-            <div class="p-3.5 rounded-lg bg-[#171717]/80 border border-[#C6A15B]/20">
-              <span class="text-[#DCCBB0] block font-light">Years of Experience</span>
+            <div class="p-3.5 rounded-lg bg-[#181416]/80 border border-[#C6A15B]/20">
+              <span class="text-[#DCCBB0] block font-light">Experience</span>
               <span id="consultant-experience" class="text-[#F8F3E9] font-bold text-sm">15+ Years of Dedicated Practice</span>
             </div>
-            <div class="p-3.5 rounded-lg bg-[#171717]/80 border border-[#C6A15B]/20">
+            <div class="p-3.5 rounded-lg bg-[#181416]/80 border border-[#C6A15B]/20">
               <span class="text-[#DCCBB0] block font-light">Qualifications</span>
               <span id="consultant-qualifications" class="text-[#F8F3E9] font-bold text-sm">Vastu Acharya • Master in Sthapatya Veda</span>
             </div>
@@ -309,14 +300,14 @@
           <!-- Journey & Philosophy -->
           <div class="space-y-3 text-xs md:text-sm text-[#DCCBB0] leading-relaxed mb-6 font-light">
             <p id="consultant-journey">
-              Spanning over a decade and a half, Rajni Singh has guided hundreds of families, industrialists, real estate developers, and corporate institutions in harmonizing their spaces with solar and geomagnetic energies, emphasizing scientific spatial logic without requiring structural demolition.
+              Spanning over a decade and a half, Rajni Singh has guided hundreds of families, industrialists, real estate developers, and corporate institutions in harmonizing their living and working spaces with cosmic solar and geomagnetic energies, emphasizing scientific spatial logic without requiring structural demolition.
             </p>
             <p id="consultant-philosophy">
-              <strong class="text-[#F9E29B]">Professional Philosophy:</strong> Vastu Shastra is not superstition or blind dogma; it is an empirical Vedic science of harmonizing the five primeval elements with solar trajectories to nurture health, mental clarity, and abundance in human dwellings.
+              <strong class="text-[#F9E29B]">Consultation Philosophy:</strong> Vastu Shastra is not superstition or blind dogma; it is an empirical Vedic science of harmonizing the five primeval elements with solar trajectories to nurture health, mental clarity, and abundance in human dwellings.
             </p>
           </div>
 
-          <!-- Areas of Expertise -->
+          <!-- Key Areas of Expertise -->
           <div class="mb-8">
             <span class="text-xs uppercase tracking-widest text-[#C6A15B] font-bold block mb-3">Key Areas of Spatial Expertise</span>
             <div id="consultant-areas" class="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -324,162 +315,61 @@
             </div>
           </div>
 
-          <!-- Direct CTA -->
-          <button data-open-booking class="px-8 py-3.5 rounded-full bg-gradient-to-r from-[#D9A52D] via-[#F9E29B] to-[#C6A15B] text-[#171717] font-serif text-xs font-bold uppercase tracking-wider hover:shadow-[0_0_25px_rgba(217,165,45,0.7)] transition-all">
-            Book Personal Consultation with Rajni Singh ➔
-          </button>
+          <!-- Direct CTAs -->
+          <div class="flex flex-wrap items-center gap-4">
+            <a href="#booking-section" class="btn-gold-shimmer px-8 py-3.5 rounded-full text-xs font-serif font-bold uppercase tracking-wider">
+              Book Personal Consultation ➔
+            </a>
+            <a href="https://wa.me/9181457155?text=Hello%20Rajni%20Singh%20ji,%20I%20would%20like%20to%20consult%20with%20you%20regarding%20Vastu%20for%20my%20property." target="_blank" class="px-6 py-3.5 rounded-full border border-emerald-600/50 text-emerald-400 hover:bg-emerald-950/40 text-xs font-serif font-semibold tracking-wider flex items-center gap-2 transition-all">
+              <span>💬</span> Chat on WhatsApp
+            </a>
+          </div>
         </div>
       </div>
     </div>
   </section>
 
   <!-- ============================================================== -->
-  <!-- 8. COMPLETE VASTU CONSULTATION SERVICES                       -->
+  <!-- 5. SERVICES SECTION (6 MANDATED SERVICE CATEGORIES)            -->
   <!-- ============================================================== -->
-  <section id="services" class="py-24 px-4 md:px-8 relative bg-gradient-to-b from-[#12080B] via-[#1A0B10] to-[#12080B]">
+  <section id="services" class="py-24 px-4 md:px-8 relative bg-gradient-to-b from-[#121011] via-[#1E1117] to-[#121011]">
     <div class="max-w-7xl mx-auto">
       <div class="text-center max-w-3xl mx-auto mb-14">
-        <span class="text-xs uppercase tracking-widest text-[#C6A15B] font-bold">Consultation Directory</span>
+        <span class="text-xs uppercase tracking-widest text-[#C6A15B] font-bold">Comprehensive Spatial Advisory</span>
         <h2 class="font-serif text-3xl md:text-5xl font-bold text-[#F8F3E9] mt-2 mb-4">
-          Complete Vastu <span class="text-gold-gradient">Consultation Services</span>
+          Core Vastu <span class="text-gold-gradient">Consultation Services</span>
         </h2>
-        <div class="w-24 h-[1px] bg-gradient-to-r from-transparent via-[#C6A15B] to-transparent mx-auto mb-6"></div>
+        <div class="gold-divider-ornate"></div>
         <p class="text-sm md:text-base text-[#DCCBB0] font-light leading-relaxed">
-          Comprehensive spatial auditing across residential estates, commercial establishments, industrial complexes, and vacant plots prior to purchase or construction.
+          Classical Vedic spatial auditing tailored for luxury homes, corporate headquarters, manufacturing plants, and detailed blueprint evaluations.
         </p>
       </div>
 
       <!-- Service Pillar Tabs -->
       <div class="flex items-center justify-center gap-3 overflow-x-auto pb-4 mb-10" id="services-tabs">
-        <!-- Injected by js/app.js -->
+        <!-- Rendered by js/app.js -->
       </div>
 
       <!-- Service Sub-items Grid -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="services-grid">
-        <!-- Injected by js/app.js -->
+        <!-- Rendered by js/app.js -->
       </div>
     </div>
   </section>
 
   <!-- ============================================================== -->
-  <!-- 9. INTERACTIVE 3D VASTU CHAKRA & KNOWLEDGE SECTION             -->
+  <!-- 6. PACKAGES & RAZORPAY PAYMENT GATEWAY                         -->
   <!-- ============================================================== -->
-  <section id="knowledge" class="py-24 px-4 md:px-8 relative bg-[#12080B] border-t border-b border-[#C6A15B]/20">
-    <div class="max-w-7xl mx-auto">
-      <div class="text-center max-w-3xl mx-auto mb-12">
-        <span class="text-xs uppercase tracking-widest text-[#C6A15B] font-bold">Vedic Knowledge Engine</span>
-        <h2 class="font-serif text-3xl md:text-5xl font-bold text-[#F8F3E9] mt-2 mb-4">
-          Interactive <span class="text-gold-gradient">3D Vastu Chakra</span> & Geometry
-        </h2>
-        <div class="w-24 h-[1px] bg-gradient-to-r from-transparent via-[#C6A15B] to-transparent mx-auto mb-6"></div>
-        <p class="text-sm md:text-base text-[#DCCBB0] font-light leading-relaxed">
-          Explore the 8 Cardinal Directions, the 32 Padavinyasa Entrance Gates, the 45 Devtas, and the sacred Brahmasthan in interactive 3D WebGL.
-        </p>
-      </div>
-
-      <!-- Knowledge Module Sub-Tabs -->
-      <div class="flex items-center justify-center gap-2 overflow-x-auto pb-4 mb-8">
-        <button data-knowledge-tab="chakra" class="px-5 py-2 rounded-full font-serif text-xs uppercase tracking-wider bg-[#C6A15B] text-[#171717] font-bold shadow-md">
-          3D Interactive Chakra
-        </button>
-        <button data-knowledge-tab="gates" class="px-5 py-2 rounded-full font-serif text-xs uppercase tracking-wider border border-[#C6A15B]/30 text-[#DCCBB0] hover:bg-[#481C25]/40">
-          32 Entrance Gates (Padavinyasa)
-        </button>
-        <button data-knowledge-tab="devtas" class="px-5 py-2 rounded-full font-serif text-xs uppercase tracking-wider border border-[#C6A15B]/30 text-[#DCCBB0] hover:bg-[#481C25]/40">
-          45 Devtas of Vastu Purusha
-        </button>
-        <button data-knowledge-tab="matrix" class="px-5 py-2 rounded-full font-serif text-xs uppercase tracking-wider border border-[#C6A15B]/30 text-[#DCCBB0] hover:bg-[#481C25]/40">
-          Room Placement Matrix
-        </button>
-      </div>
-
-      <!-- VIEW 1: 3D Interactive Chakra & 16-Zone Wheel -->
-      <div id="view-chakra-3d" class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        <!-- 3D Canvas Container -->
-        <div class="lg:col-span-7 rounded-2xl bg-[#171717]/80 backdrop-blur-md border border-[#C6A15B]/30 p-4 relative overflow-hidden shadow-2xl">
-          <!-- Canvas Target -->
-          <div id="chakra-3d-canvas" class="w-full h-[450px] md:h-[520px] rounded-xl overflow-hidden cursor-grab active:cursor-grabbing"></div>
-
-          <!-- 3D Canvas Controls Overlay -->
-          <div class="absolute bottom-6 left-6 right-6 flex items-center justify-between pointer-events-auto">
-            <div class="flex items-center gap-2">
-              <button id="chakra-zoom-in" class="w-8 h-8 rounded-full bg-[#171717]/80 border border-[#C6A15B]/40 text-[#F9E29B] flex items-center justify-center text-sm font-bold hover:bg-[#C6A15B] hover:text-[#171717] transition-all">+</button>
-              <button id="chakra-zoom-out" class="w-8 h-8 rounded-full bg-[#171717]/80 border border-[#C6A15B]/40 text-[#F9E29B] flex items-center justify-center text-sm font-bold hover:bg-[#C6A15B] hover:text-[#171717] transition-all">-</button>
-              <button id="chakra-reset-btn" class="px-3 py-1.5 rounded-full bg-[#171717]/80 border border-[#C6A15B]/40 text-[#DCCBB0] text-[10px] font-serif uppercase tracking-wider hover:bg-[#481C25]">Reset</button>
-            </div>
-            <button id="chakra-autorotate-btn" class="px-3.5 py-1.5 rounded-full bg-[#171717]/80 border border-[#C6A15B]/40 text-[#F9E29B] text-[11px] font-semibold hover:bg-[#C6A15B]/20">
-              ⏸ Pause Rotation
-            </button>
-          </div>
-        </div>
-
-        <!-- Right Side: Direction Details & Selector -->
-        <div class="lg:col-span-5 space-y-4">
-          <!-- Direction Selector Grid Buttons -->
-          <div class="p-4 rounded-xl bg-[#171717]/80 border border-[#C6A15B]/25">
-            <span class="text-[10px] uppercase tracking-widest text-[#C6A15B] font-bold block mb-2">Select Direction to Inspect</span>
-            <div class="grid grid-cols-3 gap-1.5 text-xs font-mono font-semibold">
-              <button data-vastu-dir="NW" class="py-2 rounded border border-[#C6A15B]/30 bg-[#171717]/60 hover:bg-[#C6A15B]/30">NW (Air)</button>
-              <button data-vastu-dir="N" class="py-2 rounded border border-[#C6A15B]/30 bg-[#171717]/60 hover:bg-[#C6A15B]/30">N (Water)</button>
-              <button data-vastu-dir="NE" class="py-2 rounded border border-[#C6A15B]/30 bg-[#C6A15B] text-[#171717] font-bold">NE (Divine)</button>
-              <button data-vastu-dir="W" class="py-2 rounded border border-[#C6A15B]/30 bg-[#171717]/60 hover:bg-[#C6A15B]/30">W (Space)</button>
-              <button data-vastu-dir="CENTER" class="py-2 rounded border border-[#C6A15B] bg-[#481C25] text-[#F9E29B] font-bold">Center</button>
-              <button data-vastu-dir="E" class="py-2 rounded border border-[#C6A15B]/30 bg-[#171717]/60 hover:bg-[#C6A15B]/30">E (Sun)</button>
-              <button data-vastu-dir="SW" class="py-2 rounded border border-[#C6A15B]/30 bg-[#171717]/60 hover:bg-[#C6A15B]/30">SW (Earth)</button>
-              <button data-vastu-dir="S" class="py-2 rounded border border-[#C6A15B]/30 bg-[#171717]/60 hover:bg-[#C6A15B]/30">S (Fire/Earth)</button>
-              <button data-vastu-dir="SE" class="py-2 rounded border border-[#C6A15B]/30 bg-[#171717]/60 hover:bg-[#C6A15B]/30">SE (Fire)</button>
-            </div>
-          </div>
-
-          <!-- Dynamic Direction Information Inspector -->
-          <div id="chakra-info-panel" class="p-6 rounded-2xl bg-[#171717]/90 border border-[#C6A15B]/30 shadow-xl min-h-[380px]">
-            <!-- Injected by js/chakra3d.js -->
-          </div>
-        </div>
-      </div>
-
-      <!-- VIEW 2: 32 Padavinyasa Gates Table -->
-      <div id="view-32-gates" class="hidden">
-        <div class="mb-4">
-          <h3 class="font-serif text-xl font-bold text-[#F9E29B]">The 32 Gates of Vastu Purusha Mandala</h3>
-          <p class="text-xs text-[#DCCBB0]">Ancient scriptures divide the perimeter into 32 gate divisions. Green highlighted gates are historically auspicious for main entrances:</p>
-        </div>
-        <div id="gates-table-container"></div>
-      </div>
-
-      <!-- VIEW 3: 45 Devtas -->
-      <div id="view-45-devtas" class="hidden">
-        <div class="mb-4">
-          <h3 class="font-serif text-xl font-bold text-[#F9E29B]">The 45 Governing Devtas of the Vastu Purusha Mandala</h3>
-          <p class="text-xs text-[#DCCBB0]">Structured in three concentric sacred tiers from the central Brahmasthan outwards:</p>
-        </div>
-        <div id="devtas-content-container"></div>
-      </div>
-
-      <!-- VIEW 4: Room Matrix -->
-      <div id="view-room-matrix" class="hidden">
-        <div class="mb-4">
-          <h3 class="font-serif text-xl font-bold text-[#F9E29B]">Room Placement Matrix & Remedial Guidance</h3>
-          <p class="text-xs text-[#DCCBB0]">Scriptural guidelines for room orientations and scientific non-demolition alternatives:</p>
-        </div>
-        <div id="room-matrix-container"></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============================================================== -->
-  <!-- 10. CONSULTATION PACKAGES AND PRICING                          -->
-  <!-- ============================================================== -->
-  <section id="packages" class="py-24 px-4 md:px-8 relative bg-gradient-to-b from-[#12080B] via-[#1A0B10] to-[#12080B]">
+  <section id="packages" class="py-24 px-4 md:px-8 relative bg-[#121011] border-t border-b border-[#C6A15B]/20">
     <div class="max-w-7xl mx-auto">
       <div class="text-center max-w-3xl mx-auto mb-14">
         <span class="text-xs uppercase tracking-widest text-[#C6A15B] font-bold">Transparent Vedic Advisory</span>
         <h2 class="font-serif text-3xl md:text-5xl font-bold text-[#F8F3E9] mt-2 mb-4">
           Consultation <span class="text-gold-gradient">Packages & Pricing</span>
         </h2>
-        <div class="w-24 h-[1px] bg-gradient-to-r from-transparent via-[#C6A15B] to-transparent mx-auto mb-6"></div>
+        <div class="gold-divider-ornate"></div>
         <p class="text-sm md:text-base text-[#DCCBB0] font-light leading-relaxed">
-          Select the optimal consultation engagement. In adherence with our brand guidelines, packages display starting baselines; exact scopes are finalized upon property blueprint evaluation.
+          Standardized consultation tiers with secure digital payment processing. Scopes are confirmed upon blueprint evaluation.
         </p>
       </div>
 
@@ -489,25 +379,39 @@
       </div>
 
       <!-- Package Cards Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="packages-cards">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12" id="packages-cards">
         <!-- Rendered by js/app.js -->
+      </div>
+
+      <!-- Secure Payment Notice Banner -->
+      <div class="max-w-3xl mx-auto p-4 rounded-xl bg-[#481C25]/30 border border-[#C6A15B]/30 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#DCCBB0]">
+        <div class="flex items-center gap-3">
+          <span class="text-xl">🔒</span>
+          <div>
+            <strong class="text-[#F8F3E9] block">Secure Payment Gateway Integration:</strong>
+            <span>Razorpay 256-bit encrypted checkout supported for Cards, UPI & Net Banking.</span>
+          </div>
+        </div>
+        <a href="#booking-section" class="px-4 py-2 rounded-full border border-[#C6A15B] text-[#C6A15B] hover:bg-[#C6A15B] hover:text-[#121011] font-serif text-[11px] font-bold uppercase tracking-wider whitespace-nowrap transition-all">
+          Reserve Slot First
+        </a>
       </div>
     </div>
   </section>
 
   <!-- ============================================================== -->
-  <!-- 13. PROFESSIONAL GALLERY & MEDIA                               -->
+  <!-- 7. PROFESSIONAL IMAGE GALLERY                                  -->
   <!-- ============================================================== -->
-  <section id="gallery" class="py-24 px-4 md:px-8 relative bg-[#12080B] border-t border-b border-[#C6A15B]/20">
+  <section id="gallery" class="py-24 px-4 md:px-8 relative bg-gradient-to-b from-[#121011] via-[#1E1117] to-[#121011]">
     <div class="max-w-7xl mx-auto">
       <div class="text-center max-w-3xl mx-auto mb-14">
-        <span class="text-xs uppercase tracking-widest text-[#C6A15B] font-bold">Media & Field Work</span>
+        <span class="text-xs uppercase tracking-widest text-[#C6A15B] font-bold">Field Work & Architectural Studies</span>
         <h2 class="font-serif text-3xl md:text-5xl font-bold text-[#F8F3E9] mt-2 mb-4">
-          Consultation <span class="text-gold-gradient">Gallery & Appearances</span>
+          Professional <span class="text-gold-gradient">Vastu Gallery</span>
         </h2>
-        <div class="w-24 h-[1px] bg-gradient-to-r from-transparent via-[#C6A15B] to-transparent mx-auto mb-6"></div>
+        <div class="gold-divider-ornate"></div>
         <p class="text-sm md:text-base text-[#DCCBB0] font-light leading-relaxed">
-          Documented site visits, industrial energy audits, podcast recordings, and national architecture conclaves.
+          Curated visual architectural documentation covering residential estates, commercial office layouts, industrial plants, and 16-zone blueprint calibrations.
         </p>
       </div>
 
@@ -516,7 +420,7 @@
         <!-- Rendered by js/app.js -->
       </div>
 
-      <!-- Gallery Masonry Grid -->
+      <!-- Gallery Grid -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="gallery-grid">
         <!-- Rendered by js/app.js -->
       </div>
@@ -524,180 +428,276 @@
   </section>
 
   <!-- ============================================================== -->
-  <!-- 14. CLIENT TESTIMONIALS                                        -->
+  <!-- 8. INSTAGRAM INTEGRATION (JOURNAL OF SACRED SPACES)            -->
   <!-- ============================================================== -->
-  <section class="py-24 px-4 md:px-8 relative bg-gradient-to-b from-[#12080B] via-[#1A0B10] to-[#12080B]">
+  <section id="instagram" class="py-24 px-4 md:px-8 relative bg-[#121011] border-t border-b border-[#C6A15B]/20">
     <div class="max-w-7xl mx-auto">
-      <div class="text-center max-w-3xl mx-auto mb-14">
-        <span class="text-xs uppercase tracking-widest text-[#C6A15B] font-bold">Client Experiences</span>
-        <h2 class="font-serif text-3xl md:text-5xl font-bold text-[#F8F3E9] mt-2 mb-4">
-          Words of <span class="text-gold-gradient">Trust & Harmony</span>
-        </h2>
-        <div class="w-24 h-[1px] bg-gradient-to-r from-transparent via-[#C6A15B] to-transparent mx-auto mb-6"></div>
-      </div>
-
-      <!-- Testimonial Carousel -->
-      <div class="relative max-w-4xl mx-auto">
-        <div id="testimonials-card-container">
-          <!-- Rendered by js/app.js -->
+      <div class="flex flex-col md:flex-row items-center justify-between gap-6 mb-12">
+        <div>
+          <span class="text-xs uppercase tracking-widest text-[#C6A15B] font-bold flex items-center gap-2">
+            <svg class="w-3.5 h-3.5 fill-[#C6A15B]" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+            Journal of Sacred Spaces
+          </span>
+          <h2 class="font-serif text-2xl md:text-4xl font-bold text-[#F8F3E9] mt-1">
+            @vastu_sutram on <span class="text-gold-gradient">Instagram</span>
+          </h2>
+          <p class="text-xs text-[#DCCBB0] mt-1">Authentic Vedic insights, spatial case analyses, and site observations.</p>
         </div>
 
-        <!-- Carousel Nav Buttons -->
-        <div class="flex items-center justify-center gap-4 mt-8">
-          <button id="testimonial-prev" class="w-10 h-10 rounded-full border border-[#C6A15B]/40 flex items-center justify-center text-[#C6A15B] hover:bg-[#481C25] transition-all">
-            ←
-          </button>
-          <button id="testimonial-next" class="w-10 h-10 rounded-full border border-[#C6A15B]/40 flex items-center justify-center text-[#C6A15B] hover:bg-[#481C25] transition-all">
-            →
-          </button>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============================================================== -->
-  <!-- 15. BLOGS AND ARTICLES                                         -->
-  <!-- ============================================================== -->
-  <section id="articles" class="py-24 px-4 md:px-8 relative bg-[#12080B] border-t border-b border-[#C6A15B]/20">
-    <div class="max-w-7xl mx-auto">
-      <div class="text-center max-w-3xl mx-auto mb-14">
-        <span class="text-xs uppercase tracking-widest text-[#C6A15B] font-bold">Vedic Architecture Insights</span>
-        <h2 class="font-serif text-3xl md:text-5xl font-bold text-[#F8F3E9] mt-2 mb-4">
-          Articles & <span class="text-gold-gradient">Research Publications</span>
-        </h2>
-        <div class="w-24 h-[1px] bg-gradient-to-r from-transparent via-[#C6A15B] to-transparent mx-auto mb-6"></div>
-        <p class="text-sm md:text-base text-[#DCCBB0] font-light leading-relaxed">
-          Deep dives into classical Sanskrit treatises, solar physics, elemental thermodynamics, and modern residential planning.
-        </p>
+        <a href="https://www.instagram.com/vastu_sutram?cplk=b3dwajhwdXFmZzds" target="_blank" rel="noopener noreferrer" class="px-6 py-3 rounded-full bg-gradient-to-r from-[#833AB4] via-[#FD1D1D] to-[#F77737] text-white text-xs font-serif font-bold uppercase tracking-wider shadow-lg hover:shadow-xl hover:scale-105 transition-all flex items-center gap-2">
+          <span>Follow Us on Instagram</span>
+          <span>➔</span>
+        </a>
       </div>
 
-      <!-- Articles Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="articles-grid">
+      <!-- Instagram Posts Grid (6 Curated Authentic Visuals) -->
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4" id="instagram-grid">
         <!-- Rendered by js/app.js -->
       </div>
     </div>
   </section>
 
   <!-- ============================================================== -->
-  <!-- 12. OWNER CONTACT AND BUSINESS INFORMATION                     -->
+  <!-- 9. WHATSAPP BOOKING & CONSULTATION FORM (REQUIREMENT 6)       -->
   <!-- ============================================================== -->
-  <section id="contact" class="py-24 px-4 md:px-8 relative bg-gradient-to-b from-[#12080B] via-[#1A0B10] to-[#12080B]">
+  <section id="booking-section" class="py-24 px-4 md:px-8 relative bg-gradient-to-b from-[#121011] via-[#1E1117] to-[#121011]">
+    <div class="max-w-4xl mx-auto">
+      <div class="text-center max-w-2xl mx-auto mb-12">
+        <span class="text-xs uppercase tracking-widest text-[#C6A15B] font-bold">Fast-Track Direct Booking</span>
+        <h2 class="font-serif text-3xl md:text-5xl font-bold text-[#F8F3E9] mt-2 mb-4">
+          Consultation <span class="text-gold-gradient">Booking Form</span>
+        </h2>
+        <div class="gold-divider-ornate"></div>
+        <p class="text-sm text-[#DCCBB0] font-light leading-relaxed">
+          Provide your property details below to generate a formatted consultation dossier and initiate direct WhatsApp engagement with our senior spatial team.
+        </p>
+      </div>
+
+      <!-- Booking Form Card -->
+      <div class="glass-panel-luxury p-8 md:p-12 rounded-3xl shadow-2xl">
+        <form id="whatsapp-consultation-form" class="space-y-6">
+          <!-- Row 1: Full Name & WhatsApp Number -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div>
+              <label class="block text-xs font-serif uppercase tracking-wider text-[#C6A15B] mb-2 font-semibold">Full Name *</label>
+              <input type="text" id="wa-name" placeholder="e.g. Vikramaditya Rao" required class="vastu-input" />
+            </div>
+            <div>
+              <label class="block text-xs font-serif uppercase tracking-wider text-[#C6A15B] mb-2 font-semibold">WhatsApp Number *</label>
+              <input type="tel" id="wa-phone" placeholder="e.g. +91 98765 43210" required class="vastu-input" />
+            </div>
+          </div>
+
+          <!-- Row 2: Email & Consultation Type -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div>
+              <label class="block text-xs font-serif uppercase tracking-wider text-[#C6A15B] mb-2 font-semibold">Email Address *</label>
+              <input type="email" id="wa-email" placeholder="e.g. vikram@example.com" required class="vastu-input" />
+            </div>
+            <div>
+              <label class="block text-xs font-serif uppercase tracking-wider text-[#C6A15B] mb-2 font-semibold">Consultation Type *</label>
+              <select id="wa-consultation-type" required class="vastu-input cursor-pointer">
+                <option value="Residential Vastu Consultation">Residential Vastu Consultation</option>
+                <option value="Commercial Vastu Consultation">Commercial Vastu Consultation</option>
+                <option value="Factory Vastu Consultation">Factory Vastu Consultation</option>
+                <option value="Online Vastu Consultation">Online Vastu Consultation</option>
+                <option value="Offline Vastu Consultation">Offline Vastu Consultation</option>
+                <option value="Vastu Mapping">Vastu Mapping</option>
+                <option value="Vastu Gridding">Vastu Gridding</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Row 3: Property Type & Location -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div>
+              <label class="block text-xs font-serif uppercase tracking-wider text-[#C6A15B] mb-2 font-semibold">Property Type *</label>
+              <select id="wa-property-type" required class="vastu-input cursor-pointer">
+                <option value="Apartment / Flat">Apartment / Flat</option>
+                <option value="Independent Villa / Bungalow">Independent Villa / Bungalow</option>
+                <option value="Commercial Office / Showroom">Commercial Office / Showroom</option>
+                <option value="Industrial Factory / Plant">Industrial Factory / Plant</option>
+                <option value="Vacant Plot / Land Parcel">Vacant Plot / Land Parcel</option>
+                <option value="Under-Construction Site">Under-Construction Site</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-serif uppercase tracking-wider text-[#C6A15B] mb-2 font-semibold">Property Location / City *</label>
+              <input type="text" id="wa-city" placeholder="e.g. Gurugram, Delhi NCR" required class="vastu-input" />
+            </div>
+          </div>
+
+          <!-- Row 4: Preferred Date & Time Slot -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div>
+              <label class="block text-xs font-serif uppercase tracking-wider text-[#C6A15B] mb-2 font-semibold">Preferred Date *</label>
+              <input type="date" id="wa-date" required class="vastu-input" />
+            </div>
+            <div>
+              <label class="block text-xs font-serif uppercase tracking-wider text-[#C6A15B] mb-2 font-semibold">Preferred Time Slot *</label>
+              <select id="wa-time-slot" required class="vastu-input cursor-pointer">
+                <option value="10:00 AM - 11:00 AM">10:00 AM - 11:00 AM</option>
+                <option value="11:30 AM - 12:30 PM">11:30 AM - 12:30 PM</option>
+                <option value="02:00 PM - 03:00 PM">02:00 PM - 03:00 PM</option>
+                <option value="04:00 PM - 05:00 PM">04:00 PM - 05:00 PM</option>
+                <option value="05:30 PM - 06:30 PM">05:30 PM - 06:30 PM</option>
+                <option value="07:00 PM - 08:00 PM">07:00 PM - 08:00 PM</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Message & Specific Requirements -->
+          <div>
+            <label class="block text-xs font-serif uppercase tracking-wider text-[#C6A15B] mb-2 font-semibold">Additional Requirements or Message</label>
+            <textarea id="wa-message" rows="3" placeholder="Please mention any specific concerns (e.g., entrance direction, kitchen placement, health unrest, or factory machinery breakdown)..." class="vastu-input"></textarea>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="pt-4">
+            <button type="submit" class="btn-gold-shimmer w-full py-4 rounded-full text-xs md:text-sm font-serif font-bold uppercase tracking-widest flex items-center justify-center gap-2 shadow-xl">
+              <span>Review & Open in WhatsApp</span>
+              <span>💬</span>
+            </button>
+            <p class="text-[11px] text-[#DCCBB0]/80 text-center mt-3">
+              Your details will be formatted into a structured enquiry dossier. You can review and confirm before sending.
+            </p>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================== -->
+  <!-- 10. OWNER CONTACT & EMAIL SECTION                              -->
+  <!-- ============================================================== -->
+  <section id="contact" class="py-24 px-4 md:px-8 relative bg-[#121011] border-t border-b border-[#C6A15B]/20">
     <div class="max-w-7xl mx-auto">
       <div class="text-center max-w-3xl mx-auto mb-16">
         <span class="text-xs uppercase tracking-widest text-[#C6A15B] font-bold">Connect With Us</span>
         <h2 class="font-serif text-3xl md:text-5xl font-bold text-[#F8F3E9] mt-2 mb-4">
           Begin Your Spatial <span class="text-gold-gradient">Transformation</span>
         </h2>
-        <div class="w-24 h-[1px] bg-gradient-to-r from-transparent via-[#C6A15B] to-transparent mx-auto mb-6"></div>
+        <div class="gold-divider-ornate"></div>
         <p class="text-sm md:text-base text-[#DCCBB0] font-light leading-relaxed">
           Reach our consultation chambers for confidential blueprint evaluations, on-site energy audits, or booking inquiries.
         </p>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
-        <!-- Contact Information & Map -->
+        <!-- Contact Information (Requirement 8: Office Address Completely Removed) -->
         <div class="lg:col-span-5 space-y-6">
-          <div class="p-6 md:p-8 rounded-2xl bg-[#171717]/80 backdrop-blur-md border border-[#C6A15B]/30 shadow-xl space-y-5">
-            <h3 class="font-serif text-xl font-bold text-[#F9E29B]">Vastu Sutram Chambers</h3>
+          <div class="glass-panel-luxury p-8 rounded-2xl space-y-6">
+            <h3 class="font-serif text-xl font-bold text-[#F9E29B]">Vastu Sutram Advisory</h3>
 
-            <div class="flex items-start gap-3 text-xs">
-              <span class="text-lg text-[#C6A15B]">📍</span>
-              <div>
-                <strong class="text-[#F8F3E9] block text-sm">Consultation Office:</strong>
-                <span class="text-[#DCCBB0]">Suite 702, Vedic Heritage Tower, Golf Course Road, Sector 54, Gurugram, Haryana 122002</span>
+            <!-- Official Email (Requirement 7: mailto:vastusutram@gmail.com) -->
+            <div class="flex items-start gap-3.5 text-xs">
+              <div class="w-9 h-9 rounded-full bg-[#481C25] border border-[#C6A15B]/40 flex items-center justify-center text-[#C6A15B] shrink-0">
+                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M0 3v18h24v-18h-24zm21.518 2l-9.518 7.713-9.518-7.713h19.036zm-19.518 14v-11.817l9.518 7.714 9.518-7.714v11.817h-19.036z"/></svg>
               </div>
-            </div>
-
-            <div class="flex items-start gap-3 text-xs">
-              <span class="text-lg text-[#C6A15B]">📞</span>
-              <div>
-                <strong class="text-[#F8F3E9] block text-sm">Direct Line:</strong>
-                <a href="tel:+919876543210" class="text-[#F9E29B] font-mono hover:underline">+91 98765 43210</a>
-              </div>
-            </div>
-
-            <div class="flex items-start gap-3 text-xs">
-              <span class="text-lg text-[#C6A15B]">💬</span>
-              <div>
-                <strong class="text-[#F8F3E9] block text-sm">WhatsApp Business:</strong>
-                <a href="https://wa.me/919876543210" target="_blank" class="text-emerald-400 font-mono hover:underline">+91 98765 43210</a>
-              </div>
-            </div>
-
-            <div class="flex items-start gap-3 text-xs">
-              <span class="text-lg text-[#C6A15B]">✉️</span>
               <div>
                 <strong class="text-[#F8F3E9] block text-sm">Official Email:</strong>
-                <a href="mailto:consultations@vastusutram.com" class="text-[#C6A15B] hover:underline">consultations@vastusutram.com</a>
+                <a href="mailto:vastusutram@gmail.com" class="text-[#C6A15B] hover:text-[#F9E29B] font-mono hover:underline">vastusutram@gmail.com</a>
               </div>
             </div>
 
-            <div class="flex items-start gap-3 text-xs">
-              <span class="text-lg text-[#C6A15B]">⏱️</span>
+            <!-- WhatsApp Business -->
+            <div class="flex items-start gap-3.5 text-xs">
+              <div class="w-9 h-9 rounded-full bg-emerald-950/60 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0">
+                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+              </div>
               <div>
-                <strong class="text-[#F8F3E9] block text-sm">Working Hours:</strong>
+                <strong class="text-[#F8F3E9] block text-sm">WhatsApp Consultation Line:</strong>
+                <a href="https://wa.me/9181457155" target="_blank" class="text-emerald-400 font-mono hover:underline">+91 81457 155</a>
+              </div>
+            </div>
+
+            <!-- Instagram Profile -->
+            <div class="flex items-start gap-3.5 text-xs">
+              <div class="w-9 h-9 rounded-full bg-[#481C25] border border-[#C6A15B]/40 flex items-center justify-center text-[#C6A15B] shrink-0">
+                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+              </div>
+              <div>
+                <strong class="text-[#F8F3E9] block text-sm">Official Instagram:</strong>
+                <a href="https://www.instagram.com/vastu_sutram?cplk=b3dwajhwdXFmZzds" target="_blank" class="text-[#C6A15B] hover:text-[#F9E29B] font-mono hover:underline">@vastu_sutram</a>
+              </div>
+            </div>
+
+            <!-- Regional Coverage (Replaces physical office address) -->
+            <div class="flex items-start gap-3.5 text-xs">
+              <div class="w-9 h-9 rounded-full bg-[#481C25] border border-[#C6A15B]/40 flex items-center justify-center text-[#C6A15B] shrink-0">
+                <span class="text-base">🌐</span>
+              </div>
+              <div>
+                <strong class="text-[#F8F3E9] block text-sm">Consultation Coverage:</strong>
+                <span class="text-[#DCCBB0]">Pan-India On-Site Consultations & Global Remote Video Sessions</span>
+              </div>
+            </div>
+
+            <!-- Working Hours -->
+            <div class="flex items-start gap-3.5 text-xs">
+              <div class="w-9 h-9 rounded-full bg-[#481C25] border border-[#C6A15B]/40 flex items-center justify-center text-[#C6A15B] shrink-0">
+                <span class="text-base">⏱️</span>
+              </div>
+              <div>
+                <strong class="text-[#F8F3E9] block text-sm">Consultation Hours:</strong>
                 <span class="text-[#DCCBB0]">Monday – Saturday: 09:30 AM – 07:00 PM IST</span>
               </div>
             </div>
 
-            <!-- Quick Direct Buttons -->
+            <!-- Quick Direct Actions -->
             <div class="flex items-center gap-3 pt-3">
-              <a href="https://wa.me/919876543210?text=Hello%20Vastu%20Sutram,%20I%20would%20like%20to%20inquire%20about%20a%20Vastu%20consultation." target="_blank" class="flex-1 py-2.5 rounded-full bg-emerald-700 hover:bg-emerald-600 text-white font-serif text-xs font-semibold text-center transition-all flex items-center justify-center gap-1.5">
+              <a href="https://wa.me/9181457155?text=Hello%20Vastu%20Sutram,%20I%20would%20like%20to%20inquire%20about%20a%20Vastu%20consultation." target="_blank" class="flex-1 py-3 rounded-full bg-emerald-700 hover:bg-emerald-600 text-white font-serif text-xs font-semibold text-center transition-all flex items-center justify-center gap-1.5 shadow">
                 <span>💬</span> WhatsApp
               </a>
-              <a href="tel:+919876543210" class="flex-1 py-2.5 rounded-full border border-[#C6A15B] text-[#C6A15B] hover:bg-[#481C25] font-serif text-xs font-semibold text-center transition-all flex items-center justify-center gap-1.5">
-                <span>📞</span> Call Office
+              <a href="mailto:vastusutram@gmail.com" class="flex-1 py-3 rounded-full border border-[#C6A15B] text-[#C6A15B] hover:bg-[#481C25] font-serif text-xs font-semibold text-center transition-all flex items-center justify-center gap-1.5">
+                <span>✉️</span> Email Us
               </a>
-            </div>
-          </div>
-
-          <!-- Google Maps Graphic Representation -->
-          <div class="rounded-2xl overflow-hidden border border-[#C6A15B]/30 h-44 bg-[#171717] relative flex items-center justify-center text-center p-4">
-            <div class="space-y-1">
-              <span class="text-2xl">🗺️</span>
-              <h4 class="font-serif text-sm font-bold text-[#F8F3E9]">Sector 54, Golf Course Road</h4>
-              <p class="text-[11px] text-[#DCCBB0]">Gurugram, National Capital Region • Pan-India Consultations</p>
             </div>
           </div>
         </div>
 
         <!-- Interactive Contact Enquiry Form -->
         <div class="lg:col-span-7">
-          <div class="p-6 md:p-10 rounded-2xl bg-[#171717]/90 backdrop-blur-md border border-[#C6A15B]/30 shadow-2xl">
-            <h3 class="font-serif text-xl font-bold text-[#F9E29B] mb-2">Send a Consultation Enquiry</h3>
-            <p class="text-xs text-[#DCCBB0] mb-6">Our senior spatial coordinator will review your requirements and respond within 24 business hours.</p>
+          <div class="glass-panel-luxury p-8 md:p-10 rounded-2xl shadow-2xl">
+            <h3 class="font-serif text-xl font-bold text-[#F9E29B] mb-2">Send an Architectural Enquiry</h3>
+            <p class="text-xs text-[#DCCBB0] mb-6">Our senior spatial coordinator will review your property requirements and respond within 24 business hours.</p>
 
             <form id="main-contact-form" class="space-y-4">
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-xs font-medium text-[#C6A15B] uppercase tracking-wider mb-1">Your Full Name *</label>
-                  <input type="text" id="contact-name" placeholder="e.g. Vikramaditya Rao" required class="w-full px-4 py-2.5 rounded-lg bg-[#12080B] border border-[#C6A15B]/30 text-xs text-[#F8F3E9] focus:border-[#C6A15B] outline-none" />
+                  <label class="block text-xs font-serif uppercase tracking-wider text-[#C6A15B] mb-1">Your Full Name *</label>
+                  <input type="text" id="contact-name" placeholder="e.g. Vikramaditya Rao" required class="vastu-input" />
                 </div>
                 <div>
-                  <label class="block text-xs font-medium text-[#C6A15B] uppercase tracking-wider mb-1">Phone / WhatsApp *</label>
-                  <input type="tel" id="contact-phone" placeholder="e.g. +91 98765 43210" required class="w-full px-4 py-2.5 rounded-lg bg-[#12080B] border border-[#C6A15B]/30 text-xs text-[#F8F3E9] focus:border-[#C6A15B] outline-none" />
+                  <label class="block text-xs font-serif uppercase tracking-wider text-[#C6A15B] mb-1">WhatsApp / Phone *</label>
+                  <input type="tel" id="contact-phone" placeholder="e.g. +91 98765 43210" required class="vastu-input" />
                 </div>
               </div>
 
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-xs font-medium text-[#C6A15B] uppercase tracking-wider mb-1">Email Address *</label>
-                  <input type="email" id="contact-email" placeholder="e.g. vikram@example.com" required class="w-full px-4 py-2.5 rounded-lg bg-[#12080B] border border-[#C6A15B]/30 text-xs text-[#F8F3E9] focus:border-[#C6A15B] outline-none" />
+                  <label class="block text-xs font-serif uppercase tracking-wider text-[#C6A15B] mb-1">Email Address *</label>
+                  <input type="email" id="contact-email" placeholder="e.g. vikram@example.com" required class="vastu-input" />
                 </div>
                 <div>
-                  <label class="block text-xs font-medium text-[#C6A15B] uppercase tracking-wider mb-1">Consultation Subject</label>
-                  <input type="text" id="contact-subject" placeholder="e.g. Villa Construction Blueprint Review" class="w-full px-4 py-2.5 rounded-lg bg-[#12080B] border border-[#C6A15B]/30 text-xs text-[#F8F3E9] focus:border-[#C6A15B] outline-none" />
+                  <label class="block text-xs font-serif uppercase tracking-wider text-[#C6A15B] mb-1">Consultation Subject</label>
+                  <input type="text" id="contact-subject" placeholder="e.g. Residential Villa Vastu Review" class="vastu-input" />
                 </div>
               </div>
 
               <div>
-                <label class="block text-xs font-medium text-[#C6A15B] uppercase tracking-wider mb-1">Message & Spatial Concerns *</label>
-                <textarea id="contact-message" rows="4" placeholder="Describe your property type, current status, or specific Vastu questions..." required class="w-full px-4 py-2.5 rounded-lg bg-[#12080B] border border-[#C6A15B]/30 text-xs text-[#F8F3E9] focus:border-[#C6A15B] outline-none"></textarea>
+                <label class="block text-xs font-serif uppercase tracking-wider text-[#C6A15B] mb-1">Message & Spatial Concerns *</label>
+                <textarea id="contact-message" rows="4" placeholder="Describe your property type, current status, or specific Vastu questions..." required class="vastu-input"></textarea>
               </div>
 
-              <button type="submit" class="w-full py-3.5 rounded-full bg-gradient-to-r from-[#D9A52D] via-[#F9E29B] to-[#C6A15B] text-[#171717] font-serif text-xs font-bold uppercase tracking-wider hover:shadow-[0_0_20px_rgba(198,161,91,0.5)] transition-all">
-                Submit Confidential Enquiry ➔
-              </button>
+              <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                <button type="submit" class="btn-gold-shimmer flex-1 py-3.5 rounded-full text-xs font-serif font-bold uppercase tracking-wider shadow">
+                  Submit Confidential Enquiry ➔
+                </button>
+                <a href="mailto:vastusutram@gmail.com" class="px-6 py-3.5 rounded-full border border-[#C6A15B]/50 text-[#C6A15B] hover:bg-[#481C25] font-serif text-xs font-semibold uppercase tracking-wider text-center flex items-center justify-center gap-1.5 transition-all">
+                  <span>✉️</span> Mail Directly
+                </a>
+              </div>
             </form>
           </div>
         </div>
@@ -706,12 +706,72 @@
   </section>
 
   <!-- ============================================================== -->
-  <!-- 20. FOOTER                                                     -->
+  <!-- 11. SIGNATURE ROTATING 3D VASTU CHAKRA (FOOTER EXPERIENCE)     -->
+  <!-- Requirement 10: Placed immediately before the footer!         -->
   <!-- ============================================================== -->
-  <footer class="bg-[#0D0507] border-t border-[#C6A15B]/30 pt-16 pb-12 px-4 md:px-8 text-xs text-[#DCCBB0]">
+  <section id="knowledge" class="py-24 px-4 md:px-8 relative bg-gradient-to-b from-[#121011] via-[#1E1117] to-[#0D0507] border-t border-[#C6A15B]/30">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center max-w-3xl mx-auto mb-14">
+        <span class="text-xs uppercase tracking-widest text-[#C6A15B] font-bold">Signature Vedic Climax</span>
+        <h2 class="font-serif text-3xl md:text-5xl font-bold text-[#F8F3E9] mt-2 mb-4">
+          The Living <span class="text-gold-gradient">Vastu Chakra</span>
+        </h2>
+        <div class="gold-divider-ornate"></div>
+        <p class="text-sm md:text-base text-[#DCCBB0] font-light leading-relaxed">
+          Interactive 3D Vastu Purusha Mandala & Cardinal Compass. Rotate the celestial wheel or inspect individual sectors to unlock classical Vedic planning principles for residential, commercial, and factory environments.
+        </p>
+      </div>
+
+      <!-- Controls & Mode Bar -->
+      <div class="flex flex-wrap items-center justify-between gap-4 mb-8 p-4 rounded-2xl bg-[#181416]/90 border border-[#C6A15B]/30 shadow-xl">
+        <div class="flex items-center gap-2 overflow-x-auto text-xs" id="chakra-direction-buttons">
+          <!-- Injected by js/app.js -->
+        </div>
+
+        <div class="flex items-center gap-3">
+          <button id="chakra-autorotate-btn" class="px-3.5 py-1.5 rounded-full border border-[#C6A15B]/50 text-[#C6A15B] text-xs font-serif hover:bg-[#C6A15B] hover:text-[#121011] transition-all">
+            Pause Rotation
+          </button>
+          <button id="chakra-reset-btn" class="px-3.5 py-1.5 rounded-full bg-[#481C25] border border-[#C6A15B]/40 text-[#F8F3E9] text-xs font-serif hover:bg-[#C6A15B] hover:text-[#121011] transition-all">
+            Reset 3D View
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Interactive 3D Stage & Information Panel -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mb-16">
+        <!-- Left: 3D WebGL Canvas Container -->
+        <div class="lg:col-span-7 rounded-3xl overflow-hidden border-2 border-[#C6A15B]/40 bg-gradient-to-b from-[#181416] to-[#0A0507] p-2 relative shadow-2xl">
+          <div id="chakra-3d-canvas-container" class="w-full h-[450px] md:h-[560px] relative">
+            <!-- Three.js Canvas Injected by js/chakra3d.js -->
+          </div>
+          <div class="absolute bottom-4 inset-x-4 flex justify-between items-center text-[11px] text-[#C6A15B] bg-[#121011]/85 backdrop-blur-md px-4 py-2 rounded-xl border border-[#C6A15B]/20">
+            <span>🖱️ Drag to rotate 3D angle | Scroll to zoom</span>
+            <span class="hidden sm:inline font-mono">Cardinal Declination: 0° True North</span>
+          </div>
+        </div>
+
+        <!-- Right: Dynamic Wisdom Panel -->
+        <div class="lg:col-span-5 rounded-3xl p-6 md:p-8 bg-[#181416]/95 backdrop-blur-md border border-[#C6A15B]/30 shadow-2xl relative" id="chakra-info-panel">
+          <!-- Rendered dynamically by js/chakra3d.js & js/app.js -->
+        </div>
+      </div>
+
+      <!-- Traditional Knowledge Disclaimer (Requirement 10) -->
+      <div class="max-w-4xl mx-auto p-4 rounded-xl bg-[#481C25]/20 border border-[#C6A15B]/20 text-center text-xs text-[#DCCBB0]/80">
+        <strong class="text-[#F9E29B]">Traditional Knowledge Disclosure:</strong>
+        Information presented through the Vastu Chakra and consultation sessions reflects classical Indian architectural traditions (Sthapatya Veda, Manasara, Mayamata). It is provided as authentic cultural, spatial, and philosophical wisdom for harmonious living, rather than guaranteed scientific outcomes.
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================== -->
+  <!-- 12. LUXURY FOOTER                                              -->
+  <!-- ============================================================== -->
+  <footer class="bg-[#0B0507] border-t border-[#C6A15B]/30 pt-16 pb-12 px-4 md:px-8 text-xs text-[#DCCBB0]">
     <div class="max-w-7xl mx-auto">
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 mb-14">
-        <!-- Col 1: Brand & Original Logo -->
+        <!-- Col 1 & 2: Brand & Original Logo -->
         <div class="lg:col-span-2 space-y-4">
           <div class="w-56 mb-4">
             <img src="assets/logo.svg" alt="VASTU SUTRAM – The Principles of Vastu" class="w-full h-auto drop-shadow" />
@@ -722,43 +782,68 @@
           <p class="text-xs text-[#DCCBB0]/80 leading-relaxed max-w-sm font-light">
             Vastu Sutram is an elite Vedic architectural advisory firm providing non-demolition energy audits and spatial planning for residential luxury homes, commercial enterprises, industrial plants, and land parcels across India and globally.
           </p>
+          <!-- Social Icons in Footer (Requirement 5 & 6) -->
+          <div class="flex items-center gap-3 pt-2">
+            <a href="https://www.instagram.com/vastu_sutram?cplk=b3dwajhwdXFmZzds" target="_blank" rel="noopener noreferrer" class="w-8 h-8 rounded-full border border-[#C6A15B]/40 text-[#C6A15B] hover:text-[#F9E29B] hover:border-[#F9E29B] flex items-center justify-center transition-all" title="Instagram">
+              <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+            </a>
+            <a href="https://wa.me/9181457155" target="_blank" rel="noopener noreferrer" class="w-8 h-8 rounded-full border border-emerald-600/40 text-emerald-400 hover:text-emerald-300 flex items-center justify-center transition-all" title="WhatsApp">
+              <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+            </a>
+            <a href="mailto:vastusutram@gmail.com" class="w-8 h-8 rounded-full border border-[#C6A15B]/40 text-[#C6A15B] hover:text-[#F9E29B] flex items-center justify-center transition-all" title="Email">
+              <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M0 3v18h24v-18h-24zm21.518 2l-9.518 7.713-9.518-7.713h19.036zm-19.518 14v-11.817l9.518 7.714 9.518-7.714v11.817h-19.036z"/></svg>
+            </a>
+          </div>
         </div>
 
-        <!-- Col 2: Services -->
+        <!-- Col 2: Services Navigation -->
         <div class="space-y-3">
-          <h4 class="font-serif text-sm font-bold text-[#F9E29B] uppercase tracking-wider">Spatial Advisory</h4>
+          <h4 class="font-serif text-sm font-bold text-[#F9E29B] uppercase tracking-wider">Spatial Services</h4>
           <ul class="space-y-2">
             <li><a href="#services" class="hover:text-[#F9E29B] transition-colors">Residential Vastu</a></li>
             <li><a href="#services" class="hover:text-[#F9E29B] transition-colors">Commercial Vastu</a></li>
-            <li><a href="#services" class="hover:text-[#F9E29B] transition-colors">Industrial Vastu</a></li>
-            <li><a href="#services" class="hover:text-[#F9E29B] transition-colors">Land & Plot Vastu</a></li>
-            <li><a href="#services" class="hover:text-[#F9E29B] transition-colors">CAD Blueprint Audits</a></li>
-            <li><a href="#services" class="hover:text-[#F9E29B] transition-colors">Non-Demolition Remedies</a></li>
+            <li><a href="#services" class="hover:text-[#F9E29B] transition-colors">Factory & Industrial Vastu</a></li>
+            <li><a href="#services" class="hover:text-[#F9E29B] transition-colors">Online & Offline Sessions</a></li>
+            <li><a href="#services" class="hover:text-[#F9E29B] transition-colors">Vastu Mapping</a></li>
+            <li><a href="#services" class="hover:text-[#F9E29B] transition-colors">Vastu Gridding</a></li>
           </ul>
         </div>
 
-        <!-- Col 3: Knowledge & Links -->
+        <!-- Col 3: Quick Navigation -->
         <div class="space-y-3">
-          <h4 class="font-serif text-sm font-bold text-[#F9E29B] uppercase tracking-wider">Vedic Knowledge</h4>
+          <h4 class="font-serif text-sm font-bold text-[#F9E29B] uppercase tracking-wider">Quick Navigation</h4>
           <ul class="space-y-2">
+            <li><a href="#home" class="hover:text-[#F9E29B] transition-colors">Home</a></li>
+            <li><a href="#about" class="hover:text-[#F9E29B] transition-colors">About Us</a></li>
+            <li><a href="#consultant" class="hover:text-[#F9E29B] transition-colors">Meet the Consultant</a></li>
             <li><a href="#knowledge" class="hover:text-[#F9E29B] transition-colors">3D Vastu Chakra</a></li>
-            <li><a href="#knowledge" class="hover:text-[#F9E29B] transition-colors">32 Padavinyasa Gates</a></li>
-            <li><a href="#about" class="hover:text-[#F9E29B] transition-colors">Panchabhuta Elements</a></li>
-            <li><a href="#packages" class="hover:text-[#F9E29B] transition-colors">Packages & Pricing</a></li>
-            <li><a href="#gallery" class="hover:text-[#F9E29B] transition-colors">Media & Podcasts</a></li>
-            <li><a href="#articles" class="hover:text-[#F9E29B] transition-colors">Research Articles</a></li>
+            <li><a href="#gallery" class="hover:text-[#F9E29B] transition-colors">Image Gallery</a></li>
+            <li><a href="#booking-section" class="hover:text-[#F9E29B] transition-colors">Book Consultation</a></li>
+            <li><a href="#contact" class="hover:text-[#F9E29B] transition-colors">Contact</a></li>
           </ul>
         </div>
 
-        <!-- Col 4: Corporate & Compliance -->
+        <!-- Col 4: Verified Contacts & Legal (Zero Physical Address) -->
         <div class="space-y-3">
-          <h4 class="font-serif text-sm font-bold text-[#F9E29B] uppercase tracking-wider">Legal & Access</h4>
+          <h4 class="font-serif text-sm font-bold text-[#F9E29B] uppercase tracking-wider">Contact & Portal</h4>
           <ul class="space-y-2">
-            <li><a href="#" class="hover:text-[#F9E29B] transition-colors">Privacy Policy</a></li>
-            <li><a href="#" class="hover:text-[#F9E29B] transition-colors">Terms and Conditions</a></li>
-            <li><a href="#" class="hover:text-[#F9E29B] transition-colors">Cancellation & Refund Policy</a></li>
-            <li><button data-replay-intro class="hover:text-[#F9E29B] text-left">Replay 3D Intro Story</button></li>
-            <li><button id="admin-modal-trigger" class="text-[#C6A15B] hover:text-[#F9E29B] font-semibold text-left">🔒 Owner Admin Portal</button></li>
+            <li>
+              <a href="mailto:vastusutram@gmail.com" class="hover:text-[#F9E29B] transition-colors text-amber-200">
+                vastusutram@gmail.com
+              </a>
+            </li>
+            <li>
+              <a href="https://wa.me/9181457155" target="_blank" class="hover:text-emerald-300 transition-colors text-emerald-400">
+                WhatsApp: +91 81457 155
+              </a>
+            </li>
+            <li>
+              <a href="https://www.instagram.com/vastu_sutram?cplk=b3dwajhwdXFmZzds" target="_blank" class="hover:text-[#F9E29B] transition-colors">
+                Instagram: @vastu_sutram
+              </a>
+            </li>
+            <li><span class="text-[11px] text-[#DCCBB0]/70">Pan-India & Global Consultations</span></li>
+            <li class="pt-2"><button id="admin-modal-trigger" class="text-[#C6A15B] hover:text-[#F9E29B] font-semibold text-left">🔒 Owner Admin Portal</button></li>
           </ul>
         </div>
       </div>
@@ -776,31 +861,21 @@
   </footer>
 
   <!-- ============================================================== -->
-  <!-- 16. FLOATING INTERFACE ELEMENTS                                -->
+  <!-- FLOATING INTERFACE CONTROLS                                    -->
   <!-- ============================================================== -->
 
-  <!-- 1. Floating WhatsApp Button -->
-  <a href="https://wa.me/919876543210?text=Hello%20Vastu%20Sutram,%20I%20would%20like%20to%20book%20a%20consultation." target="_blank" class="fixed bottom-6 right-6 z-30 w-14 h-14 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center text-2xl shadow-[0_4px_20px_rgba(16,185,129,0.5)] transform hover:scale-110 transition-all" title="Chat on WhatsApp">
-    💬
-  </a>
-
-  <!-- 2. Floating Book Consultation Pill -->
-  <button data-open-booking class="fixed bottom-6 right-24 z-30 hidden sm:flex items-center gap-2 px-5 py-3 rounded-full bg-gradient-to-r from-[#D9A52D] to-[#C6A15B] text-[#171717] font-serif text-xs font-bold uppercase tracking-wider shadow-[0_4px_20px_rgba(198,161,91,0.5)] hover:scale-105 transition-all">
-    <span>📅</span> Book Consultation
-  </button>
-
-  <!-- 3. Floating Interactive Mini Compass Button -->
-  <button id="floating-compass-btn" class="fixed bottom-6 left-6 z-30 w-12 h-12 rounded-full bg-[#171717]/90 border border-[#C6A15B] text-[#F9E29B] flex items-center justify-center text-xl shadow-lg backdrop-blur-md hover:bg-[#481C25] hover:scale-110 transition-all" title="Interactive Vastu Compass">
+  <!-- Floating Digital Compass Button -->
+  <button id="floating-compass-btn" class="fixed bottom-6 left-6 z-30 w-12 h-12 rounded-full bg-gradient-to-br from-[#481C25] to-[#121011] border border-[#C6A15B] shadow-2xl flex items-center justify-center text-xl hover:scale-110 transition-transform" title="Open Digital Vastu Compass">
     🧭
   </button>
 
-  <!-- 4. Floating Quick Inquiry Drawer Button -->
-  <button id="floating-inquiry-btn" class="fixed bottom-20 left-6 z-30 w-12 h-12 rounded-full bg-[#171717]/90 border border-[#C6A15B] text-[#F9E29B] flex items-center justify-center text-lg shadow-lg backdrop-blur-md hover:bg-[#481C25] hover:scale-110 transition-all" title="Quick Inquiry">
-    ✉️
-  </button>
+  <!-- Floating WhatsApp Quick Button -->
+  <a href="https://wa.me/9181457155?text=Hello%20Vastu%20Sutram,%20I%20would%20like%20to%20inquire%20about%20a%20Vastu%20consultation." target="_blank" rel="noopener noreferrer" class="fixed bottom-6 right-6 z-30 w-12 h-12 rounded-full bg-emerald-600 border border-emerald-400 text-white shadow-2xl flex items-center justify-center text-xl hover:scale-110 transition-transform" title="Instant WhatsApp Message">
+    💬
+  </a>
 
-  <!-- 5. Back to Top Button -->
-  <button id="back-to-top-btn" class="fixed bottom-36 left-6 z-30 w-10 h-10 rounded-full bg-[#481C25]/80 border border-[#C6A15B]/40 text-[#C6A15B] flex items-center justify-center text-sm opacity-0 pointer-events-none transition-all hover:bg-[#C6A15B] hover:text-[#171717]">
+  <!-- Back to Top Button -->
+  <button id="back-to-top-btn" class="fixed bottom-22 left-6 z-30 w-10 h-10 rounded-full bg-[#481C25]/90 border border-[#C6A15B]/40 text-[#C6A15B] flex items-center justify-center text-sm opacity-0 pointer-events-none transition-all hover:bg-[#C6A15B] hover:text-[#121011]">
     ▲
   </button>
 
@@ -808,44 +883,83 @@
   <!-- GLOBAL MODALS                                                  -->
   <!-- ============================================================== -->
 
-  <!-- Modal 1: 8-Step Booking System Modal -->
-  <div id="booking-modal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-    <div id="booking-modal-body" class="w-full">
-      <!-- Injected by js/booking.js -->
+  <!-- Modal 1: Review & Send WhatsApp Message Modal -->
+  <div id="whatsapp-review-modal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="max-w-lg w-full p-6 md:p-8 rounded-2xl bg-[#181416] border border-[#C6A15B]/40 text-[#F8F3E9] relative shadow-2xl">
+      <div class="flex items-center justify-between border-b border-[#C6A15B]/20 pb-3 mb-4">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">💬</span>
+          <h3 class="font-serif text-lg font-bold text-[#F9E29B]">Review Your WhatsApp Enquiry</h3>
+        </div>
+        <button id="whatsapp-review-close" class="text-[#C6A15B] hover:text-[#F8F3E9] text-xl font-bold">✕</button>
+      </div>
+
+      <p class="text-xs text-[#DCCBB0] mb-3">Please review the formatted enquiry message below before opening WhatsApp:</p>
+
+      <div id="whatsapp-preview-content" class="p-4 rounded-xl bg-[#121011] border border-[#C6A15B]/25 font-mono text-xs text-[#EADCC9] whitespace-pre-wrap max-h-60 overflow-y-auto mb-5 leading-relaxed">
+        <!-- Injected dynamically -->
+      </div>
+
+      <!-- Confirmation Notice -->
+      <div id="whatsapp-handoff-status" class="hidden p-3 rounded-lg bg-emerald-950/60 border border-emerald-500/40 text-xs text-emerald-300 mb-4">
+        ✓ WhatsApp click-to-chat triggered. Please hit "Send" in your WhatsApp client to dispatch the enquiry to Vastu Sutram.
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-3">
+        <button id="whatsapp-send-btn" class="flex-1 py-3 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-serif text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg transition-all">
+          <span>Open WhatsApp Client</span>
+          <span>➔</span>
+        </button>
+        <button id="whatsapp-edit-btn" class="px-5 py-3 rounded-full border border-[#C6A15B]/40 text-[#C6A15B] hover:bg-[#481C25] font-serif text-xs uppercase tracking-wider transition-all">
+          Edit Form
+        </button>
+      </div>
     </div>
   </div>
 
-  <!-- Modal 2: Admin Dashboard Modal -->
-  <div id="admin-modal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
-    <div id="admin-modal-body" class="w-full">
-      <!-- Injected by js/admin.js -->
+  <!-- Modal 2: Razorpay Payment Checkout Modal -->
+  <div id="razorpay-modal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="max-w-md w-full p-6 md:p-8 rounded-2xl bg-[#181416] border border-[#C6A15B]/40 text-[#F8F3E9] relative shadow-2xl">
+      <div class="flex items-center justify-between border-b border-[#C6A15B]/20 pb-3 mb-4">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">💳</span>
+          <h3 class="font-serif text-lg font-bold text-[#F9E29B]">Consultation Payment</h3>
+        </div>
+        <button id="razorpay-modal-close" class="text-[#C6A15B] hover:text-[#F8F3E9] text-xl font-bold">✕</button>
+      </div>
+
+      <div id="razorpay-modal-content" class="space-y-4">
+        <!-- Rendered by js/app.js -->
+      </div>
     </div>
   </div>
 
-  <!-- Modal 3: Floating Compass Modal -->
+  <!-- Modal 3: Gallery Lightbox Modal -->
+  <div id="lightbox-modal" class="hidden fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
+    <div id="lightbox-content" class="max-w-4xl w-full"></div>
+  </div>
+
+  <!-- Modal 4: Digital Vastu Compass Modal -->
   <div id="floating-compass-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-    <div class="max-w-md w-full p-6 rounded-2xl bg-[#171717] border border-[#C6A15B]/40 text-[#F8F3E9] relative">
+    <div class="max-w-md w-full p-6 rounded-2xl bg-[#181416] border border-[#C6A15B]/40 text-[#F8F3E9] relative shadow-2xl">
       <div class="flex items-center justify-between border-b border-[#C6A15B]/20 pb-3 mb-4">
         <div class="flex items-center gap-2">
           <span class="text-xl">🧭</span>
           <h3 class="font-serif text-lg font-bold text-[#F9E29B]">Live Digital Vastu Compass</h3>
         </div>
-        <button id="compass-close-btn" class="text-[#C6A15B] hover:text-[#F8F3E9]">✕</button>
+        <button id="compass-close-btn" class="text-[#C6A15B] hover:text-[#F8F3E9] text-xl font-bold">✕</button>
       </div>
 
-      <!-- Dial Container -->
       <div id="compass-dial-container" class="w-60 h-60 mx-auto relative mb-4">
         <!-- Rendered by js/compass.js -->
       </div>
 
-      <!-- Readouts -->
       <div class="text-center mb-4">
         <div id="compass-deg-readout" class="font-mono text-3xl font-bold text-[#F9E29B]">0°</div>
         <div id="compass-zone-readout" class="font-serif text-sm font-semibold text-[#F8F3E9] mt-0.5">North (Uttara) • Water</div>
         <p id="compass-zone-advice" class="text-xs text-[#DCCBB0] mt-1 italic max-w-xs mx-auto">Ideal for Main Entrance (N3/N4), Cash Locker, Living Room.</p>
       </div>
 
-      <!-- Manual Degree Slider -->
       <div class="space-y-1 mb-4">
         <div class="flex justify-between text-[10px] text-[#C6A15B]">
           <span>Rotate Dial Manually:</span>
@@ -854,60 +968,31 @@
         <input type="range" id="compass-degree-slider" min="0" max="359" value="0" class="w-full accent-[#C6A15B]" />
       </div>
 
-      <!-- Quick Direction Presets -->
       <div class="grid grid-cols-4 gap-1.5 text-[11px] font-mono">
-        <button data-compass-preset="0" class="p-1.5 rounded bg-[#12080B] border border-[#C6A15B]/20 hover:bg-[#C6A15B]/30">0° N</button>
-        <button data-compass-preset="45" class="p-1.5 rounded bg-[#12080B] border border-[#C6A15B]/20 hover:bg-[#C6A15B]/30">45° NE</button>
-        <button data-compass-preset="90" class="p-1.5 rounded bg-[#12080B] border border-[#C6A15B]/20 hover:bg-[#C6A15B]/30">90° E</button>
-        <button data-compass-preset="135" class="p-1.5 rounded bg-[#12080B] border border-[#C6A15B]/20 hover:bg-[#C6A15B]/30">135° SE</button>
-        <button data-compass-preset="180" class="p-1.5 rounded bg-[#12080B] border border-[#C6A15B]/20 hover:bg-[#C6A15B]/30">180° S</button>
-        <button data-compass-preset="225" class="p-1.5 rounded bg-[#12080B] border border-[#C6A15B]/20 hover:bg-[#C6A15B]/30">225° SW</button>
-        <button data-compass-preset="270" class="p-1.5 rounded bg-[#12080B] border border-[#C6A15B]/20 hover:bg-[#C6A15B]/30">270° W</button>
-        <button data-compass-preset="315" class="p-1.5 rounded bg-[#12080B] border border-[#C6A15B]/20 hover:bg-[#C6A15B]/30">315° NW</button>
+        <button data-compass-preset="0" class="p-1.5 rounded bg-[#121011] border border-[#C6A15B]/20 hover:bg-[#C6A15B]/30">0° N</button>
+        <button data-compass-preset="45" class="p-1.5 rounded bg-[#121011] border border-[#C6A15B]/20 hover:bg-[#C6A15B]/30">45° NE</button>
+        <button data-compass-preset="90" class="p-1.5 rounded bg-[#121011] border border-[#C6A15B]/20 hover:bg-[#C6A15B]/30">90° E</button>
+        <button data-compass-preset="135" class="p-1.5 rounded bg-[#121011] border border-[#C6A15B]/20 hover:bg-[#C6A15B]/30">135° SE</button>
+        <button data-compass-preset="180" class="p-1.5 rounded bg-[#121011] border border-[#C6A15B]/20 hover:bg-[#C6A15B]/30">180° S</button>
+        <button data-compass-preset="225" class="p-1.5 rounded bg-[#121011] border border-[#C6A15B]/20 hover:bg-[#C6A15B]/30">225° SW</button>
+        <button data-compass-preset="270" class="p-1.5 rounded bg-[#121011] border border-[#C6A15B]/20 hover:bg-[#C6A15B]/30">270° W</button>
+        <button data-compass-preset="315" class="p-1.5 rounded bg-[#121011] border border-[#C6A15B]/20 hover:bg-[#C6A15B]/30">315° NW</button>
       </div>
     </div>
   </div>
 
-  <!-- Modal 4: Quick Inquiry Modal -->
-  <div id="quick-inquiry-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-    <div class="max-w-md w-full p-6 rounded-2xl bg-[#171717] border border-[#C6A15B]/40 text-[#F8F3E9] relative">
-      <div class="flex items-center justify-between border-b border-[#C6A15B]/20 pb-3 mb-4">
-        <h3 class="font-serif text-lg font-bold text-[#F9E29B]">Quick Vastu Inquiry</h3>
-        <button id="quick-inquiry-close" class="text-[#C6A15B] hover:text-[#F8F3E9]">✕</button>
-      </div>
-      <form id="quick-inquiry-form" class="space-y-3 text-xs">
-        <div>
-          <label class="block text-[#C6A15B] uppercase tracking-wider mb-1">Your Name</label>
-          <input type="text" id="quick-name" required placeholder="Full Name" class="w-full px-3 py-2 rounded bg-[#12080B] border border-[#C6A15B]/30 text-[#F8F3E9] outline-none" />
-        </div>
-        <div>
-          <label class="block text-[#C6A15B] uppercase tracking-wider mb-1">Phone / WhatsApp</label>
-          <input type="tel" id="quick-phone" required placeholder="+91 98765 43210" class="w-full px-3 py-2 rounded bg-[#12080B] border border-[#C6A15B]/30 text-[#F8F3E9] outline-none" />
-        </div>
-        <div>
-          <label class="block text-[#C6A15B] uppercase tracking-wider mb-1">Short Query</label>
-          <textarea id="quick-message" rows="3" required placeholder="What guidance do you require?" class="w-full px-3 py-2 rounded bg-[#12080B] border border-[#C6A15B]/30 text-[#F8F3E9] outline-none"></textarea>
-        </div>
-        <button type="submit" class="w-full py-2.5 rounded-full bg-[#C6A15B] text-[#171717] font-serif text-xs font-bold uppercase hover:bg-[#F9E29B] transition-all">
-          Request Instant Callback ➔
-        </button>
-      </form>
+  <!-- Modal 5: Admin Dashboard Modal (PIN: vastu2026) -->
+  <div id="admin-modal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
+    <div id="admin-modal-body" class="w-full">
+      <!-- Injected by js/admin.js -->
     </div>
   </div>
 
-  <!-- Modal 5: Lightbox Modal -->
-  <div id="lightbox-modal" class="hidden fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
-    <div id="lightbox-content"></div>
-  </div>
-
-  <!-- Modal 6: Article Reader Modal -->
-  <div id="article-modal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-    <div id="article-modal-content"></div>
-  </div>
-
-  <!-- Modal 7: Service Detail Modal -->
-  <div id="service-detail-modal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-    <div id="service-detail-content"></div>
+  <!-- Modal 6: 8-Step CAD Booking Wizard Modal (Preserved for deep blueprint upload) -->
+  <div id="booking-modal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+    <div id="booking-modal-body" class="w-full">
+      <!-- Injected by js/booking.js -->
+    </div>
   </div>
 
   <!-- Application Scripts -->

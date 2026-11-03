@@ -424,7 +424,7 @@ class VastuBookingSystem {
               ${[
                 { id: "Online Video Consultation", desc: "Interactive screen-share over Zoom/Google Meet with blueprint markups." },
                 { id: "Phone Consultation", desc: "Detailed telephonic review & audio discussion." },
-                { id: "In-Person Office Meeting", desc: "Meet at Vastu Sutram consulting chambers (Gurugram)." },
+                { id: "In-Person Consultation", desc: "In-person consultation session arranged by prior appointment." },
                 { id: "On-Site Visit Request", desc: "Consultant visits your actual site (Pan-India travel applicable)." }
               ].map(mode => `
                 <label class="flex items-start gap-2.5 p-3 rounded-lg border cursor-pointer transition-all ${

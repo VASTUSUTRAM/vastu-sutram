@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
+  <defs>
+    <linearGradient id="iBg6" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#12080B" />
+      <stop offset="50%" stop-color="#281119" />
+      <stop offset="100%" stop-color="#121011" />
+    </linearGradient>
+  </defs>
+  <rect width="500" height="500" fill="url(#iBg6)" />
+  <circle cx="250" cy="220" r="130" fill="none" stroke="#C6A15B" stroke-width="1.5" />
+  <polygon points="250,110 345,275 155,275" fill="none" stroke="#F9E29B" stroke-width="2" />
+  <polygon points="250,330 345,165 155,165" fill="none" stroke="#F9E29B" stroke-width="2" />
+  <circle cx="250" cy="220" r="15" fill="#C6A15B" />
+  <text x="250" y="395" fill="#F8F3E9" font-family="'Cinzel', Georgia, serif" font-size="14" font-weight="bold" letter-spacing="2" text-anchor="middle">SACRED GEOMETRY HARMONY</text>
+  <text x="250" y="420" fill="#C6A15B" font-family="'Plus Jakarta Sans', sans-serif" font-size="11" text-anchor="middle">Non-Demolition Copper & Brass Grids</text>
+  <text x="250" y="450" fill="#DCCBB0" font-family="'Plus Jakarta Sans', sans-serif" font-size="10" text-anchor="middle">@vastu_sutram</text>
+</svg>
