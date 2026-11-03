@@ -403,8 +403,11 @@ class VastuApp {
 
   // 7. KNOWLEDGE EXPLORER & 3D CHAKRA
   initKnowledgeExplorer() {
-    if (window.THREE && window.InteractiveVastuChakra) {
-      this.chakraInstance = new InteractiveVastuChakra('chakra-3d-canvas', 'chakra-info-panel');
+    if (window.InteractiveVastuChakra) {
+      const containerId = document.getElementById('chakra-3d-canvas-container')
+        ? 'chakra-3d-canvas-container'
+        : 'chakra-3d-canvas';
+      this.chakraInstance = new InteractiveVastuChakra(containerId, 'chakra-info-panel');
     }
 
     // Tabs inside knowledge section
