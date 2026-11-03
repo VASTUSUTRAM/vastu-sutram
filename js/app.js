@@ -914,6 +914,9 @@ class VastuApp {
 
     const bookingSection = document.getElementById('booking-section');
     if (bookingSection) {
+      if (typeof this.setBookingWizardStep === 'function') {
+        this.setBookingWizardStep(1);
+      }
       bookingSection.scrollIntoView({ behavior: 'smooth' });
       const nameInput = document.getElementById('wa-name');
       if (nameInput) {
@@ -1420,6 +1423,9 @@ class VastuApp {
 
     const bookingSection = document.getElementById('booking-section');
     if (bookingSection) {
+      if (typeof this.setBookingWizardStep === 'function') {
+        this.setBookingWizardStep(1);
+      }
       bookingSection.scrollIntoView({ behavior: 'smooth' });
       const nameInput = document.getElementById('wa-name');
       if (nameInput) {
@@ -1907,10 +1913,214 @@ class VastuApp {
     });
   }
 
-  // 12. WHATSAPP BOOKING DOSSIER & DIRECT CHAT
+  // 12. 4-STEP GUIDED CONSULTATION BOOKING ENGINE & WHATSAPP DOSSIER
   initWhatsAppBookingForm() {
     const form = document.getElementById('whatsapp-consultation-form');
     if (!form) return;
+
+    this.currentBookingWizardStep = 1;
+    this.maxCompletedBookingStep = 0;
+
+    // Set default date (2 days ahead) if empty
+    const dateInput = document.getElementById('wa-date');
+    if (dateInput && !dateInput.value) {
+      const d = new Date();
+      d.setDate(d.getDate() + 2);
+      dateInput.value = d.toISOString().split('T')[0];
+    }
+
+    const prevBtn = document.getElementById('booking-step-prev-btn');
+    const nextBtn = document.getElementById('booking-step-next-btn');
+    const stepNodes = document.querySelectorAll('[data-booking-step-trigger]');
+
+    const showStepAlert = (msg) => {
+      const alertBox = document.getElementById('booking-step-alert');
+      if (!alertBox) return;
+      if (!msg) {
+        alertBox.classList.add('hidden');
+        alertBox.textContent = '';
+      } else {
+        alertBox.innerHTML = `<span>⚠️</span> <span>${msg}</span>`;
+        alertBox.classList.remove('hidden');
+      }
+    };
+
+    const validateUpToStep = (stepNumber) => {
+      const name = document.getElementById('wa-name') ? document.getElementById('wa-name').value.trim() : '';
+      const phone = document.getElementById('wa-phone') ? document.getElementById('wa-phone').value.trim() : '';
+      const email = document.getElementById('wa-email') ? document.getElementById('wa-email').value.trim() : '';
+      const city = document.getElementById('wa-city') ? document.getElementById('wa-city').value.trim() : '';
+      const date = document.getElementById('wa-date') ? document.getElementById('wa-date').value : '';
+
+      if (stepNumber >= 1) {
+        if (!name || !phone || !email) {
+          showStepAlert('Please enter your Full Name, WhatsApp Number, and Email Address in Step 01.');
+          return false;
+        }
+      }
+      if (stepNumber >= 2) {
+        if (!city) {
+          showStepAlert('Please enter your Property Location / City in Step 02.');
+          return false;
+        }
+      }
+      if (stepNumber >= 3) {
+        if (!date) {
+          showStepAlert('Please select your Preferred Consultation Date in Step 03.');
+          return false;
+        }
+      }
+      showStepAlert('');
+      return true;
+    };
+
+    this.populateLiveReviewGrid = () => {
+      const reviewGrid = document.getElementById('booking-live-review-grid');
+      if (!reviewGrid) return;
+
+      const name = (document.getElementById('wa-name')?.value || '').trim() || '—';
+      const phone = (document.getElementById('wa-phone')?.value || '').trim() || '—';
+      const altPhone = (document.getElementById('wa-alt-phone')?.value || '').trim();
+      const email = (document.getElementById('wa-email')?.value || '').trim() || '—';
+      const consultType = document.getElementById('wa-consultation-type')?.value || '—';
+      const propType = document.getElementById('wa-property-type')?.value || '—';
+      const city = (document.getElementById('wa-city')?.value || '').trim() || '—';
+      const stage = document.getElementById('wa-property-stage')?.value || 'Existing Property';
+      const mode = document.getElementById('wa-mode')?.value || 'Online Video / Blueprint Review';
+      const date = document.getElementById('wa-date')?.value || '—';
+      const slot = document.getElementById('wa-time-slot')?.value || '—';
+      const msg = (document.getElementById('wa-message')?.value || '').trim() || 'Standard spatial evaluation and energetic alignment requested.';
+
+      const rows = [
+        { label: 'Client Name', value: name, step: 1 },
+        { label: 'WhatsApp & Contact', value: altPhone ? `${phone} (Alt: ${altPhone})` : phone, step: 1 },
+        { label: 'Email Address', value: email, step: 1 },
+        { label: 'Consultation Type', value: consultType, step: 2 },
+        { label: 'Property Type & Stage', value: `${propType} • ${stage}`, step: 2 },
+        { label: 'Property Location / City', value: city, step: 2 },
+        { label: 'Consultation Mode', value: mode, step: 3 },
+        { label: 'Preferred Schedule', value: `${date} (${slot})`, step: 3 }
+      ];
+
+      reviewGrid.innerHTML = `
+        ${rows.map(r => `
+          <div class="p-4 rounded-2xl bg-[#12080B]/80 border border-[#C6A15B]/25 flex items-start justify-between gap-3">
+            <div>
+              <span class="text-[10px] uppercase tracking-[0.18em] text-[#C6A15B] font-bold block mb-1">${r.label}</span>
+              <span class="text-xs sm:text-sm text-[#F8F3E9] font-medium">${r.value}</span>
+            </div>
+            <button type="button" data-edit-booking-step="${r.step}" class="text-[10px] uppercase tracking-wider text-[#F9E29B] hover:underline font-serif shrink-0">Edit</button>
+          </div>
+        `).join('')}
+        <div class="md:col-span-2 p-4 rounded-2xl bg-[#12080B]/80 border border-[#C6A15B]/25 flex items-start justify-between gap-3">
+          <div>
+            <span class="text-[10px] uppercase tracking-[0.18em] text-[#C6A15B] font-bold block mb-1">Specific Spatial Priorities / Notes</span>
+            <p class="text-xs text-[#DCCBB0] leading-relaxed font-light">${msg}</p>
+          </div>
+          <button type="button" data-edit-booking-step="3" class="text-[10px] uppercase tracking-wider text-[#F9E29B] hover:underline font-serif shrink-0">Edit</button>
+        </div>
+      `;
+
+      reviewGrid.querySelectorAll('[data-edit-booking-step]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const targetStep = parseInt(e.currentTarget.getAttribute('data-edit-booking-step'), 10);
+          this.setBookingWizardStep(targetStep);
+        });
+      });
+    };
+
+    this.setBookingWizardStep = (stepNumber) => {
+      const target = Math.max(1, Math.min(4, stepNumber));
+      this.currentBookingWizardStep = target;
+      if (target - 1 > this.maxCompletedBookingStep) {
+        this.maxCompletedBookingStep = target - 1;
+      }
+
+      showStepAlert('');
+
+      // Toggle step panes
+      const panes = form.querySelectorAll('[data-booking-step-pane]');
+      panes.forEach(pane => {
+        const paneStep = parseInt(pane.getAttribute('data-booking-step-pane'), 10);
+        if (paneStep === target) {
+          pane.classList.remove('hidden');
+          if (window.gsap) {
+            window.gsap.fromTo(pane, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' });
+          }
+        } else {
+          pane.classList.add('hidden');
+        }
+      });
+
+      // Update horizontal progress line & step nodes
+      const progressLine = document.getElementById('booking-progress-line');
+      if (progressLine) {
+        const pct = ((target - 1) / 3) * 100;
+        progressLine.style.width = `${pct}%`;
+      }
+
+      stepNodes.forEach(node => {
+        const s = parseInt(node.getAttribute('data-booking-step-trigger'), 10);
+        node.classList.remove('active', 'completed');
+        if (s === target) {
+          node.classList.add('active');
+        } else if (s < target || s <= this.maxCompletedBookingStep) {
+          node.classList.add('completed');
+        }
+      });
+
+      // Update Footer Navigation Buttons
+      const nextLabel = document.getElementById('booking-step-next-label');
+      if (prevBtn) {
+        if (target === 1) {
+          prevBtn.classList.add('invisible');
+        } else {
+          prevBtn.classList.remove('invisible');
+        }
+      }
+
+      if (nextBtn) {
+        if (target === 4) {
+          nextBtn.classList.add('hidden');
+          this.populateLiveReviewGrid();
+        } else {
+          nextBtn.classList.remove('hidden');
+          const labels = {
+            1: 'Continue to Property Details',
+            2: 'Continue to Preferences',
+            3: 'Review Consultation Dossier'
+          };
+          if (nextLabel) nextLabel.textContent = labels[target] || 'Continue';
+        }
+      }
+    };
+
+    if (prevBtn) {
+      prevBtn.addEventListener('click', () => {
+        if (this.currentBookingWizardStep > 1) {
+          this.setBookingWizardStep(this.currentBookingWizardStep - 1);
+        }
+      });
+    }
+
+    if (nextBtn) {
+      nextBtn.addEventListener('click', () => {
+        if (validateUpToStep(this.currentBookingWizardStep)) {
+          this.setBookingWizardStep(this.currentBookingWizardStep + 1);
+        }
+      });
+    }
+
+    stepNodes.forEach(node => {
+      node.addEventListener('click', () => {
+        const targetStep = parseInt(node.getAttribute('data-booking-step-trigger'), 10);
+        if (targetStep <= this.currentBookingWizardStep) {
+          this.setBookingWizardStep(targetStep);
+        } else if (validateUpToStep(targetStep - 1)) {
+          this.setBookingWizardStep(targetStep);
+        }
+      });
+    });
 
     const modal = document.getElementById('whatsapp-review-modal');
     const previewContent = document.getElementById('whatsapp-preview-content');
@@ -1925,43 +2135,47 @@ class VastuApp {
     form.addEventListener('submit', (e) => {
       e.preventDefault();
 
+      if (!validateUpToStep(3)) {
+        return;
+      }
+
       const name = document.getElementById('wa-name') ? document.getElementById('wa-name').value.trim() : '';
       const phone = document.getElementById('wa-phone') ? document.getElementById('wa-phone').value.trim() : '';
+      const altPhone = document.getElementById('wa-alt-phone') ? document.getElementById('wa-alt-phone').value.trim() : '';
       const email = document.getElementById('wa-email') ? document.getElementById('wa-email').value.trim() : '';
       const consultationType = document.getElementById('wa-consultation-type') ? document.getElementById('wa-consultation-type').value : '';
       const propertyType = document.getElementById('wa-property-type') ? document.getElementById('wa-property-type').value : '';
+      const propertyStage = document.getElementById('wa-property-stage') ? document.getElementById('wa-property-stage').value : '';
+      const consultationMode = document.getElementById('wa-mode') ? document.getElementById('wa-mode').value : 'Online Video / Blueprint Review';
       const city = document.getElementById('wa-city') ? document.getElementById('wa-city').value.trim() : '';
       const date = document.getElementById('wa-date') ? document.getElementById('wa-date').value : '';
       const timeSlot = document.getElementById('wa-time-slot') ? document.getElementById('wa-time-slot').value : '';
       const message = document.getElementById('wa-message') ? document.getElementById('wa-message').value.trim() : '';
 
-      if (!name || !phone || !email || !city || !date) {
-        alert('Please fill out all required fields marked with *.');
-        return;
-      }
-
       currentPayload = {
         name,
-        phone,
+        phone: altPhone ? `${phone} (Alt: ${altPhone})` : phone,
         email,
         serviceName: consultationType,
-        propertyType,
+        propertyType: propertyStage ? `${propertyType} (${propertyStage})` : propertyType,
         city,
         appointmentDate: date,
-        appointmentTime: timeSlot,
+        appointmentTime: `${timeSlot} • ${consultationMode}`,
         message,
-        source: 'WhatsApp Booking Form'
+        source: '4-Step Guided Consultation Booking Form'
       };
 
       formattedMessage = 
 `*VASTU SUTRAM – CONSULTATION ENQUIRY DOSSIER*
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 • *Client Name:* ${name}
-• *WhatsApp Number:* ${phone}
+• *WhatsApp Number:* ${phone}${altPhone ? `\n• *Alternate Contact:* ${altPhone}` : ''}
 • *Email Address:* ${email}
 • *Consultation Type:* ${consultationType}
 • *Property Type:* ${propertyType}
+• *Property Stage:* ${propertyStage || 'Existing Property'}
 • *Location / City:* ${city}
+• *Consultation Mode:* ${consultationMode}
 • *Preferred Date:* ${date}
 • *Preferred Time Slot:* ${timeSlot}
 • *Client Query / Specific Concerns:*
@@ -2146,6 +2360,19 @@ ${message ? message : 'Standard spatial evaluation and energetic alignment reque
     const form = document.getElementById('main-contact-form');
     if (!form) return;
 
+    const feedback = document.getElementById('contact-form-feedback');
+    const showFeedback = (text, isError = false) => {
+      if (!feedback) {
+        alert(text);
+        return;
+      }
+      feedback.textContent = text;
+      feedback.className = isError
+        ? 'p-3.5 rounded-xl bg-rose-950/75 border border-rose-400/45 text-xs text-rose-200'
+        : 'p-3.5 rounded-xl bg-emerald-950/75 border border-emerald-400/45 text-xs text-emerald-200';
+      feedback.classList.remove('hidden');
+    };
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const name = document.getElementById('contact-name').value.trim();
@@ -2155,7 +2382,7 @@ ${message ? message : 'Standard spatial evaluation and energetic alignment reque
       const message = document.getElementById('contact-message').value.trim();
 
       if (!name || !phone || !email || !message) {
-        alert('Please fill out all required fields.');
+        showFeedback('Please fill out all required fields marked with *.', true);
         return;
       }
 
@@ -2166,11 +2393,14 @@ ${message ? message : 'Standard spatial evaluation and energetic alignment reque
           body: JSON.stringify({ name, phone, email, subject, message })
         });
         if (res.ok) {
-          alert('Thank you! Your enquiry has been received. Our senior consultant will respond promptly.');
+          showFeedback('✓ Thank you! Your confidential enquiry has been received by Vastu Sutram. Our senior consultant will respond within 24 hours.');
+          form.reset();
+        } else {
+          showFeedback('✓ Thank you! Your message has been logged for our consultation desk.');
           form.reset();
         }
       } catch (err) {
-        alert('Thank you! Your message has been received.');
+        showFeedback('✓ Thank you! Your message has been received.');
         form.reset();
       }
     });
