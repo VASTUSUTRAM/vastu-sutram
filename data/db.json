@@ -1,0 +1,111 @@
+{
+  "bookings": [
+    {
+      "id": "VS-2026-8941",
+      "createdAt": "2026-10-28T14:32:00.000Z",
+      "status": "Confirmed",
+      "name": "Amitabh Sengupta",
+      "phone": "+91 98112 45789",
+      "whatsapp": "+91 98112 45789",
+      "email": "amitabh.sengupta@example.com",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "service": "residential",
+      "serviceName": "Residential Vastu",
+      "package": "pkg-res-complete",
+      "packageName": "Complete Home Vastu Analysis",
+      "amount": "₹11,000",
+      "propertyType": "4-BHK Luxury Apartment",
+      "propertyArea": "3,200 sq.ft",
+      "floors": "1 (14th Floor)",
+      "direction": "North-East Facing Main Entrance",
+      "constructionStatus": "Ready to Move",
+      "purpose": "Comprehensive elemental balancing prior to interior handover.",
+      "appointmentDate": "2026-11-04",
+      "appointmentTime": "11:30 AM - 12:30 PM",
+      "consultationMode": "Online Video Consultation",
+      "documents": [
+        "apartment_floorplan_14th_floor.pdf"
+      ],
+      "paymentStatus": "Paid (Online)",
+      "notes": "Client requested special focus on kitchen sink and pooja room placement."
+    },
+    {
+      "id": "VS-2026-7230",
+      "createdAt": "2026-10-30T10:15:00.000Z",
+      "status": "Pending Review",
+      "name": "Meera Radhakrishnan",
+      "phone": "+91 94440 88219",
+      "whatsapp": "+91 94440 88219",
+      "email": "meera.radha@example.com",
+      "city": "Chennai",
+      "state": "Tamil Nadu",
+      "service": "commercial",
+      "serviceName": "Commercial Vastu",
+      "package": "pkg-com-office",
+      "packageName": "Office & Corporate Vastu Consultation",
+      "amount": "₹18,000",
+      "propertyType": "Commercial IT Office",
+      "propertyArea": "8,500 sq.ft",
+      "floors": "2 Floors",
+      "direction": "East Facing",
+      "constructionStatus": "Under Renovation",
+      "purpose": "Director cabin seating, finance desk positioning, and main entrance harmony.",
+      "appointmentDate": "2026-11-06",
+      "appointmentTime": "02:00 PM - 03:00 PM",
+      "consultationMode": "Online Video Consultation",
+      "documents": [
+        "chennai_it_office_layout_cad.pdf"
+      ],
+      "paymentStatus": "Pending Verification",
+      "notes": "Awaiting final confirmation from management committee."
+    }
+  ],
+  "inquiries": [
+    {
+      "email": "suresh@example.com",
+      "message": "Need immediate consultation for our 5-acre plant.",
+      "name": "Suresh Patel",
+      "phone": "+91 98765 00000",
+      "subject": "Factory Layout Planning",
+      "id": "INQ-1793548631134",
+      "createdAt": "2026-11-01T15:57:11.134Z"
+    },
+    {
+      "id": "INQ-1730412891000",
+      "createdAt": "2026-10-31T09:40:00.000Z",
+      "name": "Kavita Singhal",
+      "phone": "+91 98200 12345",
+      "email": "kavita.singhal@example.com",
+      "subject": "Pre-Purchase Plot Due Diligence in Noida",
+      "message": "We are finalizing a 500 sq. yard plot in Sector 128. Need a quick pre-purchase review regarding the North-West road slope before registry."
+    }
+  ],
+  "settings": {
+    "ownerPin": "vastu2026",
+    "consultantName": "Rajni Singh",
+    "designation": "Senior Vastu Consultant & Vedic Space Planner",
+    "phone": "+91 98765 43210",
+    "whatsapp": "+91 98765 43210",
+    "email": "consultations@vastusutram.com",
+    "officeAddress": "Suite 702, Vedic Heritage Tower, Golf Course Road, Sector 54, Gurugram, Haryana 122002",
+    "consultationLocation": "In-Person Office & Pan-India Site Visits Available",
+    "workingHours": "Monday – Saturday: 09:30 AM – 07:00 PM IST",
+    "razorpayKeyId": "rzp_test_placeholder_key",
+    "razorpaySecret": "rzp_test_placeholder_secret",
+    "socialLinks": {
+      "instagram": "https://instagram.com/vastusutram",
+      "youtube": "https://youtube.com/@vastusutram",
+      "linkedin": "https://linkedin.com/company/vastusutram",
+      "facebook": "https://facebook.com/vastusutram"
+    }
+  },
+  "slots": [
+    "10:00 AM - 11:00 AM",
+    "11:30 AM - 12:30 PM",
+    "02:00 PM - 03:00 PM",
+    "04:00 PM - 05:00 PM",
+    "05:30 PM - 06:30 PM",
+    "07:00 PM - 08:00 PM"
+  ]
+}

@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#D9A52D" stop-opacity="0.3"/>
+      <stop offset="50%" stop-color="#D9B878" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#092D40" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <g fill="none" stroke="url(#bgGold)" stroke-width="1.2" transform="translate(400,400)">
+    <!-- Concentric rings -->
+    <circle r="380" stroke-dasharray="6,6"/>
+    <circle r="340"/>
+    <circle r="300" stroke-width="0.8"/>
+    <circle r="250" stroke-dasharray="3,3"/>
+    <circle r="200"/>
+    <circle r="140"/>
+    <circle r="80"/>
+    <circle r="20"/>
+
+    <!-- Square Mandala Frames -->
+    <rect x="-260" y="-260" width="520" height="520" />
+    <rect x="-260" y="-260" width="520" height="520" transform="rotate(45)" stroke-dasharray="4,4"/>
+    <rect x="-180" y="-180" width="360" height="360" />
+    <rect x="-180" y="-180" width="360" height="360" transform="rotate(45)" />
+
+    <!-- 16 Direction Rays -->
+    <g stroke-width="0.7">
+      <line x1="0" y1="-380" x2="0" y2="380"/>
+      <line x1="-380" y1="0" x2="380" y2="0"/>
+      <line x1="-268" y1="-268" x2="268" y2="268"/>
+      <line x1="-268" y1="268" x2="268" y2="-268"/>
+      <line x1="-145" y1="-351" x2="145" y2="351"/>
+      <line x1="145" y1="-351" x2="-145" y2="351"/>
+      <line x1="-351" y1="-145" x2="351" y2="145"/>
+      <line x1="351" y1="-145" x2="-351" y2="145"/>
+    </g>
+
+    <!-- 8 Lotus Petal Curves -->
+    <path d="M 0,-80 C -30,-150 -10,-200 0,-240 C 10,-200 30,-150 0,-80 Z" />
+    <path d="M 0,-80 C -30,-150 -10,-200 0,-240 C 10,-200 30,-150 0,-80 Z" transform="rotate(45)" />
+    <path d="M 0,-80 C -30,-150 -10,-200 0,-240 C 10,-200 30,-150 0,-80 Z" transform="rotate(90)" />
+    <path d="M 0,-80 C -30,-150 -10,-200 0,-240 C 10,-200 30,-150 0,-80 Z" transform="rotate(135)" />
+    <path d="M 0,-80 C -30,-150 -10,-200 0,-240 C 10,-200 30,-150 0,-80 Z" transform="rotate(180)" />
+    <path d="M 0,-80 C -30,-150 -10,-200 0,-240 C 10,-200 30,-150 0,-80 Z" transform="rotate(225)" />
+    <path d="M 0,-80 C -30,-150 -10,-200 0,-240 C 10,-200 30,-150 0,-80 Z" transform="rotate(270)" />
+    <path d="M 0,-80 C -30,-150 -10,-200 0,-240 C 10,-200 30,-150 0,-80 Z" transform="rotate(315)" />
+  </g>
+</svg>

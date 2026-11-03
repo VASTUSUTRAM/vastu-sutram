@@ -1,0 +1,19 @@
+{
+  "name": "vastu-sutram",
+  "version": "1.0.0",
+  "description": "Vastu Sutram – The Principles of Vastu | Luxury Vastu Shastra Consultation & Booking Platform",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test.js"
+  },
+  "keywords": [
+    "vastu-shastra",
+    "vedic-architecture",
+    "consultation",
+    "luxury-architecture",
+    "vastu-purusha-mandala"
+  ],
+  "author": "Vastu Sutram",
+  "license": "ISC"
+}
