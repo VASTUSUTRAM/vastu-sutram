@@ -14,8 +14,12 @@ const DB_FILE = path.join(__dirname, 'data', 'db.json');
 const UPLOADS_DIR = path.join(__dirname, 'assets', 'uploads');
 
 // Ensure uploads directory exists
-if (!fs.existsSync(UPLOADS_DIR)) {
-  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+try {
+  if (!fs.existsSync(UPLOADS_DIR)) {
+    fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+  }
+} catch (e) {
+  // Read-only filesystem safe
 }
 
 // MIME types mapping
@@ -361,9 +365,13 @@ const server = http.createServer(async (req, res) => {
   });
 });
 
-server.listen(PORT, () => {
-  console.log(`====================================================`);
-  console.log(`  VASTU SUTRAM – THE PRINCIPLES OF VASTU`);
-  console.log(`  Live Platform Running at: http://localhost:${PORT}`);
-  console.log(`====================================================`);
-});
+if (require.main === module) {
+  server.listen(PORT, () => {
+    console.log(`====================================================`);
+    console.log(`  VASTU SUTRAM – THE PRINCIPLES OF VASTU`);
+    console.log(`  Live Platform Running at: http://localhost:${PORT}`);
+    console.log(`====================================================`);
+  });
+}
+
+module.exports = server;

@@ -12,8 +12,14 @@ module.exports = async (req, res) => {
   const db = readDb();
   if (!db.bookings) db.bookings = [];
 
-  // GET: Fetch all bookings
+  // GET: Fetch all bookings (or single booking if id query passed)
   if (req.method === 'GET') {
+    const id = req.query ? req.query.id : null;
+    if (id) {
+      const single = db.bookings.find(b => b.id === id);
+      if (single) return res.status(200).json(single);
+      return res.status(404).json({ error: 'Booking not found' });
+    }
     return res.status(200).json(db.bookings);
   }
 
@@ -37,7 +43,7 @@ module.exports = async (req, res) => {
   // PATCH: Update booking status
   if (req.method === 'PATCH') {
     try {
-      const id = req.query.id || (req.body && req.body.id);
+      const id = (req.query && req.query.id) || (req.body && req.body.id);
       const updates = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
       const idx = db.bookings.findIndex(b => b.id === id);
 
@@ -55,7 +61,7 @@ module.exports = async (req, res) => {
 
   // DELETE: Remove booking
   if (req.method === 'DELETE') {
-    const id = req.query.id || (req.body && req.body.id);
+    const id = (req.query && req.query.id) || (req.body && req.body.id);
     db.bookings = db.bookings.filter(b => b.id !== id);
     writeDb(db);
     return res.status(200).json({ success: true, message: 'Booking removed' });
