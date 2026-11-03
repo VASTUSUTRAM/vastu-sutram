@@ -1,30 +1,19 @@
 {
   "version": 2,
-  "cleanUrls": true,
-  "rewrites": [
-    {
-      "source": "/api/bookings/:id",
-      "destination": "/api/bookings?id=:id"
-    },
-    {
-      "source": "/api/export/bookings.csv",
-      "destination": "/api/export"
+  "functions": {
+    "server.js": {
+      "includeFiles": "{index.html,css/**,js/**,assets/**,data/**}"
     }
-  ],
-  "headers": [
+  },
+  "routes": [
     {
-      "source": "/(.*)",
-      "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
-        { "key": "X-XSS-Protection", "value": "1; mode=block" }
-      ]
-    },
-    {
-      "source": "/assets/(.*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
-      ]
+      "src": "/(.*)",
+      "dest": "server.js",
+      "headers": {
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "SAMEORIGIN",
+        "x-xss-protection": "1; mode=block"
+      }
     }
   ]
 }

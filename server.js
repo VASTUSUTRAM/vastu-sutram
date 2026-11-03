@@ -11,7 +11,10 @@ const url = require('url');
 const PORT = process.env.PORT || 3000;
 const PUBLIC_DIR = __dirname;
 const DB_FILE = path.join(__dirname, 'data', 'db.json');
-const UPLOADS_DIR = path.join(__dirname, 'assets', 'uploads');
+const TMP_DB = path.join('/tmp', 'vastu_db.json');
+const UPLOADS_DIR = process.env.VERCEL
+  ? path.join('/tmp', 'uploads')
+  : path.join(__dirname, 'assets', 'uploads');
 
 // Ensure uploads directory exists
 try {
@@ -44,36 +47,61 @@ const MIME_TYPES = {
 };
 
 // Database helper functions
+function getDbPath() {
+  if (process.env.VERCEL) {
+    if (!fs.existsSync(TMP_DB) && fs.existsSync(DB_FILE)) {
+      try {
+        fs.writeFileSync(TMP_DB, fs.readFileSync(DB_FILE, 'utf8'), 'utf8');
+      } catch (e) {
+        // Fallback
+      }
+    }
+    return fs.existsSync(TMP_DB) ? TMP_DB : DB_FILE;
+  }
+  return DB_FILE;
+}
+
 function readDb() {
   try {
-    if (!fs.existsSync(DB_FILE)) {
-      return { bookings: [], inquiries: [], settings: {} };
+    const target = getDbPath();
+    if (fs.existsSync(target)) {
+      const raw = fs.readFileSync(target, 'utf-8');
+      return JSON.parse(raw);
     }
-    const raw = fs.readFileSync(DB_FILE, 'utf-8');
-    return JSON.parse(raw);
   } catch (err) {
-    console.error('Error reading db.json:', err);
-    return { bookings: [], inquiries: [], settings: {} };
+    console.error('Error reading db:', err);
   }
+  return { bookings: [], inquiries: [], settings: {} };
 }
 
 function writeDb(data) {
   try {
-    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
+    const target = process.env.VERCEL ? TMP_DB : DB_FILE;
+    fs.writeFileSync(target, JSON.stringify(data, null, 2), 'utf-8');
     return true;
   } catch (err) {
-    console.error('Error writing db.json:', err);
+    console.error('Error writing db:', err);
     return false;
   }
 }
 
-// Helper to parse JSON body
+// Helper to parse JSON body (safe for both local streams & pre-parsed serverless bodies)
 function getJsonBody(req) {
+  if (req.body) {
+    if (typeof req.body === 'string') {
+      try {
+        return Promise.resolve(JSON.parse(req.body));
+      } catch (e) {
+        return Promise.resolve({});
+      }
+    }
+    return Promise.resolve(req.body);
+  }
   return new Promise((resolve, reject) => {
     let body = '';
     req.on('data', chunk => {
       body += chunk.toString();
-      if (body.length > 50 * 1024 * 1024) { // 50MB limit for floorplans & media
+      if (body.length > 50 * 1024 * 1024) { // 50MB limit
         reject(new Error('Payload too large'));
       }
     });
@@ -81,15 +109,15 @@ function getJsonBody(req) {
       try {
         resolve(body ? JSON.parse(body) : {});
       } catch (err) {
-        reject(err);
+        resolve({});
       }
     });
     req.on('error', reject);
   });
 }
 
-// HTTP Server
-const server = http.createServer(async (req, res) => {
+// Request Handler
+const requestHandler = async (req, res) => {
   const parsedUrl = url.parse(req.url, true);
   const pathname = decodeURIComponent(parsedUrl.pathname);
 
@@ -363,7 +391,9 @@ const server = http.createServer(async (req, res) => {
       res.end(content);
     });
   });
-});
+};
+
+const server = http.createServer(requestHandler);
 
 if (require.main === module) {
   server.listen(PORT, () => {
@@ -374,4 +404,10 @@ if (require.main === module) {
   });
 }
 
-module.exports = server;
+// Export callable function for Vercel Serverless Function runtime
+module.exports = (req, res) => {
+  return requestHandler(req, res);
+};
+module.exports.default = (req, res) => {
+  return requestHandler(req, res);
+};
