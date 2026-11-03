@@ -20,7 +20,7 @@ const requiredFiles = [
   'js/app.js',
   'assets/logo.svg',
   'assets/logo-icon.svg',
-  'assets/rajni-singh.svg',
+  'assets/rajni-singh.jpg',
   'data/db.json'
 ];
 

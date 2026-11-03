@@ -954,7 +954,7 @@ ${message ? message : 'Standard spatial evaluation and energetic alignment reque
 
     if (sendBtn) {
       sendBtn.addEventListener('click', async () => {
-        const rawWaNumber = (VASTU_DATA.config && VASTU_DATA.config.whatsappNumber) || '9181457155';
+        const rawWaNumber = (VASTU_DATA.config && VASTU_DATA.config.whatsappNumber) || '919181457155';
         const cleanNumber = rawWaNumber.replace(/\D/g, '');
         const encodedText = encodeURIComponent(formattedMessage);
         const waUrl = `https://api.whatsapp.com/send?phone=${cleanNumber}&text=${encodedText}`;

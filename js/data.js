@@ -24,7 +24,7 @@ const VASTU_DATA = {
   consultant: {
     name: "Rajni Singh",
     designation: "Senior Vastu Consultant & Vedic Space Planner",
-    photo: "assets/rajni-singh.svg",
+    photo: "assets/rajni-singh.jpg",
     introduction: "With a deep understanding of traditional Vastu principles and their practical application, our consultant provides personalised guidance to help individuals and organisations make informed decisions about their spaces.",
     experience: "15+ Years of Dedicated Practice",
     qualifications: "Vastu Acharya • Master in Traditional Vedic Architecture (Sthapatya Veda)",
@@ -1694,9 +1694,9 @@ const VASTU_DATA = {
     brandName: "VASTU SUTRAM",
     tagline: "THE PRINCIPLES OF VASTU",
     officialEmail: "vastusutram@gmail.com",
-    whatsappNumber: "9181457155",
-    whatsappDisplay: "+91 81457 155",
-    whatsappNotice: "WhatsApp business number 91814 57155 is configured (pending owner confirmation of complete 10-digit format).",
+    whatsappNumber: "919181457155",
+    whatsappDisplay: "+91 91814 57155",
+    whatsappNotice: "Verified Official WhatsApp Business Line (+91 91814 57155).",
     instagramUrl: "https://www.instagram.com/vastu_sutram?cplk=b3dwajhwdXFmZzds",
     coverage: "Pan-India On-Site Consultations & Global Remote Video Sessions"
   },
