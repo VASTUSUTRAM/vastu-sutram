@@ -330,9 +330,128 @@ h1, h2, h3, h4, h5, .font-serif {
 
 /* Original Brand Logo Presentation */
 .original-brand-logo {
-  filter: drop-shadow(0 0 1.5px rgba(255, 253, 248, 0.95))
-          drop-shadow(0 0 5px rgba(248, 243, 233, 0.7))
-          drop-shadow(0 2px 14px rgba(198, 161, 91, 0.4));
+  filter: drop-shadow(0 4px 18px rgba(198, 161, 91, 0.35))
+          drop-shadow(0 0 6px rgba(255, 253, 248, 0.25));
+}
+
+/* Cinematic Deep Maroon & Burgundy Luxury Background */
+.cinematic-maroon-bg {
+  background:
+    radial-gradient(ellipse 65% 55% at 50% 38%, rgba(96, 30, 44, 0.72) 0%, rgba(56, 17, 26, 0.55) 45%, rgba(18, 8, 11, 0.96) 100%),
+    linear-gradient(180deg, #16070B 0%, #2B0D14 48%, #120609 100%);
+}
+
+/* Soft Golden Light Sweep Around Original Logo */
+.logo-light-sweep {
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+}
+
+.logo-light-sweep::after {
+  content: '';
+  position: absolute;
+  top: -30%;
+  left: -130%;
+  width: 65%;
+  height: 160%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(249, 226, 155, 0.04) 25%,
+    rgba(249, 226, 155, 0.26) 50%,
+    rgba(249, 226, 155, 0.04) 75%,
+    transparent 100%
+  );
+  transform: skewX(-24deg);
+  pointer-events: none;
+  animation: luxuryLightSweep 7s ease-in-out infinite 1.8s;
+}
+
+@keyframes luxuryLightSweep {
+  0% {
+    left: -130%;
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  45% {
+    left: 160%;
+    opacity: 0;
+  }
+  100% {
+    left: 160%;
+    opacity: 0;
+  }
+}
+
+/* Soft Floating Effect for Original Logo */
+@keyframes logoFloatLuxury {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
+.logo-float-luxury {
+  animation: logoFloatLuxury 5.5s ease-in-out infinite;
+}
+
+/* Metallic Champagne Gold Brand Name */
+.brand-title-gold {
+  background: linear-gradient(
+    135deg,
+    #FFF6D6 0%,
+    #F3D78D 24%,
+    #C6A15B 52%,
+    #E8C87C 76%,
+    #FFF2C2 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 3px 16px rgba(198, 161, 91, 0.28));
+}
+
+/* Luxury CTA Buttons with Elevation */
+.vastu-cta-primary {
+  background: linear-gradient(135deg, #D9A52D 0%, #F9E29B 50%, #C6A15B 100%);
+  color: #16070B;
+  border: 1px solid rgba(249, 226, 155, 0.85);
+  box-shadow: 0 8px 28px rgba(198, 161, 91, 0.32), inset 0 1px 1px rgba(255, 255, 255, 0.45);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease, filter 0.4s ease;
+}
+
+.vastu-cta-primary:hover {
+  transform: translateY(-3.5px);
+  box-shadow: 0 14px 36px rgba(217, 165, 45, 0.5), 0 0 18px rgba(249, 226, 155, 0.4);
+  filter: brightness(1.04);
+}
+
+.vastu-cta-secondary {
+  background: linear-gradient(135deg, rgba(72, 28, 37, 0.82) 0%, rgba(44, 14, 21, 0.9) 100%);
+  color: #F8F3E9;
+  border: 1px solid rgba(198, 161, 91, 0.65);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(12px);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease, border-color 0.4s ease, background 0.4s ease;
+}
+
+.vastu-cta-secondary:hover {
+  transform: translateY(-3.5px);
+  border-color: #F9E29B;
+  background: linear-gradient(135deg, rgba(92, 34, 46, 0.92) 0%, rgba(58, 18, 28, 0.95) 100%);
+  box-shadow: 0 14px 34px rgba(198, 161, 91, 0.28), 0 0 15px rgba(198, 161, 91, 0.22);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo-float-luxury,
+  .logo-light-sweep::after {
+    animation: none !important;
+  }
 }
 
 /* Print Styles */

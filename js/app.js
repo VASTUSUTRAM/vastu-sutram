@@ -36,22 +36,60 @@ class VastuApp {
     this.bindGlobalEvents();
   }
 
-  // 1. INTRO
+  // 1. CINEMATIC INTRO & HERO REVEAL
   initIntro() {
-    const introContainer = document.getElementById('cinematic-intro-wrapper');
-    if (!introContainer) return;
+    this.setupHeroLetters();
 
-    // Check if user already skipped or seen intro this session
-    const seen = sessionStorage.getItem('vastu_intro_seen');
-    if (seen === 'true') {
-      introContainer.style.display = 'none';
+    const introContainer = document.getElementById('cinematic-intro-wrapper');
+    if (!introContainer) {
+      this.playHeroReveal();
       return;
     }
 
-    if (window.THREE && window.VastuCinematicIntro) {
+    if (window.VastuCinematicIntro) {
       this.introInstance = new VastuCinematicIntro('cinematic-intro-wrapper');
     } else {
       introContainer.style.display = 'none';
+      this.playHeroReveal();
+    }
+  }
+
+  setupHeroLetters() {
+    const heroPrinciples = document.getElementById('hero-principles-text');
+    if (!heroPrinciples || heroPrinciples.dataset.splitDone === 'true') return;
+    const text = heroPrinciples.textContent.trim();
+    heroPrinciples.innerHTML = text.split('').map(ch => {
+      if (ch === ' ') return `<span class="inline-block w-2 sm:w-3">&nbsp;</span>`;
+      return `<span class="hero-principle-char inline-block">${ch}</span>`;
+    }).join('');
+    heroPrinciples.dataset.splitDone = 'true';
+  }
+
+  playHeroReveal() {
+    this.setupHeroLetters();
+    const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reducedMotion || !window.gsap) return;
+
+    const logo = document.getElementById('hero-logo-wrap');
+    const brandName = document.getElementById('hero-brand-name');
+    const tagline = document.getElementById('hero-tagline');
+    const chars = document.querySelectorAll('.hero-principle-char');
+    const line = document.getElementById('hero-principles-line');
+    const diamond = document.getElementById('hero-principles-diamond');
+    const btnExplore = document.getElementById('hero-btn-explore');
+    const btnBook = document.getElementById('hero-btn-book');
+
+    const tl = window.gsap.timeline({ defaults: { ease: 'power3.out' } });
+    if (logo) tl.fromTo(logo, { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 1.3 }, 0);
+    if (brandName) tl.fromTo(brandName, { opacity: 0, y: 22 }, { opacity: 1, y: 0, duration: 1.0 }, 0.35);
+    if (tagline) tl.fromTo(tagline, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.95 }, 0.7);
+    if (chars.length) {
+      tl.fromTo(chars, { opacity: 0, x: -7 }, { opacity: 1, x: 0, duration: 0.45, stagger: 0.025, ease: 'power2.out' }, 1.0);
+    }
+    if (line) tl.fromTo(line, { scaleX: 0 }, { scaleX: 1, duration: 0.75, ease: 'power2.inOut' }, 1.25);
+    if (diamond) tl.fromTo(diamond, { opacity: 0 }, { opacity: 1, duration: 0.4 }, 1.5);
+    if (btnExplore && btnBook) {
+      tl.fromTo([btnExplore, btnBook], { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.85, stagger: 0.14 }, 1.45);
     }
   }
 
@@ -139,38 +177,33 @@ class VastuApp {
       height = canvas.height = canvas.parentElement.clientHeight;
     });
 
-    // Particle system
+    // Subtle, peaceful golden dust particles
+    const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const particles = [];
-    const particleCount = Math.min(width > 768 ? 100 : 40, 120);
+    const particleCount = width > 768 ? 34 : 20;
 
     for (let i = 0; i < particleCount; i++) {
       particles.push({
         x: Math.random() * width,
         y: Math.random() * height,
-        radius: Math.random() * 2 + 0.8,
-        vx: (Math.random() - 0.5) * 0.4,
-        vy: (Math.random() - 0.5) * 0.4,
-        alpha: Math.random() * 0.7 + 0.3,
-        pulse: Math.random() * 0.02
+        radius: Math.random() * 1.6 + 0.6,
+        vx: (Math.random() - 0.5) * 0.16,
+        vy: -(Math.random() * 0.24 + 0.06),
+        alpha: Math.random() * 0.45 + 0.15,
+        pulse: Math.random() * 0.015
       });
     }
 
     function render() {
       ctx.clearRect(0, 0, width, height);
 
-      // Subtle Golden Mandala Radial Center
-      const grad = ctx.createRadialGradient(width / 2, height / 2, 20, width / 2, height / 2, Math.min(width, height) * 0.65);
-      grad.addColorStop(0, 'rgba(198, 161, 91, 0.08)');
-      grad.addColorStop(0.5, 'rgba(72, 28, 37, 0.05)');
-      grad.addColorStop(1, 'rgba(18, 8, 11, 0)');
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, width, height);
-
       // Draw Floating Gold Particles
       particles.forEach(p => {
-        p.x += p.vx;
-        p.y += p.vy;
-        p.alpha += Math.sin(Date.now() * p.pulse) * 0.005;
+        if (!reducedMotion) {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.alpha += Math.sin(Date.now() * p.pulse) * 0.003;
+        }
 
         if (p.x < 0) p.x = width;
         if (p.x > width) p.x = 0;
@@ -179,13 +212,15 @@ class VastuApp {
 
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(249, 226, 155, ${Math.max(0.1, Math.min(0.8, p.alpha))})`;
-        ctx.shadowColor = '#D9A52D';
-        ctx.shadowBlur = 8;
+        ctx.fillStyle = `rgba(249, 226, 155, ${Math.max(0.1, Math.min(0.6, p.alpha))})`;
+        ctx.shadowColor = '#C6A15B';
+        ctx.shadowBlur = 6;
         ctx.fill();
       });
 
-      requestAnimationFrame(render);
+      if (!reducedMotion) {
+        requestAnimationFrame(render);
+      }
     }
 
     render();

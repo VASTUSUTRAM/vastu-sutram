@@ -19,6 +19,7 @@ const requiredFiles = [
   'js/admin.js',
   'js/app.js',
   'assets/logo.png',
+  'assets/logo-emblem.png',
   'assets/logo.svg',
   'assets/logo-icon.svg',
   'assets/rajni-singh.jpg',
