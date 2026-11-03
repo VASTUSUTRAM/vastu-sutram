@@ -59,8 +59,8 @@ class VastuApp {
     if (!heroPrinciples || heroPrinciples.dataset.splitDone === 'true') return;
     const text = heroPrinciples.textContent.trim();
     heroPrinciples.innerHTML = text.split('').map(ch => {
-      if (ch === ' ') return `<span class="inline-block w-2 sm:w-3">&nbsp;</span>`;
-      return `<span class="hero-principle-char inline-block">${ch}</span>`;
+      if (ch === ' ') return `<span class="inline">&nbsp;</span>`;
+      return `<span class="hero-principle-char inline">${ch}</span>`;
     }).join('');
     heroPrinciples.dataset.splitDone = 'true';
   }
@@ -84,7 +84,7 @@ class VastuApp {
     if (brandName) tl.fromTo(brandName, { opacity: 0, y: 22 }, { opacity: 1, y: 0, duration: 1.0 }, 0.35);
     if (tagline) tl.fromTo(tagline, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.95 }, 0.7);
     if (chars.length) {
-      tl.fromTo(chars, { opacity: 0, x: -7 }, { opacity: 1, x: 0, duration: 0.45, stagger: 0.025, ease: 'power2.out' }, 1.0);
+      tl.fromTo(chars, { opacity: 0 }, { opacity: 1, duration: 0.45, stagger: 0.025, ease: 'power2.out' }, 1.0);
     }
     if (line) tl.fromTo(line, { scaleX: 0 }, { scaleX: 1, duration: 0.75, ease: 'power2.inOut' }, 1.25);
     if (diamond) tl.fromTo(diamond, { opacity: 0 }, { opacity: 1, duration: 0.4 }, 1.5);

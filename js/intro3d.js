@@ -1,19 +1,19 @@
 /**
  * VASTU SUTRAM – ULTIMATE CINEMATIC 3D WEBSITE INTRODUCTION
- * Two-Part Connected Luxury 3D & Brand Film (Three.js + GSAP + Optional Vedic Soundscape)
+ * Two-Part Connected Luxury 3D & Brand Film (Three.js + GSAP)
  *
  * PART 1 – THE CINEMATIC VASTU PROTECTION STORY (Scenes 1–5):
  *   Scene 1 (0.0s – 2.2s): Mysterious deep burgundy/maroon atmosphere, golden floating particles, camera glides forward.
- *   Scene 2 (2.2s – 5.5s): Detailed 3D metallic Vastu Chakra emerges from the distance, rotating in 3D space with 8 directions & Brahmasthan.
+ *   Scene 2 (2.2s – 5.5s): Ancient Vedic Civilization 3D Vastu Chakra (aged Chola bronze, temple copper, oxidized gold patina, carved Devanagari / Sanskrit rings, 81-Pada mandala, 32 Padavinyasa pillars & sacred Yantra) emerges from the distance, rotating in 3D space.
  *   Scene 3 (5.5s – 8.8s): Architectural 3D Indian contemporary luxury residence reveals from an aerial three-quarter angle with warm interior lighting.
- *   Scene 4 (8.8s – 16.0s): House transitions into an architectural cutaway view; the 3D Vastu Chakra enters through the main entrance into the central Brahmasthan, expands into a golden mandala, illuminates all 8 directions sequentially, spreads golden energy lines, and forms a refined transparent golden protective dome around the residence ("WHERE BALANCE BEGINS, HARMONY FOLLOWS.").
+ *   Scene 4 (8.8s – 16.0s): House transitions into an architectural cutaway view; the 3D Ancient Vastu Chakra enters through the main entrance into the central Brahmasthan, expands into a golden mandala, illuminates all 8 directions sequentially, spreads golden energy lines, and forms a refined transparent golden protective dome around the residence ("WHERE BALANCE BEGINS, HARMONY FOLLOWS.").
  *   Scene 5 (16.0s – 18.2s): Camera zooms out, golden particles converge into a luminous circular golden light that expands and dissolves seamlessly into the deep maroon brand stage.
  *
  * PART 2 – VASTU SUTRAM PREMIUM BRAND INTRODUCTION (Scenes 6–10):
  *   Scene 6 (18.2s – 20.0s): Original Vastu Sutram logo (assets/logo-emblem.png) reveals in center with gentle zoom, light sweep & soft float.
  *   Scene 7 (20.0s – 21.4s): VASTU SUTRAM reveals directly below the logo in large champagne-gold serif typography.
  *   Scene 8 (21.4s – 22.7s): "WHERE ANCIENT WISDOM MEETS HARMONIOUS LIVING." reveals in warm ivory italic serif.
- *   Scene 9 (22.7s – 24.0s): THE PRINCIPLES OF VASTU staggered letter-by-letter reveal + animated golden underline.
+ *   Scene 9 (22.7s – 24.0s): THE PRINCIPLES OF VASTU staggered letter-by-letter reveal + animated golden underline with uniform letter-spacing.
  *   Scene 10 (24.0s – 25.2s): EXPLORE THE WEBSITE and BOOK A CONSULTATION buttons reveal smoothly.
  */
 
@@ -38,18 +38,17 @@ class VastuCinematicIntro {
     this.ambientParticles = null;
     this.chakraGroup = null;
     this.chakraWheel = null;
+    this.chakraOuterScriptRing = null;
     this.chakraDirectionBeams = [];
     this.chakraDirectionNodes = [];
     this.houseGroup = null;
     this.houseRoofGroup = null;
-    this.houseUpperWalls = [];
     this.houseWindows = [];
     this.energyLinesGroup = null;
     this.energyBeamMat = null;
     this.protectiveDome = null;
     this.protectiveWire = null;
     this.protectiveBaseRing = null;
-    this.convergenceVortex = null;
 
     // Animation state proxies driven by GSAP
     this.animState = {
@@ -59,7 +58,7 @@ class VastuCinematicIntro {
       lookX: 0,
       lookY: 0.5,
       lookZ: 0,
-      chakraSpinSpeed: 0.65,
+      chakraSpinSpeed: 0.55,
       chakraGlow: 0.35,
       houseWarmth: 0,
       cutawayProgress: 0,
@@ -67,11 +66,6 @@ class VastuCinematicIntro {
       domeProgress: 0,
       vortexGather: 0
     };
-
-    // Optional Web Audio synthesizer for peaceful Indian tanpura/bell ambience
-    this.audioCtx = null;
-    this.isAudioPlaying = false;
-    this.audioGain = null;
 
     this.initDOM();
     this.bindEvents();
@@ -85,13 +79,14 @@ class VastuCinematicIntro {
   }
 
   buildLetterSpans(text, className) {
+    // Use standard inline spans (not inline-block) so browser kerning & CSS letter-spacing remain 100% uniform
     return text
       .split('')
       .map((ch) => {
         if (ch === ' ') {
-          return `<span class="inline-block w-2 sm:w-3">&nbsp;</span>`;
+          return `<span class="inline">&nbsp;</span>`;
         }
-        return `<span class="${className} inline-block opacity-0" style="transform: translateX(-8px);">${ch}</span>`;
+        return `<span class="${className} inline opacity-0">${ch}</span>`;
       })
       .join('');
   }
@@ -119,7 +114,7 @@ class VastuCinematicIntro {
     this.container.innerHTML = `
       <div id="intro-stage" class="relative w-full h-full overflow-hidden cinematic-maroon-bg flex items-center justify-center select-none">
         
-        <!-- 3D WebGL Stage for Part 1 (Vastu Chakra & Architectural House Story) -->
+        <!-- 3D WebGL Stage for Part 1 (Ancient Vastu Chakra & Architectural House Story) -->
         <div id="intro-3d-webgl-container" class="absolute inset-0 w-full h-full z-10 pointer-events-none"></div>
 
         <!-- Subtle Vastu Sacred Geometry Backdrop (Part 2 Brand Stage) -->
@@ -161,28 +156,8 @@ class VastuCinematicIntro {
           </span>
         </div>
 
-        <!-- Top Controls (Audio On/Off & Skip Intro) — Hidden during Scene 1 dark opening -->
-        <div id="intro-top-controls" class="absolute top-5 right-5 sm:top-7 sm:right-8 z-50 flex items-center gap-2.5 opacity-0">
-          <button
-            id="intro-sound-btn"
-            type="button"
-            class="px-3.5 py-1.5 rounded-full text-[11px] font-serif uppercase tracking-[0.16em] text-[#DCCBB0]/85 hover:text-[#F9E29B] border border-[#C6A15B]/35 hover:border-[#C6A15B]/75 bg-[#18080D]/65 backdrop-blur-md transition-all flex items-center gap-1.5"
-            title="Toggle Sacred Vedic Ambience"
-          >
-            <span id="intro-sound-icon">🔇</span>
-            <span id="intro-sound-label" class="hidden sm:inline">Sound Off</span>
-          </button>
-          <button
-            id="skip-intro-btn"
-            type="button"
-            class="px-4 py-1.5 rounded-full text-[11px] font-serif uppercase tracking-[0.2em] text-[#DCCBB0]/85 hover:text-[#F9E29B] border border-[#C6A15B]/35 hover:border-[#C6A15B]/75 bg-[#18080D]/65 backdrop-blur-md transition-all"
-          >
-            Skip Intro ➔
-          </button>
-        </div>
-
         <!-- PART 2: VASTU SUTRAM PREMIUM BRAND INTRODUCTION (Scenes 6–10) -->
-        <div id="intro-brand-stage" class="relative z-30 max-w-4xl w-full mx-auto flex flex-col items-center text-center px-5 py-8 pointer-events-none">
+        <div id="intro-brand-stage" class="relative z-30 max-w-4xl w-full mx-auto flex flex-col items-center justify-center text-center px-5 py-8 pointer-events-none">
           
           <!-- Scene 6: Original Vastu Sutram Logo Reveal -->
           <div id="intro-logo-wrap" class="opacity-0 mb-5 sm:mb-7" style="transform: scale(0.86);">
@@ -199,7 +174,7 @@ class VastuCinematicIntro {
           <!-- Scene 7: Brand Name Animation (VASTU SUTRAM) -->
           <h1
             id="intro-brand-name"
-            class="font-serif text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold uppercase tracking-[0.2em] sm:tracking-[0.25em] brand-title-gold opacity-0 mb-4 sm:mb-5 leading-tight"
+            class="font-serif text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold uppercase tracking-[0.2em] sm:tracking-[0.25em] brand-title-gold opacity-0 mb-4 sm:mb-5 leading-tight text-center"
             style="transform: translateY(28px);"
           >
             VASTU SUTRAM
@@ -208,21 +183,21 @@ class VastuCinematicIntro {
           <!-- Scene 8: Tagline Reveal ("WHERE ANCIENT WISDOM MEETS HARMONIOUS LIVING.") -->
           <p
             id="intro-tagline"
-            class="font-editorial italic text-lg sm:text-2xl md:text-3xl text-[#F8F3E9] font-normal tracking-wide max-w-2xl mx-auto mb-6 sm:mb-7 leading-relaxed drop-shadow-[0_2px_10px_rgba(0,0,0,0.65)]"
+            class="font-editorial italic text-lg sm:text-2xl md:text-3xl text-[#F8F3E9] font-normal tracking-wide max-w-2xl mx-auto mb-6 sm:mb-7 leading-relaxed text-center drop-shadow-[0_2px_10px_rgba(0,0,0,0.65)]"
           >
             ${taglineWordsHtml}
           </p>
 
           <!-- Scene 9: THE PRINCIPLES OF VASTU Staggered Letter Reveal + Golden Underline -->
-          <div id="intro-principles-block" class="flex flex-col items-center mb-9 sm:mb-11">
+          <div id="intro-principles-block" class="w-full flex flex-col items-center justify-center text-center mb-9 sm:mb-11">
             <div
               id="intro-principles-text"
-              class="font-serif text-xs sm:text-sm md:text-base lg:text-lg text-[#E5C378] uppercase tracking-[0.28em] sm:tracking-[0.36em] font-semibold"
+              class="font-serif text-xs sm:text-sm md:text-base lg:text-lg text-[#E5C378] uppercase tracking-[0.28em] sm:tracking-[0.34em] pl-[0.28em] sm:pl-[0.34em] font-semibold text-center whitespace-nowrap"
               aria-label="THE PRINCIPLES OF VASTU"
             >
               ${principlesHtml}
             </div>
-            <div class="relative w-48 sm:w-64 md:w-80 h-[2px] mt-3 flex items-center justify-center">
+            <div class="relative w-52 sm:w-68 md:w-80 h-[2px] mt-3.5 flex items-center justify-center mx-auto">
               <div
                 id="intro-principles-line"
                 class="w-full h-[1.5px] bg-gradient-to-r from-transparent via-[#C6A15B] to-transparent shadow-[0_0_12px_#F9E29B]"
@@ -270,7 +245,7 @@ class VastuCinematicIntro {
 
       // 1. Scene & Deep Maroon Atmospheric Fog
       this.scene = new THREE.Scene();
-      this.scene.fog = new THREE.FogExp2(0x14060A, 0.018);
+      this.scene.fog = new THREE.FogExp2(0x120508, 0.017);
 
       // 2. Camera
       this.camera = new THREE.PerspectiveCamera(42, width / height, 0.1, 200);
@@ -292,19 +267,19 @@ class VastuCinematicIntro {
       webglContainer.innerHTML = '';
       webglContainer.appendChild(this.renderer.domElement);
 
-      // 4. Cinematic Lighting Setup
-      const ambientLight = new THREE.AmbientLight(0xFFE9C2, 0.65);
+      // 4. Warm Temple & Antique Bronze Lighting (Avoiding harsh white specular blowout)
+      const ambientLight = new THREE.AmbientLight(0xE8C89B, 0.52);
       this.scene.add(ambientLight);
 
-      const keyGoldLight = new THREE.DirectionalLight(0xFFE299, 1.6);
-      keyGoldLight.position.set(16, 26, 22);
+      const keyGoldLight = new THREE.DirectionalLight(0xE6B86A, 1.25);
+      keyGoldLight.position.set(14, 22, 18);
       this.scene.add(keyGoldLight);
 
-      const burgundyRimLight = new THREE.DirectionalLight(0x9E2A40, 1.0);
-      burgundyRimLight.position.set(-18, 10, -14);
-      this.scene.add(burgundyRimLight);
+      const copperRimLight = new THREE.DirectionalLight(0x8C3B2B, 0.85);
+      copperRimLight.position.set(-16, -12, 12);
+      this.scene.add(copperRimLight);
 
-      this.chakraPointLight = new THREE.PointLight(0xFFD269, 2.2, 28);
+      this.chakraPointLight = new THREE.PointLight(0xD99B3C, 1.35, 22);
       this.chakraPointLight.position.set(0, 2, 0);
       this.scene.add(this.chakraPointLight);
 
@@ -364,21 +339,20 @@ class VastuCinematicIntro {
     geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     geo.userData = { initialPositions };
 
-    // Soft circular golden particle texture via canvas
     const pCanvas = document.createElement('canvas');
     pCanvas.width = 64;
     pCanvas.height = 64;
     const pCtx = pCanvas.getContext('2d');
     const grad = pCtx.createRadialGradient(32, 32, 2, 32, 32, 30);
-    grad.addColorStop(0, 'rgba(255, 248, 220, 1)');
-    grad.addColorStop(0.4, 'rgba(249, 226, 155, 0.8)');
-    grad.addColorStop(1, 'rgba(198, 161, 91, 0)');
+    grad.addColorStop(0, 'rgba(255, 240, 200, 1)');
+    grad.addColorStop(0.4, 'rgba(212, 165, 85, 0.8)');
+    grad.addColorStop(1, 'rgba(150, 105, 45, 0)');
     pCtx.fillStyle = grad;
     pCtx.fillRect(0, 0, 64, 64);
 
     const pTex = new THREE.CanvasTexture(pCanvas);
     const mat = new THREE.PointsMaterial({
-      size: this.isMobile ? 0.38 : 0.32,
+      size: this.isMobile ? 0.36 : 0.3,
       map: pTex,
       transparent: true,
       opacity: 0,
@@ -390,160 +364,366 @@ class VastuCinematicIntro {
     this.scene.add(this.ambientParticles);
   }
 
+  /**
+   * Generates a procedural high-resolution Ancient Civilization Stone & Engraved Copper-Gold
+   * Vastu Yantra texture (Indus / Vedic Sthapatya Veda aesthetic with Sanskrit inscriptions,
+   * weathered patina, 81-Pada sacred grid, lotus petals, and Ashta-Dikpala seals).
+   */
+  createAncientMandalaTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1024;
+    canvas.height = 1024;
+    const ctx = canvas.getContext('2d');
+    const cx = 512;
+    const cy = 512;
+
+    // 1. Weathered Ancient Dark Bronze & Oxidized Terracotta-Stone Base
+    const baseGrad = ctx.createRadialGradient(cx, cy, 30, cx, cy, 500);
+    baseGrad.addColorStop(0, '#2B1810');
+    baseGrad.addColorStop(0.35, '#1F120D');
+    baseGrad.addColorStop(0.7, '#2A1610');
+    baseGrad.addColorStop(0.92, '#160B08');
+    baseGrad.addColorStop(1, '#0E0705');
+    ctx.fillStyle = baseGrad;
+    ctx.fillRect(0, 0, 1024, 1024);
+
+    // 2. Aged Stone & Hammered Bronze Grain Stipple (Antique Patina)
+    for (let i = 0; i < 4500; i++) {
+      const rx = Math.random() * 1024;
+      const ry = Math.random() * 1024;
+      const sz = Math.random() * 2.4 + 0.5;
+      ctx.fillStyle =
+        i % 3 === 0
+          ? 'rgba(184, 134, 60, 0.06)'
+          : i % 2 === 0
+          ? 'rgba(10, 5, 3, 0.14)'
+          : 'rgba(120, 72, 38, 0.07)';
+      ctx.fillRect(rx, ry, sz, sz);
+    }
+
+    // 3. Concentric Engraved Vedic Rings
+    const ringRadii = [488, 462, 418, 396, 332, 260, 185, 118, 68];
+    ringRadii.forEach((r, idx) => {
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.strokeStyle = idx % 2 === 0 ? 'rgba(205, 158, 82, 0.78)' : 'rgba(148, 98, 44, 0.55)';
+      ctx.lineWidth = idx === 0 || idx === 3 ? 4 : 2;
+      ctx.stroke();
+    });
+
+    // 4. Outer 32 Padavinyasa Vedic Gate Divisions & Ancient Tick Carvings
+    for (let g = 0; g < 64; g++) {
+      const a = (g / 64) * Math.PI * 2;
+      const r1 = g % 2 === 0 ? 418 : 440;
+      const r2 = 462;
+      ctx.beginPath();
+      ctx.moveTo(cx + Math.cos(a) * r1, cy + Math.sin(a) * r1);
+      ctx.lineTo(cx + Math.cos(a) * r2, cy + Math.sin(a) * r2);
+      ctx.strokeStyle = 'rgba(198, 150, 74, 0.65)';
+      ctx.lineWidth = g % 2 === 0 ? 2.5 : 1.2;
+      ctx.stroke();
+    }
+
+    // 5. Ancient Sanskrit / Devanagari Directional Inscriptions around the Ring
+    const sanskritRing = [
+      { deg: -90, label: 'उत्तर • कुबेर', code: 'N' },
+      { deg: -45, label: 'ईशान • शिव', code: 'NE' },
+      { deg: 0, label: 'पूर्व • इन्द्र', code: 'E' },
+      { deg: 45, label: 'आग्नेय • अग्नि', code: 'SE' },
+      { deg: 90, label: 'दक्षिण • यम', code: 'S' },
+      { deg: 135, label: 'नैऋत्य • निऋति', code: 'SW' },
+      { deg: 180, label: 'पश्चिम • वरुण', code: 'W' },
+      { deg: -135, label: 'वायव्य • वायु', code: 'NW' }
+    ];
+
+    ctx.font = 'bold 20px "Cinzel", Georgia, serif';
+    ctx.fillStyle = 'rgba(226, 182, 104, 0.88)';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    sanskritRing.forEach((item) => {
+      const rad = (item.deg * Math.PI) / 180;
+      const tx = cx + Math.cos(rad) * 364;
+      const ty = cy + Math.sin(rad) * 364;
+      ctx.save();
+      ctx.translate(tx, ty);
+      ctx.rotate(rad + Math.PI / 2);
+      ctx.fillText(item.label, 0, 0);
+      ctx.restore();
+    });
+
+    // 6. Sacred 16-Petal & 8-Petal Engraved Temple Lotus Mandala
+    for (let p = 0; p < 16; p++) {
+      const a = (p / 16) * Math.PI * 2;
+      const nextA = ((p + 1) / 16) * Math.PI * 2;
+      const midA = (a + nextA) / 2;
+      const rIn = 185;
+      const rTip = 256;
+
+      ctx.beginPath();
+      ctx.moveTo(cx + Math.cos(a) * rIn, cy + Math.sin(a) * rIn);
+      ctx.quadraticCurveTo(
+        cx + Math.cos(midA) * (rTip + 18),
+        cy + Math.sin(midA) * (rTip + 18),
+        cx + Math.cos(nextA) * rIn,
+        cy + Math.sin(nextA) * rIn
+      );
+      ctx.fillStyle = p % 2 === 0 ? 'rgba(130, 56, 32, 0.38)' : 'rgba(92, 54, 24, 0.35)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(212, 165, 85, 0.75)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+
+    // 7. Engraved 81-Pada (9x9) Paramasayika Vastu Purusha Lattice inside the Sanctum
+    const gridSpan = 250;
+    const halfG = gridSpan / 2;
+    const stepG = gridSpan / 9;
+    ctx.strokeStyle = 'rgba(212, 165, 85, 0.52)';
+    ctx.lineWidth = 1.6;
+    for (let i = 0; i <= 9; i++) {
+      const off = -halfG + i * stepG;
+      ctx.beginPath();
+      ctx.moveTo(cx - halfG, cy + off);
+      ctx.lineTo(cx + halfG, cy + off);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(cx + off, cy - halfG);
+      ctx.lineTo(cx + off, cy + halfG);
+      ctx.stroke();
+    }
+
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.needsUpdate = true;
+    return tex;
+  }
+
   build3DVastuChakra() {
     this.chakraGroup = new THREE.Group();
-    // Initially placed deep in the dark background
     this.chakraGroup.position.set(0, 3.2, -26);
     this.chakraGroup.scale.set(0.01, 0.01, 0.01);
 
     this.chakraWheel = new THREE.Group();
     this.chakraGroup.add(this.chakraWheel);
 
-    const goldMetallic = new THREE.MeshStandardMaterial({
-      color: 0xD4AF37,
-      metalness: 0.88,
-      roughness: 0.2,
-      emissive: 0x5A3E10,
-      emissiveIntensity: 0.35
+    // Ancient Civilization Materials: Aged Chola Bronze, Hammered Temple Copper, Weathered Brass & Dark Stone
+    const antiqueBronzeMat = new THREE.MeshStandardMaterial({
+      color: 0x9C7238, // Aged Antique Bronze-Gold
+      metalness: 0.72,
+      roughness: 0.44,
+      emissive: 0x261706,
+      emissiveIntensity: 0.22
     });
 
-    const brightGoldMetallic = new THREE.MeshStandardMaterial({
-      color: 0xF9E29B,
-      metalness: 0.92,
-      roughness: 0.14,
-      emissive: 0x8A641B,
-      emissiveIntensity: 0.45
+    const agedBrassMat = new THREE.MeshStandardMaterial({
+      color: 0xC29548, // Burnished Temple Brass (No harsh white glare)
+      metalness: 0.76,
+      roughness: 0.36,
+      emissive: 0x38230A,
+      emissiveIntensity: 0.26
     });
 
-    const maroonCoreMat = new THREE.MeshStandardMaterial({
-      color: 0x3A1019,
-      metalness: 0.5,
-      roughness: 0.45,
-      emissive: 0x1D060B,
-      emissiveIntensity: 0.3
+    const ancientCopperMat = new THREE.MeshStandardMaterial({
+      color: 0x7E4227, // Deep Patinated Vedic Copper
+      metalness: 0.65,
+      roughness: 0.48,
+      emissive: 0x240D06,
+      emissiveIntensity: 0.2
     });
 
-    // Concentric 3D Metallic Rings
-    const radii = [
-      { r: 3.4, tube: 0.09, mat: brightGoldMetallic },
-      { r: 2.85, tube: 0.065, mat: goldMetallic },
-      { r: 2.15, tube: 0.055, mat: goldMetallic },
-      { r: 1.25, tube: 0.06, mat: brightGoldMetallic }
+    const carvedStoneRimMat = new THREE.MeshStandardMaterial({
+      color: 0x2A1A14, // Carved Dark Basalt / Temple Stone
+      metalness: 0.28,
+      roughness: 0.75
+    });
+
+    // 1. Heavy Carved Ancient Stone & Bronze Base Medallion with Engraved Mandala Texture
+    const mandalaTex = this.createAncientMandalaTexture();
+    const mandalaFaceMat = new THREE.MeshStandardMaterial({
+      map: mandalaTex,
+      roughness: 0.58,
+      metalness: 0.38,
+      emissive: 0x2A1808,
+      emissiveIntensity: 0.22
+    });
+
+    const stoneBackingDisc = new THREE.Mesh(
+      new THREE.CylinderGeometry(3.62, 3.78, 0.28, 72),
+      carvedStoneRimMat
+    );
+    stoneBackingDisc.rotation.x = Math.PI / 2;
+    stoneBackingDisc.position.z = -0.16;
+    this.chakraWheel.add(stoneBackingDisc);
+
+    const engravedMandalaDisc = new THREE.Mesh(
+      new THREE.CylinderGeometry(3.45, 3.45, 0.1, 72),
+      [antiqueBronzeMat, mandalaFaceMat, mandalaFaceMat]
+    );
+    engravedMandalaDisc.rotation.x = Math.PI / 2;
+    engravedMandalaDisc.position.z = -0.02;
+    this.chakraWheel.add(engravedMandalaDisc);
+
+    // 2. Stepped Concentric Antique Bronze & Copper Temple Rings
+    const ringConfigs = [
+      { r: 3.55, tube: 0.13, mat: antiqueBronzeMat, z: 0.04 },
+      { r: 3.12, tube: 0.075, mat: ancientCopperMat, z: 0.07 },
+      { r: 2.52, tube: 0.085, mat: agedBrassMat, z: 0.09 },
+      { r: 1.82, tube: 0.065, mat: ancientCopperMat, z: 0.11 },
+      { r: 1.15, tube: 0.08, mat: agedBrassMat, z: 0.14 }
     ];
 
-    radii.forEach((cfg) => {
-      const torus = new THREE.Mesh(
+    ringConfigs.forEach((cfg) => {
+      const ringMesh = new THREE.Mesh(
         new THREE.TorusGeometry(cfg.r, cfg.tube, 20, 96),
         cfg.mat
       );
-      this.chakraWheel.add(torus);
+      ringMesh.position.z = cfg.z;
+      this.chakraWheel.add(ringMesh);
     });
 
-    // Subtle Perforated Medallion Base Plate
-    const baseDisc = new THREE.Mesh(
-      new THREE.CylinderGeometry(3.35, 3.35, 0.08, 64),
-      maroonCoreMat
-    );
-    baseDisc.rotation.x = Math.PI / 2;
-    baseDisc.position.z = -0.05;
-    this.chakraWheel.add(baseDisc);
+    // 3. 32 Carved Temple Gear Bosses / Studs along the Outer Rim (Ancient Astrolabe / Konark Wheel Motif)
+    for (let b = 0; b < 32; b++) {
+      const bAngle = (b / 32) * Math.PI * 2;
+      const isCardinalStud = b % 4 === 0;
+      const bossGeo = new THREE.BoxGeometry(
+        isCardinalStud ? 0.24 : 0.15,
+        isCardinalStud ? 0.28 : 0.18,
+        0.22
+      );
+      const bossMesh = new THREE.Mesh(
+        bossGeo,
+        isCardinalStud ? agedBrassMat : antiqueBronzeMat
+      );
+      bossMesh.position.set(
+        Math.cos(bAngle) * 3.58,
+        Math.sin(bAngle) * 3.58,
+        0.05
+      );
+      bossMesh.rotation.z = bAngle;
+      this.chakraWheel.add(bossMesh);
+    }
 
-    // 8 Directional Divisions, Pointers & Sequential Illumination Nodes
+    // 4. Eight Sculpted Ancient Konark-Style Chariot Spokes & Vajra Pointers
     for (let i = 0; i < 8; i++) {
       const angle = (i / 8) * Math.PI * 2;
+      const spokeGroup = new THREE.Group();
+      spokeGroup.rotation.z = angle;
 
-      // Radial Spoke
-      const spokeGeo = new THREE.CylinderGeometry(0.035, 0.035, 6.6, 8);
-      const spoke = new THREE.Mesh(spokeGeo, goldMetallic);
-      spoke.rotation.z = angle;
-      this.chakraWheel.add(spoke);
-
-      // Directional Spear Pointer
-      const spearGeo = new THREE.ConeGeometry(i % 2 === 0 ? 0.22 : 0.16, 0.75, 4);
-      const spear = new THREE.Mesh(spearGeo, brightGoldMetallic);
-      spear.position.set(Math.cos(angle) * 3.1, Math.sin(angle) * 3.1, 0.06);
-      spear.rotation.z = angle - Math.PI / 2;
-      this.chakraWheel.add(spear);
-
-      // Directional Node Jewel (Illuminates sequentially in Scene 4!)
-      const nodeMat = new THREE.MeshStandardMaterial({
-        color: 0xF9E29B,
-        metalness: 0.8,
-        roughness: 0.15,
-        emissive: 0xF9E29B,
-        emissiveIntensity: 0.2
-      });
-      const nodeOrb = new THREE.Mesh(new THREE.SphereGeometry(0.16, 16, 16), nodeMat);
-      nodeOrb.position.set(Math.cos(angle) * 2.5, Math.sin(angle) * 2.5, 0.1);
-      this.chakraWheel.add(nodeOrb);
-      this.chakraDirectionNodes.push(nodeOrb);
-    }
-
-    // Sacred Vedic Octagram (Two Interlocking Golden Squares)
-    for (let sq = 0; sq < 2; sq++) {
-      const rot = sq * (Math.PI / 4);
-      const pts = [];
-      for (let c = 0; c <= 4; c++) {
-        const a = rot + (c * Math.PI) / 2 + Math.PI / 4;
-        pts.push(new THREE.Vector3(Math.cos(a) * 2.8, Math.sin(a) * 2.8, 0.08));
-      }
-      const lineGeo = new THREE.BufferGeometry().setFromPoints(pts);
-      const line = new THREE.Line(
-        lineGeo,
-        new THREE.LineBasicMaterial({ color: 0xF9E29B, transparent: true, opacity: 0.85 })
+      // Tapered Carved Temple Pillar Spoke
+      const lowerShaft = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.05, 0.08, 2.35, 12),
+        antiqueBronzeMat
       );
-      this.chakraWheel.add(line);
+      lowerShaft.position.set(0, 2.15, 0.08);
+      spokeGroup.add(lowerShaft);
+
+      // Decorative Ring Mouldings on each Spoke (Chola Bronze Pillar Style)
+      [1.45, 2.1, 2.75].forEach((rPos) => {
+        const collar = new THREE.Mesh(
+          new THREE.TorusGeometry(0.095, 0.03, 10, 20),
+          agedBrassMat
+        );
+        collar.rotation.x = Math.PI / 2;
+        collar.position.set(0, rPos, 0.08);
+        spokeGroup.add(collar);
+      });
+
+      // Ancient Vajra / Trishul-Tipped Directional Finial
+      const finialTip = new THREE.Mesh(
+        new THREE.ConeGeometry(0.18, 0.55, 4),
+        agedBrassMat
+      );
+      finialTip.position.set(0, 3.22, 0.1);
+      spokeGroup.add(finialTip);
+
+      // Directional Ashta-Dikpala Medallion Node (Illuminates sequentially in Scene 4)
+      const nodeMat = new THREE.MeshStandardMaterial({
+        color: 0xD8A452,
+        metalness: 0.72,
+        roughness: 0.32,
+        emissive: 0x8F5E18,
+        emissiveIntensity: 0.25
+      });
+      const nodeSeal = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.18, 0.21, 0.14, 8),
+        nodeMat
+      );
+      nodeSeal.rotation.x = Math.PI / 2;
+      nodeSeal.position.set(0, 2.52, 0.14);
+      spokeGroup.add(nodeSeal);
+      this.chakraDirectionNodes.push(nodeSeal);
+
+      this.chakraWheel.add(spokeGroup);
     }
 
-    // 81-Pada Sacred Mandala Grid Lines
-    const gridSpan = 3.2;
-    const half = gridSpan / 2;
-    const step = gridSpan / 9;
-    const gridMat = new THREE.LineBasicMaterial({
-      color: 0xC6A15B,
-      transparent: true,
-      opacity: 0.45
-    });
-    for (let g = 1; g < 9; g++) {
-      const offset = -half + g * step;
-      const hLine = new THREE.BufferGeometry().setFromPoints([
-        new THREE.Vector3(-half, offset, 0.06),
-        new THREE.Vector3(half, offset, 0.06)
-      ]);
-      const vLine = new THREE.BufferGeometry().setFromPoints([
-        new THREE.Vector3(offset, -half, 0.06),
-        new THREE.Vector3(offset, half, 0.06)
-      ]);
-      this.chakraWheel.add(new THREE.Line(hLine, gridMat));
-      this.chakraWheel.add(new THREE.Line(vLine, gridMat));
+    // 5. Interlocking 3D Copper Sri-Yantra / Ashta-Kona Star Reliefs
+    for (let sq = 0; sq < 2; sq++) {
+      const sqMesh = new THREE.Mesh(
+        new THREE.RingGeometry(2.38, 2.48, 4),
+        sq === 0 ? agedBrassMat : ancientCopperMat
+      );
+      sqMesh.rotation.z = sq * (Math.PI / 4) + Math.PI / 8;
+      sqMesh.position.z = 0.12;
+      this.chakraWheel.add(sqMesh);
     }
 
-    // Central Brahmasthan Lotus & Glowing Octahedron Crystal
-    const brahmaPedestal = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.85, 0.95, 0.18, 32),
-      goldMetallic
+    // 6. Central Ancient Brahmasthan Stepped Temple Sanctum (16-Petal Bronze Lotus + Carved Meru Sri Yantra Pyramid)
+    const meruStep1 = new THREE.Mesh(
+      new THREE.CylinderGeometry(1.05, 1.15, 0.16, 8),
+      ancientCopperMat
     );
-    brahmaPedestal.rotation.x = Math.PI / 2;
-    brahmaPedestal.position.z = 0.08;
-    this.chakraWheel.add(brahmaPedestal);
+    meruStep1.rotation.x = Math.PI / 2;
+    meruStep1.position.z = 0.12;
+    this.chakraWheel.add(meruStep1);
 
-    this.brahmaCrystal = new THREE.Mesh(
-      new THREE.OctahedronGeometry(0.45, 0),
-      brightGoldMetallic
+    const meruStep2 = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.76, 0.88, 0.18, 8),
+      antiqueBronzeMat
     );
-    this.brahmaCrystal.position.z = 0.35;
+    meruStep2.rotation.x = Math.PI / 2;
+    meruStep2.rotation.y = Math.PI / 8;
+    meruStep2.position.z = 0.22;
+    this.chakraWheel.add(meruStep2);
+
+    // 12 Sculpted Bronze Lotus Petals cradling the Central Meru
+    for (let p = 0; p < 12; p++) {
+      const pAngle = (p / 12) * Math.PI * 2;
+      const petalGeo = new THREE.ConeGeometry(0.14, 0.42, 4);
+      const petal = new THREE.Mesh(petalGeo, agedBrassMat);
+      petal.position.set(Math.cos(pAngle) * 0.88, Math.sin(pAngle) * 0.88, 0.2);
+      petal.rotation.z = pAngle - Math.PI / 2;
+      this.chakraWheel.add(petal);
+    }
+
+    // Central Carved Meru Bindu (Stepped Ancient Pyramid & Finial instead of a harsh white disc)
+    this.brahmaCrystal = new THREE.Group();
+    const meruPyramid = new THREE.Mesh(
+      new THREE.ConeGeometry(0.46, 0.42, 4),
+      agedBrassMat
+    );
+    meruPyramid.rotation.x = Math.PI / 2;
+    meruPyramid.rotation.y = Math.PI / 4;
+    this.brahmaCrystal.add(meruPyramid);
+
+    const meruKalash = new THREE.Mesh(
+      new THREE.OctahedronGeometry(0.22, 0),
+      antiqueBronzeMat
+    );
+    meruKalash.position.z = 0.24;
+    this.brahmaCrystal.add(meruKalash);
+
+    this.brahmaCrystal.position.z = 0.32;
     this.chakraWheel.add(this.brahmaCrystal);
 
     this.scene.add(this.chakraGroup);
   }
 
   build3DIndianResidence() {
-    // Contemporary Indian Luxury Courtyard Villa (Vastu-compliant architectural proportions)
     this.houseGroup = new THREE.Group();
     this.houseGroup.position.set(0, -1.8, 0);
     this.houseGroup.visible = false;
 
-    // Materials
     this.plinthMat = new THREE.MeshStandardMaterial({
       color: 0x2B1D1E,
       roughness: 0.7,
@@ -553,7 +733,7 @@ class VastuCinematicIntro {
     });
 
     this.wallMat = new THREE.MeshStandardMaterial({
-      color: 0xF3E6D3, // Warm Sandstone Ivory
+      color: 0xF3E6D3,
       roughness: 0.45,
       metalness: 0.1,
       transparent: true,
@@ -577,7 +757,7 @@ class VastuCinematicIntro {
     });
 
     this.roofTerracottaMat = new THREE.MeshStandardMaterial({
-      color: 0x5A1E28, // Royal Deep Maroon-Terracotta Roof
+      color: 0x5A1E28,
       roughness: 0.4,
       metalness: 0.3,
       transparent: true,
@@ -623,7 +803,6 @@ class VastuCinematicIntro {
     mainPlinth.position.y = 0.15;
     this.houseGroup.add(mainPlinth);
 
-    // Sacred Courtyard Floor (Brahmasthan Center)
     const courtyardFloor = new THREE.Mesh(
       new THREE.BoxGeometry(8.8, 0.08, 8.8),
       this.courtyardFloorMat
@@ -631,7 +810,6 @@ class VastuCinematicIntro {
     courtyardFloor.position.y = 0.42;
     this.houseGroup.add(courtyardFloor);
 
-    // Entrance Grand Steps (Front +Z)
     for (let s = 0; s < 3; s++) {
       const stepMesh = new THREE.Mesh(
         new THREE.BoxGeometry(2.8 - s * 0.2, 0.15, 0.45),
@@ -641,12 +819,11 @@ class VastuCinematicIntro {
       this.houseGroup.add(stepMesh);
     }
 
-    // 2. Interior Vastu Room Partition Walls (Visible when house transitions to architectural cutaway)
+    // 2. Interior Vastu Room Partition Walls
     const partitionHeight = 2.4;
     const partY = 0.45 + partitionHeight / 2;
-
     const wallThickness = 0.22;
-    // Outer Perimeter Walls (Left, Right, Back, and Front with Grand Entrance Portal)
+
     const backWall = new THREE.Mesh(
       new THREE.BoxGeometry(8.8, partitionHeight, wallThickness),
       this.cutawayWallMat
@@ -668,7 +845,6 @@ class VastuCinematicIntro {
     rightWall.position.set(4.3, partY, 0);
     this.houseGroup.add(rightWall);
 
-    // Front Left & Right Wings leaving a 2.4m Grand Main Entrance Archway in the center
     const frontLeftWing = new THREE.Mesh(
       new THREE.BoxGeometry(3.2, partitionHeight, wallThickness),
       this.cutawayWallMat
@@ -683,7 +859,6 @@ class VastuCinematicIntro {
     frontRightWing.position.set(2.8, partY, 4.3);
     this.houseGroup.add(frontRightWing);
 
-    // Grand Golden Entrance Arch Frame (Simhadwara)
     const pillarGeo = new THREE.CylinderGeometry(0.14, 0.16, 2.7, 16);
     const leftPillar = new THREE.Mesh(pillarGeo, this.trimGoldMat);
     leftPillar.position.set(-1.15, partY + 0.1, 4.55);
@@ -696,7 +871,6 @@ class VastuCinematicIntro {
     lintelBeam.position.set(0, 2.95, 4.55);
     this.houseGroup.add(leftPillar, rightPillar, lintelBeam);
 
-    // Internal 8-Zone Courtyard Colonade & Low Room Dividers (surrounding the open central Brahmasthan)
     const innerDividerH = 1.65;
     const innerY = 0.45 + innerDividerH / 2;
     const innerPartitions = [
@@ -716,7 +890,6 @@ class VastuCinematicIntro {
       this.houseGroup.add(m);
     });
 
-    // 4 Golden Courtyard Pillars framing the Central Brahmasthan
     const courtCoords = [
       [-1.6, -1.6],
       [1.6, -1.6],
@@ -732,7 +905,6 @@ class VastuCinematicIntro {
       this.houseGroup.add(col);
     });
 
-    // 3. Warm Illuminated Windows around the Facade
     const windowPositions = [
       { x: -2.8, y: 1.65, z: 4.43, w: 1.4, h: 1.2, rotY: 0 },
       { x: 2.8, y: 1.65, z: 4.43, w: 1.4, h: 1.2, rotY: 0 },
@@ -753,7 +925,6 @@ class VastuCinematicIntro {
       this.houseWindows.push(winMesh);
     });
 
-    // 4. Roof & Upper Pavilion (Lifts and turns translucent during Scene 4 Cutaway!)
     this.houseRoofGroup = new THREE.Group();
 
     const mainRoofSlab = new THREE.Mesh(
@@ -763,7 +934,6 @@ class VastuCinematicIntro {
     mainRoofSlab.position.y = 2.95;
     this.houseRoofGroup.add(mainRoofSlab);
 
-    // Traditional Indian Sloped Shikhara / Hip Roof Crown with Golden Kalash Finial
     const hipRoofGeo = new THREE.ConeGeometry(6.8, 2.1, 4);
     hipRoofGeo.rotateY(Math.PI / 4);
     const hipRoof = new THREE.Mesh(hipRoofGeo, this.roofTerracottaMat);
@@ -786,7 +956,6 @@ class VastuCinematicIntro {
 
     this.houseGroup.add(this.houseRoofGroup);
 
-    // Architectural Wireframe Overlay for Luxury Cutaway Blueprint Aesthetic
     const blueprintEdgesGeo = new THREE.EdgesGeometry(new THREE.BoxGeometry(8.82, 2.42, 8.82));
     this.blueprintWireMat = new THREE.LineBasicMaterial({
       color: 0xF9E29B,
@@ -801,9 +970,8 @@ class VastuCinematicIntro {
   }
 
   buildEnergyShieldAndGrid() {
-    // 1. Golden Energy Lines spreading from the Brahmasthan across all 8 directions of the house
     this.energyLinesGroup = new THREE.Group();
-    this.energyLinesGroup.position.set(0, -1.32, 0); // Floor level inside the residence
+    this.energyLinesGroup.position.set(0, -1.32, 0);
 
     this.energyBeamMat = new THREE.MeshBasicMaterial({
       color: 0xF9E29B,
@@ -826,7 +994,6 @@ class VastuCinematicIntro {
       this.chakraDirectionBeams.push(beamMesh);
     }
 
-    // Concentric Golden Energy Ripples on the House Floor
     this.floorRippleRings = [];
     [1.6, 2.9, 4.1].forEach((r) => {
       const ringMat = new THREE.MeshBasicMaterial({
@@ -843,7 +1010,6 @@ class VastuCinematicIntro {
 
     this.scene.add(this.energyLinesGroup);
 
-    // 2. Symbolic Transparent Golden Protective Dome / Shield around the Entire House
     this.domeGroup = new THREE.Group();
     this.domeGroup.position.set(0, -1.8, 0);
     this.domeGroup.visible = false;
@@ -873,7 +1039,6 @@ class VastuCinematicIntro {
     this.protectiveDome = new THREE.Mesh(domeGeo, this.domeMat);
     this.domeGroup.add(this.protectiveDome);
 
-    // Delicate Sacred Geometric Lattice on the Protective Dome
     const domeWireGeo = new THREE.SphereGeometry(
       domeRadius + 0.04,
       24,
@@ -893,7 +1058,6 @@ class VastuCinematicIntro {
     this.protectiveWire = new THREE.Mesh(domeWireGeo, this.domeWireMat);
     this.domeGroup.add(this.protectiveWire);
 
-    // Glowing Golden Base Sanctuary Ring
     this.domeBaseMat = new THREE.MeshBasicMaterial({
       color: 0xF9E29B,
       transparent: true,
@@ -915,7 +1079,6 @@ class VastuCinematicIntro {
     const tl = window.gsap.timeline({ defaults: { ease: 'power2.inOut' } });
     this.timeline = tl;
 
-    const topControls = document.getElementById('intro-top-controls');
     const storyCaptionWrap = document.getElementById('intro-story-caption-wrap');
     const goldenPortal = document.getElementById('intro-golden-portal');
     const goldenOrb = document.getElementById('intro-golden-orb');
@@ -934,8 +1097,6 @@ class VastuCinematicIntro {
 
     // =========================================================================
     // SCENE 1 (0.0s – 2.2s): THE MYSTERIOUS BEGINNING
-    // Complete dark burgundy/maroon environment, subtle golden particles, camera moves forward
-    // No text or buttons shown initially.
     // =========================================================================
     tl.to(
       this.ambientParticles.material,
@@ -948,16 +1109,12 @@ class VastuCinematicIntro {
       0
     );
 
-    // Reveal subtle Skip & Sound controls after initial 2s dark opening
-    tl.to(topControls, { opacity: 1, duration: 0.8 }, 2.0);
-
     // =========================================================================
-    // SCENE 2 (2.2s – 5.6s): THE 3D VASTU CHAKRA APPEARS
-    // Golden 3D Vastu Chakra emerges from distance, moves toward camera, rotates in 3D space
+    // SCENE 2 (2.2s – 5.6s): THE ANCIENT 3D VASTU CHAKRA APPEARS
     // =========================================================================
     tl.to(
       this.chakraGroup.scale,
-      { x: 1.15, y: 1.15, z: 1.15, duration: 3.0, ease: 'power2.out' },
+      { x: 1.12, y: 1.12, z: 1.12, duration: 3.0, ease: 'power2.out' },
       2.1
     );
     tl.to(
@@ -973,7 +1130,6 @@ class VastuCinematicIntro {
 
     // =========================================================================
     // SCENE 3 (5.6s – 8.8s): A BEAUTIFUL INDIAN RESIDENCE APPEARS
-    // Aerial three-quarter perspective reveals contemporary Indian villa with warm interior glow
     // =========================================================================
     tl.call(
       () => {
@@ -1006,7 +1162,6 @@ class VastuCinematicIntro {
       5.8
     );
 
-    // Camera sweeps to a majestic aerial three-quarter architectural angle
     tl.to(
       this.animState,
       {
@@ -1022,7 +1177,6 @@ class VastuCinematicIntro {
       5.5
     );
 
-    // Position the rotating 3D Chakra poised in front of the main entrance (+Z)
     tl.to(
       this.chakraGroup.position,
       { x: 0, y: 0.4, z: 7.4, duration: 2.8, ease: 'power2.inOut' },
@@ -1041,14 +1195,7 @@ class VastuCinematicIntro {
 
     // =========================================================================
     // SCENE 4 (8.8s – 16.0s): THE CHAKRA ENTERS THE HOUSE & FORMS PROTECTIVE SHIELD
-    // 1. House transitions into architectural cutaway view (roof lifts & becomes translucent)
-    // 2. Chakra moves gracefully through the main entrance toward the central Brahmasthan
-    // 3. Expands into a circular golden mandala inside the house
-    // 4. 8 directional divisions illuminate one after another + golden energy lines spread
-    // 5. Transparent golden protective dome forms around the entire house
     // =========================================================================
-
-    // 4A (8.8s – 10.6s): Architectural cutaway transition
     tl.to(
       this.houseRoofGroup.position,
       { y: 3.2, duration: 1.8, ease: 'power2.inOut' },
@@ -1075,7 +1222,6 @@ class VastuCinematicIntro {
       8.8
     );
 
-    // Camera glides closer to observe the Chakra entering the main entrance into the central core
     tl.to(
       this.animState,
       {
@@ -1091,7 +1237,6 @@ class VastuCinematicIntro {
       8.8
     );
 
-    // 4B (9.2s – 11.4s): Chakra glides gracefully through the front entrance to the center (Brahmasthan)
     tl.to(
       this.chakraGroup.rotation,
       { x: -Math.PI / 2, y: 0, duration: 1.2, ease: 'power2.out' },
@@ -1103,24 +1248,22 @@ class VastuCinematicIntro {
       9.1
     );
 
-    // 4C (11.4s – 13.0s): Chakra expands into a majestic circular golden mandala filling the house floorplan
     tl.to(
       this.chakraGroup.scale,
       { x: 1.18, y: 1.18, z: 1.18, duration: 1.5, ease: 'back.out(1.2)' },
       11.3
     );
 
-    // 4D (11.8s – 13.8s): 8 directional divisions illuminate one after another & golden energy lines spread
     this.chakraDirectionNodes.forEach((nodeMesh, idx) => {
       const startT = 11.7 + idx * 0.16;
       tl.to(
         nodeMesh.scale,
-        { x: 1.9, y: 1.9, z: 1.9, duration: 0.35, yoyo: true, repeat: 1 },
+        { x: 1.7, y: 1.7, z: 1.7, duration: 0.35, yoyo: true, repeat: 1 },
         startT
       );
       tl.to(
         nodeMesh.material,
-        { emissiveIntensity: 1.6, duration: 0.4 },
+        { emissiveIntensity: 1.3, duration: 0.4 },
         startT
       );
     });
@@ -1147,7 +1290,6 @@ class VastuCinematicIntro {
       );
     });
 
-    // Restore roof gently as the golden protective shield forms around the complete residence
     tl.to(
       this.houseRoofGroup.position,
       { y: 0, duration: 1.6, ease: 'power2.inOut' },
@@ -1169,8 +1311,6 @@ class VastuCinematicIntro {
       13.0
     );
 
-    // 4E (13.3s – 16.0s): Transparent Golden Protective Dome forms around the entire house
-    // Symbolic caption: "WHERE BALANCE BEGINS, HARMONY FOLLOWS."
     tl.call(
       () => {
         if (this.domeGroup) {
@@ -1203,14 +1343,12 @@ class VastuCinematicIntro {
       13.4
     );
 
-    // Reveal Symbolic Message: "WHERE BALANCE BEGINS, HARMONY FOLLOWS."
     tl.to(
       storyCaptionWrap,
       { opacity: 1, y: 0, duration: 1.0, ease: 'power3.out' },
       13.4
     );
 
-    // Slow camera pan around the glowing protected residence
     tl.to(
       this.animState,
       {
@@ -1226,8 +1364,6 @@ class VastuCinematicIntro {
 
     // =========================================================================
     // SCENE 5 (16.0s – 18.2s): CINEMATIC GOLDEN TRANSITION TO THE BRAND
-    // Camera zooms out, house scales down, golden particles converge to center forming
-    // a circular golden light that expands and dissolves into the deep maroon background.
     // =========================================================================
     tl.to(
       storyCaptionWrap,
@@ -1254,7 +1390,6 @@ class VastuCinematicIntro {
       16.1
     );
 
-    // Golden Circular Light Portal forms at screen center and expands smoothly
     tl.to(
       goldenPortal,
       { opacity: 1, duration: 0.7, ease: 'power2.in' },
@@ -1280,8 +1415,6 @@ class VastuCinematicIntro {
     // =========================================================================
     // PART 2 – VASTU SUTRAM PREMIUM BRAND INTRODUCTION (18.0s – 24.8s)
     // =========================================================================
-
-    // Ambient maroon geometry & soft golden glow appear
     tl.to(
       [sacredGeo, ambientGlow],
       { opacity: 1, duration: 1.4, ease: 'power2.out' },
@@ -1320,8 +1453,7 @@ class VastuCinematicIntro {
       principleChars,
       {
         opacity: 1,
-        x: 0,
-        duration: 0.5,
+        duration: 0.45,
         stagger: 0.03,
         ease: 'power2.out'
       },
@@ -1367,7 +1499,6 @@ class VastuCinematicIntro {
 
     const elapsed = this.clock ? this.clock.getElapsedTime() : Date.now() * 0.001;
 
-    // 1. Update Camera Position & LookAt from GSAP animState
     this.camera.position.set(
       this.animState.camX,
       this.animState.camY,
@@ -1379,25 +1510,21 @@ class VastuCinematicIntro {
       this.animState.lookZ
     );
 
-    // 2. Continuous 3D Rotation of the Vastu Chakra & Counter-Rotating Brahma Crystal
     if (this.chakraWheel) {
       this.chakraWheel.rotation.z -= 0.012 * this.animState.chakraSpinSpeed;
     }
     if (this.brahmaCrystal) {
-      this.brahmaCrystal.rotation.z = elapsed * 1.6;
-      this.brahmaCrystal.rotation.x = Math.sin(elapsed * 2.0) * 0.35;
+      this.brahmaCrystal.rotation.z = elapsed * 0.95;
     }
     if (this.chakraPointLight && this.chakraGroup) {
       this.chakraPointLight.position.copy(this.chakraGroup.position);
       this.chakraPointLight.position.y += 1.2;
     }
 
-    // 3. Protective Shield Gentle Harmonic Rotation
     if (this.protectiveWire && this.domeGroup && this.domeGroup.visible) {
       this.protectiveWire.rotation.y = elapsed * 0.18;
     }
 
-    // 4. Floating & Converging Golden Particles
     if (this.ambientParticles) {
       const posAttr = this.ambientParticles.geometry.attributes.position;
       const initPos = this.ambientParticles.geometry.userData.initialPositions;
@@ -1408,7 +1535,6 @@ class VastuCinematicIntro {
         const iy = initPos[i * 3 + 1];
         const iz = initPos[i * 3 + 2];
 
-        // Gentle upward drift + orbital swirl during Scene 5 convergence
         const swirlAngle = elapsed * 0.25 + gather * 2.5;
         const rx = ix * Math.cos(swirlAngle * 0.3) - iz * Math.sin(swirlAngle * 0.3);
         const rz = ix * Math.sin(swirlAngle * 0.3) + iz * Math.cos(swirlAngle * 0.3);
@@ -1425,7 +1551,6 @@ class VastuCinematicIntro {
   }
 
   showBrandStageImmediately() {
-    const topControls = document.getElementById('intro-top-controls');
     const sacredGeo = document.getElementById('intro-sacred-geometry');
     const ambientGlow = document.getElementById('intro-ambient-glow');
     const logoWrap = document.getElementById('intro-logo-wrap');
@@ -1438,7 +1563,6 @@ class VastuCinematicIntro {
     const btnBook = document.getElementById('btn-book-from-intro');
 
     [
-      topControls,
       sacredGeo,
       ambientGlow,
       logoWrap,
@@ -1463,97 +1587,14 @@ class VastuCinematicIntro {
     });
   }
 
-  toggleAmbientAudio() {
-    const iconEl = document.getElementById('intro-sound-icon');
-    const labelEl = document.getElementById('intro-sound-label');
-
-    if (this.isAudioPlaying) {
-      this.stopAmbientAudio();
-      if (iconEl) iconEl.textContent = '🔇';
-      if (labelEl) labelEl.textContent = 'Sound Off';
-      return;
-    }
-
-    try {
-      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-      if (!AudioContextClass) return;
-
-      if (!this.audioCtx) {
-        this.audioCtx = new AudioContextClass();
-      }
-      if (this.audioCtx.state === 'suspended') {
-        this.audioCtx.resume();
-      }
-
-      const now = this.audioCtx.currentTime;
-      this.audioGain = this.audioCtx.createGain();
-      this.audioGain.gain.setValueAtTime(0.001, now);
-      this.audioGain.gain.exponentialRampToValueAtTime(0.08, now + 1.2);
-      this.audioGain.connect(this.audioCtx.destination);
-
-      // Warm Vedic Tanpura Fifth Drone (Sa - Pa - Upper Sa in C# / 138.59 Hz, 207.65 Hz, 277.18 Hz)
-      this.droneOscs = [138.59, 207.65, 277.18].map((freq, idx) => {
-        const osc = this.audioCtx.createOscillator();
-        const subGain = this.audioCtx.createGain();
-        osc.type = idx === 0 ? 'sine' : 'triangle';
-        osc.frequency.setValueAtTime(freq, now);
-        subGain.gain.setValueAtTime(idx === 0 ? 0.5 : 0.22, now);
-        osc.connect(subGain);
-        subGain.connect(this.audioGain);
-        osc.start();
-        return osc;
-      });
-
-      // Gentle Temple Bell Chime Accent
-      const bellOsc = this.audioCtx.createOscillator();
-      const bellGain = this.audioCtx.createGain();
-      bellOsc.type = 'sine';
-      bellOsc.frequency.setValueAtTime(554.37, now);
-      bellGain.gain.setValueAtTime(0.06, now);
-      bellGain.gain.exponentialRampToValueAtTime(0.0001, now + 3.5);
-      bellOsc.connect(bellGain);
-      bellGain.connect(this.audioCtx.destination);
-      bellOsc.start(now);
-      bellOsc.stop(now + 3.6);
-
-      this.isAudioPlaying = true;
-      if (iconEl) iconEl.textContent = '🔊';
-      if (labelEl) labelEl.textContent = 'Sound On';
-    } catch (e) {
-      console.warn('Audio context blocked or unsupported:', e);
-    }
-  }
-
   stopAmbientAudio() {
-    this.isAudioPlaying = false;
-    if (this.droneOscs) {
-      this.droneOscs.forEach((osc) => {
-        try {
-          osc.stop();
-        } catch (_) {}
-      });
-      this.droneOscs = null;
-    }
-    if (this.audioCtx && this.audioCtx.state !== 'closed') {
-      try {
-        this.audioCtx.close();
-      } catch (_) {}
-      this.audioCtx = null;
-    }
+    // Preserved as safe no-op for external callers
   }
 
   bindEvents() {
-    const skipBtn = document.getElementById('skip-intro-btn');
-    const soundBtn = document.getElementById('intro-sound-btn');
     const exploreBtn = document.getElementById('btn-explore-website');
     const bookBtn = document.getElementById('btn-book-from-intro');
 
-    if (skipBtn) {
-      skipBtn.addEventListener('click', () => this.finishIntro(false));
-    }
-    if (soundBtn) {
-      soundBtn.addEventListener('click', () => this.toggleAmbientAudio());
-    }
     if (exploreBtn) {
       exploreBtn.addEventListener('click', () => this.finishIntro(false));
     }
@@ -1565,8 +1606,6 @@ class VastuCinematicIntro {
   finishIntro(openBooking = false) {
     if (this.isDismissed) return;
     this.isDismissed = true;
-
-    this.stopAmbientAudio();
 
     if (this.timeline) {
       this.timeline.kill();

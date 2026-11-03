@@ -235,34 +235,35 @@ class InteractiveVastuChakra {
   }
 
   buildChakraGeometry() {
+    // Ancient Civilization Bronze, Burnished Temple Brass & Carved Stone Materials
     const goldMat = new THREE.MeshStandardMaterial({
-      color: 0xD4AF37,
-      metalness: 0.85,
-      roughness: 0.22,
-      emissive: 0x3A2808,
-      emissiveIntensity: 0.25
+      color: 0x9C7238, // Aged Chola Bronze
+      metalness: 0.72,
+      roughness: 0.42,
+      emissive: 0x2A1A08,
+      emissiveIntensity: 0.22
     });
 
     const brightGoldMat = new THREE.MeshStandardMaterial({
-      color: 0xF9E29B,
-      metalness: 0.9,
-      roughness: 0.16,
-      emissive: 0x6A4E16,
-      emissiveIntensity: 0.35
+      color: 0xC69A4B, // Burnished Antique Temple Brass
+      metalness: 0.76,
+      roughness: 0.34,
+      emissive: 0x3D270C,
+      emissiveIntensity: 0.28
     });
 
     const maroonBaseMat = new THREE.MeshStandardMaterial({
-      color: 0x260C12,
-      metalness: 0.45,
-      roughness: 0.55,
-      emissive: 0x120407,
-      emissiveIntensity: 0.25
+      color: 0x24120E, // Weathered Ancient Terracotta-Stone Plinth
+      metalness: 0.35,
+      roughness: 0.68,
+      emissive: 0x100504,
+      emissiveIntensity: 0.2
     });
 
     const obsidianPlateMat = new THREE.MeshStandardMaterial({
-      color: 0x160D10,
-      metalness: 0.55,
-      roughness: 0.42
+      color: 0x18100D, // Dark Carved Basalt Sanctum Plate
+      metalness: 0.42,
+      roughness: 0.58
     });
 
     // 1. Heavy Royal Architectural Plinth Disc (3D Depth Base)
@@ -321,17 +322,16 @@ class InteractiveVastuChakra {
     }
     this.wheelGroup.add(this.outerHaloRing);
 
-    // 3. Eight Directional 3D Sectors (N, NE, E, SE, S, SW, W, NW)
-    // In 2D/3D polar coordinates: +Y (90 deg) is North, +X (0 deg) is East, -Y (-90 deg) is South, -X (180 deg) is West
+    // 3. Eight Directional 3D Sectors (N, NE, E, SE, S, SW, W, NW) — Ancient Patinated Mineral & Bronze Tones
     const directionsConfig = [
-      { code: 'N', sub: 'Uttara', el: 'Water • Kubera', deg: 90, color: 0x1D5B47, accent: 0x52B788, cardinal: true },
-      { code: 'NE', sub: 'Ishanya', el: 'Water/Space • Shiva', deg: 45, color: 0x1E4E79, accent: 0x64B5F6, cardinal: false },
-      { code: 'E', sub: 'Purva', el: 'Air/Fire • Surya', deg: 0, color: 0x7F421C, accent: 0xF4A261, cardinal: true },
-      { code: 'SE', sub: 'Agneya', el: 'Fire • Agni', deg: -45, color: 0x7A231D, accent: 0xE76F51, cardinal: false },
-      { code: 'S', sub: 'Dakshina', el: 'Earth/Fire • Yama', deg: -90, color: 0x6B1520, accent: 0xE63946, cardinal: true },
-      { code: 'SW', sub: 'Nairrutya', el: 'Earth • Nirriti', deg: -135, color: 0x5E3E1C, accent: 0xDDA15E, cardinal: false },
-      { code: 'W', sub: 'Paschima', el: 'Space • Varuna', deg: 180, color: 0x2F3B4C, accent: 0x90A4AE, cardinal: true },
-      { code: 'NW', sub: 'Vayavya', el: 'Air • Vayu', deg: 135, color: 0x3E4C59, accent: 0xCBD5E1, cardinal: false }
+      { code: 'N', sub: 'Uttara', el: 'Water • Kubera', deg: 90, color: 0x1D4438, accent: 0x4E8E72, cardinal: true },
+      { code: 'NE', sub: 'Ishanya', el: 'Water/Space • Shiva', deg: 45, color: 0x1E3A54, accent: 0x5C8BB5, cardinal: false },
+      { code: 'E', sub: 'Purva', el: 'Air/Fire • Surya', deg: 0, color: 0x6B3B1E, accent: 0xC98448, cardinal: true },
+      { code: 'SE', sub: 'Agneya', el: 'Fire • Agni', deg: -45, color: 0x63211B, accent: 0xB85642, cardinal: false },
+      { code: 'S', sub: 'Dakshina', el: 'Earth/Fire • Yama', deg: -90, color: 0x54161D, accent: 0xAD3944, cardinal: true },
+      { code: 'SW', sub: 'Nairrutya', el: 'Earth • Nirriti', deg: -135, color: 0x4F361C, accent: 0xB38348, cardinal: false },
+      { code: 'W', sub: 'Paschima', el: 'Space • Varuna', deg: 180, color: 0x2C3440, accent: 0x798897, cardinal: true },
+      { code: 'NW', sub: 'Vayavya', el: 'Air • Vayu', deg: 135, color: 0x3A3F45, accent: 0x99A2AC, cardinal: false }
     ];
 
     const innerRadius = 3.25;
