@@ -882,6 +882,170 @@ h1, h2, h3, h4, h5, .font-serif {
   box-shadow: 0 24px 52px rgba(0, 0, 0, 0.72), 0 0 28px rgba(198, 161, 91, 0.25);
 }
 
+/* ==============================================================
+   24/7 INTELLIGENT AI CUSTOMER SUPPORT AGENT WIDGET
+   ============================================================== */
+@keyframes vastuChatFloat {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes vastuChatPulseRing {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.75;
+  }
+  70% {
+    transform: scale(1.32);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.32);
+    opacity: 0;
+  }
+}
+
+/* Floating Launcher Button (positioned above the WhatsApp button on bottom-right) */
+.vastu-ai-launcher-btn {
+  position: fixed;
+  bottom: 5.25rem;
+  right: 1.35rem;
+  z-index: 45;
+  width: 3.6rem;
+  height: 3.6rem;
+  border-radius: 9999px;
+  background: linear-gradient(145deg, #481C25 0%, #1E0B10 65%, #12080B 100%);
+  border: 1.5px solid #F9E29B;
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.72),
+    0 0 22px rgba(198, 161, 91, 0.45),
+    inset 0 1px 1px rgba(255, 246, 214, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  animation: vastuChatFloat 4.2s ease-in-out infinite;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+}
+
+.vastu-ai-launcher-btn:hover {
+  transform: scale(1.07);
+  box-shadow:
+    0 16px 36px rgba(0, 0, 0, 0.8),
+    0 0 30px rgba(249, 226, 155, 0.65);
+}
+
+.vastu-ai-pulse-ring {
+  position: absolute;
+  inset: -4px;
+  border-radius: 9999px;
+  border: 1.5px solid rgba(249, 226, 155, 0.75);
+  animation: vastuChatPulseRing 2.6s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+  pointer-events: none;
+}
+
+.vastu-ai-online-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 11px;
+  height: 11px;
+  border-radius: 9999px;
+  background: #10B981;
+  border: 2px solid #12080B;
+  box-shadow: 0 0 8px #10B981;
+}
+
+/* 24/7 Subtle Callout Pill Outside Chat Window */
+.vastu-ai-tooltip-pill {
+  position: fixed;
+  bottom: 5.75rem;
+  right: 5.5rem;
+  z-index: 44;
+  max-width: 265px;
+  padding: 0.55rem 0.85rem;
+  border-radius: 9999px;
+  background: linear-gradient(145deg, rgba(44, 16, 23, 0.94) 0%, rgba(18, 10, 13, 0.97) 100%);
+  border: 1px solid rgba(249, 226, 155, 0.55);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.65), 0 0 18px rgba(198, 161, 91, 0.25);
+  backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  animation: vastuChatFloat 4.8s ease-in-out infinite;
+}
+
+@media (max-width: 640px) {
+  .vastu-ai-tooltip-pill {
+    display: none;
+  }
+}
+
+/* Luxury Glassmorphism Chat Window */
+.vastu-ai-chat-window {
+  position: fixed;
+  bottom: 9.4rem;
+  right: 1.35rem;
+  z-index: 48;
+  width: 385px;
+  max-width: calc(100vw - 1.5rem);
+  height: 550px;
+  max-height: calc(100vh - 10.5rem);
+  border-radius: 24px;
+  background: linear-gradient(160deg, rgba(38, 14, 21, 0.96) 0%, rgba(18, 11, 14, 0.98) 100%);
+  border: 1.5px solid rgba(249, 226, 155, 0.55);
+  box-shadow:
+    0 28px 70px rgba(0, 0, 0, 0.85),
+    0 0 36px rgba(198, 161, 91, 0.25),
+    inset 0 1px 0 rgba(255, 246, 214, 0.25);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform-origin: bottom right;
+  animation: vastuChatWindowOpen 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes vastuChatWindowOpen {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.vastu-ai-header {
+  background: linear-gradient(135deg, rgba(72, 28, 37, 0.95) 0%, rgba(30, 12, 18, 0.98) 100%);
+}
+
+@media (max-width: 640px) {
+  .vastu-ai-chat-window {
+    right: 0.75rem;
+    left: 0.75rem;
+    bottom: 5.5rem;
+    width: auto;
+    max-width: none;
+    height: 74vh;
+    max-height: calc(100vh - 6.5rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vastu-ai-launcher-btn,
+  .vastu-ai-tooltip-pill,
+  .vastu-ai-pulse-ring {
+    animation: none !important;
+  }
+}
+
 /* Print Styles */
 @media print {
   body * {
