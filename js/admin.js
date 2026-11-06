@@ -286,10 +286,12 @@ class VastuAdminDashboard {
                       <div class="font-semibold text-[#F8F3E9]">${b.name || b.fullName || 'Client'}</div>
                       <div class="text-[11px] text-[#DCCBB0] font-mono">${b.phone || '—'}</div>
                       <div class="text-[10px] text-[#C6A15B] truncate max-w-[160px]">${b.email || '—'}</div>
+                      <div class="text-[10px] text-[#DCCBB0]/75 truncate max-w-[180px]">${b.propertyType || ''}</div>
                     </td>
                     <td class="p-3">
                       <div class="font-medium text-[#F8F3E9]">${b.packageName || b.serviceName || b.package || 'Vastu Consultation'}</div>
                       <div class="text-[10px] text-[#DCCBB0]">${b.consultationMode || ''}</div>
+                      ${b.message ? `<div class="text-[10px] text-[#C6A15B]/90 truncate max-w-[200px]" title="${(b.message || '').replace(/"/g, '&quot;')}">${b.message}</div>` : ''}
                     </td>
                     <td class="p-3 font-mono font-bold text-[#F9E29B] whitespace-nowrap">
                       ₹${payable.toLocaleString('en-IN')}
@@ -382,20 +384,26 @@ class VastuAdminDashboard {
           <table class="w-full text-left text-xs">
             <thead class="bg-[#481C25]/60 text-[#C6A15B] font-serif border-b border-[#C6A15B]/20 uppercase tracking-wider text-[11px]">
               <tr>
-                <th class="p-3">Reference ID</th>
-                <th class="p-3">Client Details</th>
-                <th class="p-3">Service & Package</th>
-                <th class="p-3">Schedule & Mode</th>
-                <th class="p-3">Status</th>
+                <th class="p-3">Reference &amp; Date</th>
+                <th class="p-3">Customer Details</th>
+                <th class="p-3">Selected Package &amp; Amount</th>
+                <th class="p-3">Schedule &amp; Mode</th>
+                <th class="p-3">Payment &amp; Reference</th>
                 <th class="p-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-[#C6A15B]/10">
               ${filtered.length === 0 ? `
                 <tr><td colspan="6" class="p-8 text-center text-[#DCCBB0]/70 italic">No consultation bookings matching the criteria.</td></tr>
-              ` : filtered.map(b => `
+              ` : filtered.map(b => {
+                const pStatus = b.paymentStatus || 'Pending';
+                const bDate = b.createdAt ? b.createdAt.substring(0, 10) : (b.appointmentDate || '—');
+                return `
                 <tr class="hover:bg-[#481C25]/20 transition-all">
-                  <td class="p-3 font-mono font-bold text-[#F9E29B] whitespace-nowrap">${b.id}</td>
+                  <td class="p-3 whitespace-nowrap">
+                    <div class="font-mono font-bold text-[#F9E29B]">${b.id}</div>
+                    <div class="text-[10px] text-[#DCCBB0]/75">Booked: ${bDate}</div>
+                  </td>
                   <td class="p-3">
                     <div class="font-semibold text-[#F8F3E9]">${b.fullName || b.name}</div>
                     <div class="text-[11px] text-[#DCCBB0]">${b.phone} • ${b.city || 'India'}</div>
@@ -412,11 +420,8 @@ class VastuAdminDashboard {
                     <div class="text-[10px] text-[#C6A15B]">${b.consultationMode}</div>
                   </td>
                   <td class="p-3 whitespace-nowrap">
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                      (b.status || '').includes('Confirmed') ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' :
-                      (b.status || '').includes('Completed') ? 'bg-blue-500/20 text-blue-300 border border-blue-500/40' :
-                      'bg-amber-500/20 text-amber-300 border border-amber-500/40'
-                    }">${b.status || 'Pending'}</span>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${this.getPaymentStatusBadgeClass(pStatus)}">${pStatus}</span>
+                    <div class="text-[10px] font-mono text-[#DCCBB0] mt-1">${b.transactionId || b.id}</div>
                   </td>
                   <td class="p-3 text-right whitespace-nowrap">
                     <div class="flex items-center justify-end gap-1.5">
@@ -432,7 +437,8 @@ class VastuAdminDashboard {
                     </div>
                   </td>
                 </tr>
-              `).join('')}
+              `;
+              }).join('')}
             </tbody>
           </table>
         </div>
@@ -606,19 +612,19 @@ class VastuAdminDashboard {
             <input type="text" id="set-coverage" value="${s.consultationCoverage || 'Pan-India On-Site Consultations & Global Remote Video Sessions'}" class="w-full px-3.5 py-2 rounded-lg bg-[#12080B] border border-[#C6A15B]/30 text-xs text-[#F8F3E9] outline-none" />
           </div>
 
-          <div class="p-4 rounded-xl bg-[#481C25]/40 border border-[#C6A15B]/30 space-y-3">
-            <h4 class="font-serif text-xs font-bold text-[#F9E29B] uppercase tracking-wider">Razorpay Gateway Integration Keys</h4>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div>
-                <label class="block text-[11px] text-[#DCCBB0] mb-1">Razorpay Key ID</label>
-                <input type="text" id="set-rzp-key" value="${s.razorpayKeyId || ''}" placeholder="rzp_live_xxxxxxxxxxxx" class="w-full px-3 py-1.5 rounded bg-[#12080B] border border-[#C6A15B]/20 text-xs font-mono text-[#F8F3E9] outline-none" />
-              </div>
-              <div>
-                <label class="block text-[11px] text-[#DCCBB0] mb-1">Razorpay Key Secret</label>
-                <input type="password" id="set-rzp-secret" value="${s.razorpaySecret || ''}" placeholder="••••••••••••••••" class="w-full px-3 py-1.5 rounded bg-[#12080B] border border-[#C6A15B]/20 text-xs font-mono text-[#F8F3E9] outline-none" />
-              </div>
+          <div class="p-4 rounded-xl bg-[#481C25]/40 border border-[#C6A15B]/30 space-y-2.5">
+            <h4 class="font-serif text-xs font-bold text-[#F9E29B] uppercase tracking-wider">Razorpay &amp; UPI Security Architecture (Server-Side Environment Variables)</h4>
+            <p class="text-[11px] text-[#DCCBB0] leading-relaxed">
+              For security compliance, Razorpay secret keys are <strong>never</strong> stored or exposed in frontend code or <span class="font-mono text-[#F9E29B]">data/db.json</span>. All cryptographic order creation and HMAC-SHA256 signature verification run on the server using:
+            </p>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px] font-mono text-[#F9E29B]">
+              <div class="p-2 rounded bg-[#12080B] border border-[#C6A15B]/25">RAZORPAY_KEY_ID</div>
+              <div class="p-2 rounded bg-[#12080B] border border-[#C6A15B]/25">RAZORPAY_KEY_SECRET</div>
+              <div class="p-2 rounded bg-[#12080B] border border-[#C6A15B]/25">RAZORPAY_WEBHOOK_SECRET</div>
             </div>
-            <p class="text-[10px] text-[#DCCBB0]/70">Enter your official Razorpay Merchant credentials to accept live credit cards, UPI and Net Banking.</p>
+            <p class="text-[10px] text-[#DCCBB0]/80">
+              Recipient: <strong>Vastu Sutram</strong> • Official UPI ID: <strong class="font-mono text-[#F9E29B]">gauriomji@oksbi</strong> • WhatsApp Notification Number: <strong class="font-mono text-[#F9E29B]">9181457155</strong>
+            </p>
           </div>
 
           <div class="flex items-center justify-between pt-3">
@@ -840,8 +846,6 @@ class VastuAdminDashboard {
           email: document.getElementById('set-email').value,
           workingHours: document.getElementById('set-hours').value,
           consultationCoverage: document.getElementById('set-coverage').value,
-          razorpayKeyId: document.getElementById('set-rzp-key').value,
-          razorpaySecret: document.getElementById('set-rzp-secret').value,
           ownerPin: document.getElementById('set-pin').value
         };
 

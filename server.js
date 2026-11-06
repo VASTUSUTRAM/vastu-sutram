@@ -16,11 +16,14 @@ const PAYMENT_CONFIG = {
   businessName: 'Vastu Sutram',
   upiId: 'gauriomji@oksbi',
   paymentProvider: 'State Bank of India UPI',
+  paymentGateway: 'Razorpay',
   currency: 'INR',
   currencySymbol: '₹',
   officialEmail: 'vastusutram@gmail.com',
-  whatsappNotify: '918145715755',
-  whatsappSecondary: '919181457155',
+  whatsappRecipient: '9181457155',
+  whatsappE164: '919181457155',
+  whatsappNotify: '9181457155',
+  whatsappSecondary: '918145715755',
   validPaymentStatuses: [
     'Pending',
     'Paid',
@@ -49,7 +52,7 @@ function parseInrAmount(val, fallback = 5100) {
 // Helper for Customer Email Confirmation (via Resend / Email API when configured, with structured server log fallback)
 async function sendPaymentConfirmationEmail(booking) {
   if (!booking || !booking.email) {
-    return { sent: false, reason: 'no_customer_email' };
+    return { sent: false, configured: Boolean(process.env.RESEND_API_KEY), reason: 'no_customer_email' };
   }
 
   const subject = `Vastu Sutram – Consultation Booking & Payment Confirmation (${booking.id})`;
@@ -61,21 +64,23 @@ async function sendPaymentConfirmationEmail(booking) {
     ``,
     `BOOKING & PAYMENT SUMMARY`,
     `--------------------------------------------------`,
-    `Booking Reference ID : ${booking.id}`,
-    `Customer Name        : ${booking.name || booking.fullName || ''}`,
-    `Consultation Package : ${booking.packageName || booking.serviceName || ''}`,
-    `Confirmed Amount     : ₹${Number(booking.amountPayable || 0).toLocaleString('en-IN')}`,
-    `Amount Received      : ₹${Number(booking.amountReceived || 0).toLocaleString('en-IN')}`,
-    `Transaction / Ref ID : ${booking.transactionId || 'N/A'}`,
-    `Payment Method       : ${booking.paymentMethod || 'Online'}`,
-    `Payment Status       : ${booking.paymentStatus || 'Paid'}`,
-    `Preferred Schedule   : ${booking.appointmentDate || ''} (${booking.appointmentTime || ''})`,
-    `Consultation Mode    : ${booking.consultationMode || 'Online / On-Site'}`,
+    `Booking Reference ID      : ${booking.id}`,
+    `Customer Name             : ${booking.name || booking.fullName || ''}`,
+    `Phone / WhatsApp Number   : ${booking.phone || booking.whatsapp || ''}`,
+    `Email Address             : ${booking.email || ''}`,
+    `Consultation Package      : ${booking.packageName || booking.serviceName || ''}`,
+    `Amount Paid               : ₹${Number(booking.amountReceived || booking.amountPayable || 0).toLocaleString('en-IN')}`,
+    `Payment ID / Reference    : ${booking.transactionId || 'N/A'}`,
+    `Payment Method            : ${booking.paymentMethod || 'Razorpay / UPI'}`,
+    `Payment Status            : ${booking.paymentStatus || 'Paid'}`,
+    `Property Type             : ${booking.propertyType || 'Residential / Commercial'}`,
+    `Consultation Requirements : ${booking.message || booking.requirements || 'Standard spatial evaluation and energetic alignment requested.'}`,
+    `Preferred Schedule        : ${booking.appointmentDate || ''} (${booking.appointmentTime || ''})`,
     `--------------------------------------------------`,
     ``,
     `Senior Vastu Consultant Rajni Singh's desk will connect with you regarding your blueprint / floor plan evaluation.`,
     `Official Email: ${PAYMENT_CONFIG.officialEmail}`,
-    `Official WhatsApp: +91 81457 15755`,
+    `Official WhatsApp: +91 91814 57155 (${PAYMENT_CONFIG.whatsappRecipient})`,
     ``,
     `Warm regards,`,
     `Vastu Sutram – The Principles of Vastu`
@@ -98,20 +103,140 @@ async function sendPaymentConfirmationEmail(booking) {
           text: textBody
         }
       );
-      return { sent: true, provider: 'resend', id: resp.id || null };
+      return { sent: true, configured: true, provider: 'resend', id: resp.id || null };
     } catch (err) {
       console.warn('Email API warning:', err.message);
-      return { sent: false, provider: 'resend', error: err.message };
+      return { sent: false, configured: true, provider: 'resend', error: err.message };
     }
   }
 
   console.log(`[VASTU SUTRAM EMAIL CONFIRMATION DISPATCH] To: ${booking.email} | Copy: ${PAYMENT_CONFIG.officialEmail} | Ref: ${booking.id} | Status: ${booking.paymentStatus}`);
   return {
     sent: false,
+    configured: false,
     queuedForSmtp: true,
     officialEmail: PAYMENT_CONFIG.officialEmail,
     recipient: booking.email,
     subject
+  };
+}
+
+// Helper for WhatsApp Notification to 9181457155 (+91 91814 57155)
+// Supports Meta WhatsApp Cloud API or Webhook when configured; never falsely claims automatic dispatch when unconfigured
+async function sendWhatsAppBusinessNotification(booking) {
+  if (!booking) {
+    return { sent: false, configured: false, recipient: PAYMENT_CONFIG.whatsappRecipient };
+  }
+
+  const amountFormatted = `₹${Number(booking.amountReceived || booking.amountPayable || 0).toLocaleString('en-IN')}`;
+  const requirementsText =
+    booking.message ||
+    booking.requirements ||
+    'Standard spatial evaluation and energetic alignment requested.';
+
+  const formattedMessage = [
+    `*VASTU SUTRAM – VERIFIED CONSULTATION PAYMENT*`,
+    `━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+    `• *Customer Name:* ${booking.name || booking.fullName || 'Client'}`,
+    `• *Phone Number:* ${booking.phone || booking.whatsapp || '—'}`,
+    `• *Email:* ${booking.email || '—'}`,
+    `• *Selected Package:* ${booking.packageName || booking.serviceName || 'Vastu Consultation'}`,
+    `• *Amount Paid:* ${amountFormatted}`,
+    `• *Payment ID:* ${booking.transactionId || 'Verified'}`,
+    `• *Booking Reference:* ${booking.id || ''}`,
+    `• *Property Type:* ${booking.propertyType || '—'}`,
+    `• *Consultation Requirements:* ${requirementsText}`,
+    `━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+    `*Recipient:* Vastu Sutram (${PAYMENT_CONFIG.whatsappRecipient})`
+  ].join('\n');
+
+  const cloudToken = (process.env.WHATSAPP_CLOUD_API_TOKEN || '').trim();
+  const phoneNumberId = (process.env.WHATSAPP_PHONE_NUMBER_ID || '').trim();
+  const webhookUrl = (process.env.WHATSAPP_WEBHOOK_URL || '').trim();
+  const recipientE164 = PAYMENT_CONFIG.whatsappE164; // 919181457155 (for 9181457155)
+
+  if (cloudToken && phoneNumberId) {
+    try {
+      const apiResp = await postJsonHttps(
+        `https://graph.facebook.com/v20.0/${encodeURIComponent(phoneNumberId)}/messages`,
+        { Authorization: `Bearer ${cloudToken}` },
+        {
+          messaging_product: 'whatsapp',
+          recipient_type: 'individual',
+          to: recipientE164,
+          type: 'text',
+          text: { preview_url: false, body: formattedMessage }
+        }
+      );
+      return {
+        sent: true,
+        configured: true,
+        provider: 'whatsapp_cloud_api',
+        recipient: PAYMENT_CONFIG.whatsappRecipient,
+        e164: recipientE164,
+        messageId: apiResp?.messages?.[0]?.id || null,
+        formattedMessage
+      };
+    } catch (err) {
+      console.warn('WhatsApp Cloud API warning:', err.message);
+      return {
+        sent: false,
+        configured: true,
+        provider: 'whatsapp_cloud_api',
+        recipient: PAYMENT_CONFIG.whatsappRecipient,
+        e164: recipientE164,
+        error: err.message,
+        formattedMessage
+      };
+    }
+  }
+
+  if (webhookUrl) {
+    try {
+      await postJsonHttps(webhookUrl, {}, {
+        recipient: PAYMENT_CONFIG.whatsappRecipient,
+        e164: recipientE164,
+        bookingId: booking.id,
+        customerName: booking.name || booking.fullName,
+        phone: booking.phone || booking.whatsapp,
+        email: booking.email,
+        packageName: booking.packageName || booking.serviceName,
+        amountPaid: amountFormatted,
+        paymentId: booking.transactionId,
+        requirements: requirementsText,
+        message: formattedMessage
+      });
+      return {
+        sent: true,
+        configured: true,
+        provider: 'webhook',
+        recipient: PAYMENT_CONFIG.whatsappRecipient,
+        e164: recipientE164,
+        formattedMessage
+      };
+    } catch (err) {
+      console.warn('WhatsApp Webhook warning:', err.message);
+      return {
+        sent: false,
+        configured: true,
+        provider: 'webhook',
+        recipient: PAYMENT_CONFIG.whatsappRecipient,
+        e164: recipientE164,
+        error: err.message,
+        formattedMessage
+      };
+    }
+  }
+
+  return {
+    sent: false,
+    configured: false,
+    provider: 'none',
+    recipient: PAYMENT_CONFIG.whatsappRecipient,
+    e164: recipientE164,
+    formattedMessage,
+    message:
+      'Automated WhatsApp Business API (WHATSAPP_CLOUD_API_TOKEN / WHATSAPP_PHONE_NUMBER_ID) is not configured on the server; use the interactive WhatsApp button to send the verified booking & payment details directly to 9181457155.'
   };
 }
 
@@ -583,16 +708,10 @@ async function getJsonBody(req) {
   return json;
 }
 
-function resolveRazorpayCredentials(dbData) {
-  const settings = (dbData && dbData.settings) || {};
-  const rawKeyId = (process.env.RAZORPAY_KEY_ID || settings.razorpayKeyId || '').trim();
-  const rawKeySecret = (
-    process.env.RAZORPAY_KEY_SECRET ||
-    settings.razorpayKeySecret ||
-    settings.razorpaySecret ||
-    ''
-  ).trim();
-  const webhookSecret = (process.env.RAZORPAY_WEBHOOK_SECRET || settings.razorpayWebhookSecret || '').trim();
+function resolveRazorpayCredentials() {
+  const rawKeyId = (process.env.RAZORPAY_KEY_ID || '').trim();
+  const rawKeySecret = (process.env.RAZORPAY_KEY_SECRET || '').trim();
+  const webhookSecret = (process.env.RAZORPAY_WEBHOOK_SECRET || '').trim();
 
   const isPlaceholder =
     !rawKeyId ||
@@ -646,16 +765,24 @@ const requestHandler = async (req, res) => {
   if (pathname === '/api/payments/config' && req.method === 'GET') {
     const data = readDb();
     const rzp = resolveRazorpayCredentials(data);
+    const whatsappApiConfigured = Boolean(
+      (process.env.WHATSAPP_CLOUD_API_TOKEN && process.env.WHATSAPP_PHONE_NUMBER_ID) ||
+        process.env.WHATSAPP_WEBHOOK_URL
+    );
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({
       businessName: PAYMENT_CONFIG.businessName,
       upiId: PAYMENT_CONFIG.upiId,
       paymentProvider: PAYMENT_CONFIG.paymentProvider,
+      paymentGateway: PAYMENT_CONFIG.paymentGateway,
       currency: PAYMENT_CONFIG.currency,
       currencySymbol: PAYMENT_CONFIG.currencySymbol,
       officialEmail: PAYMENT_CONFIG.officialEmail,
+      whatsappRecipient: PAYMENT_CONFIG.whatsappRecipient,
+      whatsappE164: PAYMENT_CONFIG.whatsappE164,
       whatsappNotify: PAYMENT_CONFIG.whatsappNotify,
       whatsappSecondary: PAYMENT_CONFIG.whatsappSecondary,
+      whatsappApiConfigured,
       razorpayConfigured: rzp.configured,
       razorpayMode: rzp.mode,
       razorpayKeyId: rzp.keyId,
@@ -905,18 +1032,29 @@ const requestHandler = async (req, res) => {
     }
   }
 
-  // Settings: GET & POST
+  // Settings: GET & POST (Never exposes or persists Razorpay secret keys in db.json)
   if (pathname === '/api/settings') {
     const data = readDb();
     if (req.method === 'GET') {
+      const safeSettings = { ...(data.settings || {}) };
+      delete safeSettings.razorpaySecret;
+      delete safeSettings.razorpayKeySecret;
+      delete safeSettings.razorpayWebhookSecret;
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify(data.settings || {}));
+      res.end(JSON.stringify(safeSettings));
       return;
     }
     if (req.method === 'POST') {
       try {
         const newSettings = await getJsonBody(req);
+        delete newSettings.razorpaySecret;
+        delete newSettings.razorpayKeySecret;
+        delete newSettings.razorpayWebhookSecret;
+        delete newSettings.razorpayKeyId;
         data.settings = { ...data.settings, ...newSettings };
+        delete data.settings.razorpaySecret;
+        delete data.settings.razorpayKeySecret;
+        delete data.settings.razorpayWebhookSecret;
         writeDb(data);
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ success: true, settings: data.settings }));
@@ -1239,7 +1377,9 @@ const requestHandler = async (req, res) => {
       }
 
       const emailResult = await sendPaymentConfirmationEmail(verifiedBooking);
+      const whatsappResult = await sendWhatsAppBusinessNotification(verifiedBooking);
       verifiedBooking.emailConfirmation = emailResult;
+      verifiedBooking.whatsappNotification = whatsappResult;
       writeDb(data);
 
       res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -1250,11 +1390,58 @@ const requestHandler = async (req, res) => {
         orderId: razorpay_order_id,
         booking: verifiedBooking,
         emailConfirmation: emailResult,
+        whatsappNotification: whatsappResult,
         message: 'Payment cryptographically verified and booking confirmed.'
       }));
     } catch (err) {
       res.writeHead(400, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ success: false, verified: false, error: err.message }));
+    }
+    return;
+  }
+
+  // 2B. Record Failed or Cancelled Payment Attempt (POST /api/payments/fail)
+  // Preserves all customer booking details, never marks an unverified transaction as successful
+  if (pathname === '/api/payments/fail' && req.method === 'POST') {
+    try {
+      const payload = await getJsonBody(req);
+      const { bookingId, orderId, paymentId, reason, errorCode, cancelled } = payload;
+      const data = readDb();
+      if (!data.bookings) data.bookings = [];
+
+      const idx = data.bookings.findIndex(
+        b => (bookingId && b.id === bookingId) || (orderId && b.razorpayOrderId === orderId)
+      );
+
+      let updatedBooking = null;
+      if (idx !== -1) {
+        const b = data.bookings[idx];
+        // Never overwrite an already verified Paid booking
+        if (b.paymentStatus !== 'Paid') {
+          b.paymentStatus = cancelled ? 'Pending' : 'Failed';
+          b.status = cancelled ? 'Payment Cancelled (Retry Available)' : 'Payment Failed';
+          if (paymentId) b.lastFailedPaymentId = paymentId;
+          b.lastPaymentFailureReason = reason || (cancelled ? 'Cancelled by customer' : 'Payment declined');
+          b.lastPaymentErrorCode = errorCode || '';
+          b.updatedAt = new Date().toISOString();
+          writeDb(data);
+        }
+        updatedBooking = b;
+      }
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
+        success: true,
+        verified: false,
+        paymentStatus: updatedBooking ? updatedBooking.paymentStatus : (cancelled ? 'Pending' : 'Failed'),
+        booking: updatedBooking,
+        message: cancelled
+          ? 'Payment was cancelled. Your booking details are preserved so you can retry payment anytime.'
+          : 'Payment failure recorded. Your booking details are preserved and no unverified payment was marked as successful.'
+      }));
+    } catch (err) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: false, error: err.message }));
     }
     return;
   }
@@ -1309,7 +1496,8 @@ const requestHandler = async (req, res) => {
             b.transactionId = paymentId || b.transactionId;
             b.paymentMethod = 'Razorpay';
             b.paidAt = new Date().toISOString();
-            await sendPaymentConfirmationEmail(b);
+            b.emailConfirmation = await sendPaymentConfirmationEmail(b);
+            b.whatsappNotification = await sendWhatsAppBusinessNotification(b);
           }
         } else if (event === 'payment.failed') {
           if (b.paymentStatus !== 'Paid') {
