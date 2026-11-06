@@ -15,6 +15,10 @@
       "package": "pkg-res-complete",
       "packageName": "Complete Home Vastu Analysis",
       "amount": "₹11,000",
+      "amountPayable": 11000,
+      "amountReceived": 11000,
+      "transactionId": "pay_RzpVerified8941",
+      "paymentMethod": "Razorpay",
       "propertyType": "4-BHK Luxury Apartment",
       "propertyArea": "3,200 sq.ft",
       "floors": "1 (14th Floor)",
@@ -27,13 +31,14 @@
       "documents": [
         "apartment_floorplan_14th_floor.pdf"
       ],
-      "paymentStatus": "Paid (Online)",
+      "paymentStatus": "Paid",
+      "paidAt": "2026-10-28T14:35:10.000Z",
       "notes": "Client requested special focus on kitchen sink and pooja room placement."
     },
     {
       "id": "VS-2026-7230",
       "createdAt": "2026-10-30T10:15:00.000Z",
-      "status": "Pending Review",
+      "status": "Pending Verification",
       "name": "Meera Radhakrishnan",
       "phone": "+91 94440 88219",
       "whatsapp": "+91 94440 88219",
@@ -43,8 +48,12 @@
       "service": "commercial",
       "serviceName": "Commercial Vastu Consultation",
       "package": "pkg-com-office",
-      "packageName": "Office & Corporate Vastu Consultation",
+      "packageName": "Office Vastu Consultation",
       "amount": "₹18,000",
+      "amountPayable": 18000,
+      "amountReceived": 0,
+      "transactionId": "UTR430419882711",
+      "paymentMethod": "SBI UPI (gauriomji@oksbi)",
       "propertyType": "Commercial IT Office",
       "propertyArea": "8,500 sq.ft",
       "floors": "2 Floors",
@@ -57,8 +66,8 @@
       "documents": [
         "chennai_it_office_layout_cad.pdf"
       ],
-      "paymentStatus": "Pending Verification",
-      "notes": "Awaiting final confirmation from management committee."
+      "paymentStatus": "Manual Verification Required",
+      "notes": "Direct SBI UPI transfer submitted by client. Awaiting bank statement verification."
     }
   ],
   "inquiries": [
@@ -91,6 +100,11 @@
     "whatsapp": "919181457155",
     "whatsappNotice": "Verified Official WhatsApp Business Line (+91 91814 57155).",
     "email": "vastusutram@gmail.com",
+    "upiId": "gauriomji@oksbi",
+    "payeeName": "Vastu Sutram",
+    "paymentProvider": "State Bank of India UPI",
+    "currency": "INR",
+    "whatsappPaymentNotify": "918145715755",
     "consultationCoverage": "Pan-India On-Site Visits & Worldwide Remote Video Consultations",
     "consultationLocation": "Available Pan-India by Prior Appointment",
     "workingHours": "Monday – Saturday: 09:30 AM – 07:00 PM IST",

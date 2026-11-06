@@ -1379,12 +1379,17 @@ class VastuApp {
     const consultSelect = document.getElementById('wa-consultation-type');
     const propSelect = document.getElementById('wa-property-type');
     const msgInput = document.getElementById('wa-message');
+    const amountInput = document.getElementById('wa-confirmed-amount');
 
     if (consultSelect) {
       const optionLabel = `${pkg.name} (${pkg.price})`;
       let found = false;
       for (const opt of consultSelect.options) {
-        if (opt.value === optionLabel || opt.textContent === optionLabel) {
+        if (
+          opt.value === optionLabel ||
+          opt.textContent === optionLabel ||
+          opt.getAttribute('data-pkg-id') === pkg.id
+        ) {
           consultSelect.value = opt.value;
           found = true;
           break;
@@ -1394,17 +1399,23 @@ class VastuApp {
         const customOpt = document.createElement('option');
         customOpt.value = optionLabel;
         customOpt.textContent = optionLabel;
+        customOpt.setAttribute('data-pkg-id', pkg.id);
+        customOpt.setAttribute('data-starting-price', String(pkg.rawPrice || 11000));
         consultSelect.prepend(customOpt);
         consultSelect.value = optionLabel;
       }
     }
 
+    if (amountInput && pkg.rawPrice) {
+      amountInput.value = pkg.rawPrice;
+    }
+
     if (propSelect) {
       const catToProperty = {
-        residential: 'Residential House / Villa / Flat',
-        commercial: 'Commercial Office / Retail Shop',
-        industrial: 'Factory / Industrial Plant / Warehouse',
-        land: 'Open Plot / Land Selection'
+        residential: 'Independent House',
+        commercial: 'Office',
+        industrial: 'Factory / Industrial Unit',
+        land: 'Plot / Open Land'
       };
       const targetProp = catToProperty[pkg.category];
       if (targetProp) {
@@ -1929,6 +1940,24 @@ class VastuApp {
       dateInput.value = d.toISOString().split('T')[0];
     }
 
+    // Sync confirmed amount input when package selection changes
+    const consultSelectEl = document.getElementById('wa-consultation-type');
+    const confirmedAmountEl = document.getElementById('wa-confirmed-amount');
+    if (consultSelectEl && confirmedAmountEl) {
+      consultSelectEl.addEventListener('change', () => {
+        const selOpt = consultSelectEl.options[consultSelectEl.selectedIndex];
+        const basePrice = selOpt ? selOpt.getAttribute('data-starting-price') : null;
+        if (basePrice) {
+          confirmedAmountEl.value = basePrice;
+        } else {
+          const match = (consultSelectEl.value || '').match(/₹\s*([0-9,]+)/);
+          if (match && match[1]) {
+            confirmedAmountEl.value = match[1].replace(/,/g, '');
+          }
+        }
+      });
+    }
+
     const prevBtn = document.getElementById('booking-step-prev-btn');
     const nextBtn = document.getElementById('booking-step-next-btn');
     const stepNodes = document.querySelectorAll('[data-booking-step-trigger]');
@@ -1950,6 +1979,7 @@ class VastuApp {
       const phone = document.getElementById('wa-phone') ? document.getElementById('wa-phone').value.trim() : '';
       const email = document.getElementById('wa-email') ? document.getElementById('wa-email').value.trim() : '';
       const city = document.getElementById('wa-city') ? document.getElementById('wa-city').value.trim() : '';
+      const confirmedVal = Number(document.getElementById('wa-confirmed-amount')?.value || 0);
       const date = document.getElementById('wa-date') ? document.getElementById('wa-date').value : '';
 
       if (stepNumber >= 1) {
@@ -1963,6 +1993,10 @@ class VastuApp {
           showStepAlert('Please enter your Property Location / City in Step 02.');
           return false;
         }
+        if (!confirmedVal || confirmedVal < 1) {
+          showStepAlert('Please confirm a valid Consultation Payable Fee (INR) in Step 02.');
+          return false;
+        }
       }
       if (stepNumber >= 3) {
         if (!date) {
@@ -1974,40 +2008,70 @@ class VastuApp {
       return true;
     };
 
+    this.collectBookingFormData = () => {
+      const name = (document.getElementById('wa-name')?.value || '').trim();
+      const phone = (document.getElementById('wa-phone')?.value || '').trim();
+      const altPhone = (document.getElementById('wa-alt-phone')?.value || '').trim();
+      const email = (document.getElementById('wa-email')?.value || '').trim();
+      const consultSel = document.getElementById('wa-consultation-type');
+      const consultationType = consultSel ? consultSel.value : 'Complete Home Vastu Analysis';
+      const selectedOpt = consultSel ? consultSel.options[consultSel.selectedIndex] : null;
+      const packageId = (selectedOpt && selectedOpt.getAttribute('data-pkg-id')) || 'pkg-res-complete';
+      const propertyType = document.getElementById('wa-property-type')?.value || 'Independent House';
+      const propertyStage = document.getElementById('wa-property-stage')?.value || 'Existing Property';
+      const consultationMode = document.getElementById('wa-mode')?.value || 'Online Video / Blueprint Review';
+      const city = (document.getElementById('wa-city')?.value || '').trim();
+      const date = document.getElementById('wa-date')?.value || '';
+      const timeSlot = document.getElementById('wa-time-slot')?.value || '11:30 AM - 12:30 PM';
+      const message = (document.getElementById('wa-message')?.value || '').trim();
+      const confirmedAmount = Math.max(1, Math.round(Number(document.getElementById('wa-confirmed-amount')?.value || 11000)));
+
+      return {
+        name,
+        fullName: name,
+        phone: altPhone ? `${phone} (Alt: ${altPhone})` : phone,
+        whatsapp: phone,
+        email,
+        packageId,
+        packageName: consultationType.replace(/\s*\(Starting[^)]*\)/i, '').trim(),
+        serviceName: consultationType,
+        propertyType: propertyStage ? `${propertyType} (${propertyStage})` : propertyType,
+        city,
+        consultationMode,
+        appointmentDate: date,
+        appointmentTime: `${timeSlot} • ${consultationMode}`,
+        message,
+        confirmedAmount,
+        amountPayable: confirmedAmount,
+        amount: `₹${confirmedAmount.toLocaleString('en-IN')}`,
+        source: '4-Step Guided Consultation Booking Form'
+      };
+    };
+
     this.populateLiveReviewGrid = () => {
       const reviewGrid = document.getElementById('booking-live-review-grid');
       if (!reviewGrid) return;
 
-      const name = (document.getElementById('wa-name')?.value || '').trim() || '—';
-      const phone = (document.getElementById('wa-phone')?.value || '').trim() || '—';
-      const altPhone = (document.getElementById('wa-alt-phone')?.value || '').trim();
-      const email = (document.getElementById('wa-email')?.value || '').trim() || '—';
-      const consultType = document.getElementById('wa-consultation-type')?.value || '—';
-      const propType = document.getElementById('wa-property-type')?.value || '—';
-      const city = (document.getElementById('wa-city')?.value || '').trim() || '—';
-      const stage = document.getElementById('wa-property-stage')?.value || 'Existing Property';
-      const mode = document.getElementById('wa-mode')?.value || 'Online Video / Blueprint Review';
-      const date = document.getElementById('wa-date')?.value || '—';
-      const slot = document.getElementById('wa-time-slot')?.value || '—';
-      const msg = (document.getElementById('wa-message')?.value || '').trim() || 'Standard spatial evaluation and energetic alignment requested.';
+      const d = this.collectBookingFormData();
+      const msg = d.message || 'Standard spatial evaluation and energetic alignment requested.';
 
       const rows = [
-        { label: 'Client Name', value: name, step: 1 },
-        { label: 'WhatsApp & Contact', value: altPhone ? `${phone} (Alt: ${altPhone})` : phone, step: 1 },
-        { label: 'Email Address', value: email, step: 1 },
-        { label: 'Consultation Type', value: consultType, step: 2 },
-        { label: 'Property Type & Stage', value: `${propType} • ${stage}`, step: 2 },
-        { label: 'Property Location / City', value: city, step: 2 },
-        { label: 'Consultation Mode', value: mode, step: 3 },
-        { label: 'Preferred Schedule', value: `${date} (${slot})`, step: 3 }
+        { label: 'Client Name', value: d.name || '—', step: 1 },
+        { label: 'WhatsApp & Contact', value: d.phone || '—', step: 1 },
+        { label: 'Email Address', value: d.email || '—', step: 1 },
+        { label: 'Consultation Package', value: d.serviceName || '—', step: 2 },
+        { label: 'Confirmed Payable Fee (INR)', value: `₹${d.confirmedAmount.toLocaleString('en-IN')}`, step: 2, highlight: true },
+        { label: 'Property Type & Location', value: `${d.propertyType} • ${d.city || '—'}`, step: 2 },
+        { label: 'Consultation Mode', value: d.consultationMode, step: 3 },
+        { label: 'Preferred Schedule', value: `${d.appointmentDate || '—'} (${d.appointmentTime.split('•')[0].trim()})`, step: 3 }
       ];
 
       reviewGrid.innerHTML = `
         ${rows.map(r => `
-          <div class="p-4 rounded-2xl bg-[#12080B]/80 border border-[#C6A15B]/25 flex items-start justify-between gap-3">
+          <div class="p-4 rounded-2xl ${r.highlight ? 'bg-[#481C25]/55 border-[#F9E29B]/55' : 'bg-[#12080B]/80 border-[#C6A15B]/25'} border flex items-start justify-between gap-3">
             <div>
               <span class="text-[10px] uppercase tracking-[0.18em] text-[#C6A15B] font-bold block mb-1">${r.label}</span>
-              <span class="text-xs sm:text-sm text-[#F8F3E9] font-medium">${r.value}</span>
+              <span class="text-xs sm:text-sm ${r.highlight ? 'text-[#F9E29B] font-serif font-bold text-base' : 'text-[#F8F3E9] font-medium'}">${r.value}</span>
             </div>
             <button type="button" data-edit-booking-step="${r.step}" class="text-[10px] uppercase tracking-wider text-[#F9E29B] hover:underline font-serif shrink-0">Edit</button>
           </div>
@@ -2122,6 +2186,47 @@ class VastuApp {
       });
     });
 
+    // Primary Online Payment Button on Step 04 ("Proceed to Online Payment (UPI / Razorpay)")
+    const proceedPayBtn = document.getElementById('booking-proceed-payment-btn');
+    if (proceedPayBtn) {
+      proceedPayBtn.addEventListener('click', async () => {
+        if (!validateUpToStep(3)) return;
+        const bookingData = this.collectBookingFormData();
+        proceedPayBtn.disabled = true;
+        const origHtml = proceedPayBtn.innerHTML;
+        proceedPayBtn.innerHTML = `<span>Creating Booking Reference...</span>`;
+
+        try {
+          const res = await fetch('/api/bookings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(bookingData)
+          });
+          const data = await res.json();
+          const savedBooking = (data && data.booking) || {
+            ...bookingData,
+            id: `VS-2026-${Math.floor(1000 + Math.random() * 9000)}`
+          };
+          const matchedPkg = (VASTU_DATA.packages || []).find(p => p.id === savedBooking.packageId) || {
+            id: savedBooking.packageId,
+            name: savedBooking.packageName,
+            price: savedBooking.amount,
+            rawPrice: savedBooking.amountPayable
+          };
+          this.openOnlinePaymentPortal(savedBooking, matchedPkg);
+        } catch (err) {
+          const fallbackBooking = {
+            ...bookingData,
+            id: `VS-2026-${Math.floor(1000 + Math.random() * 9000)}`
+          };
+          this.openOnlinePaymentPortal(fallbackBooking, null);
+        } finally {
+          proceedPayBtn.disabled = false;
+          proceedPayBtn.innerHTML = origHtml;
+        }
+      });
+    }
+
     const modal = document.getElementById('whatsapp-review-modal');
     const previewContent = document.getElementById('whatsapp-preview-content');
     const closeBtn = document.getElementById('whatsapp-review-close');
@@ -2139,47 +2244,23 @@ class VastuApp {
         return;
       }
 
-      const name = document.getElementById('wa-name') ? document.getElementById('wa-name').value.trim() : '';
-      const phone = document.getElementById('wa-phone') ? document.getElementById('wa-phone').value.trim() : '';
-      const altPhone = document.getElementById('wa-alt-phone') ? document.getElementById('wa-alt-phone').value.trim() : '';
-      const email = document.getElementById('wa-email') ? document.getElementById('wa-email').value.trim() : '';
-      const consultationType = document.getElementById('wa-consultation-type') ? document.getElementById('wa-consultation-type').value : '';
-      const propertyType = document.getElementById('wa-property-type') ? document.getElementById('wa-property-type').value : '';
-      const propertyStage = document.getElementById('wa-property-stage') ? document.getElementById('wa-property-stage').value : '';
-      const consultationMode = document.getElementById('wa-mode') ? document.getElementById('wa-mode').value : 'Online Video / Blueprint Review';
-      const city = document.getElementById('wa-city') ? document.getElementById('wa-city').value.trim() : '';
-      const date = document.getElementById('wa-date') ? document.getElementById('wa-date').value : '';
-      const timeSlot = document.getElementById('wa-time-slot') ? document.getElementById('wa-time-slot').value : '';
-      const message = document.getElementById('wa-message') ? document.getElementById('wa-message').value.trim() : '';
-
-      currentPayload = {
-        name,
-        phone: altPhone ? `${phone} (Alt: ${altPhone})` : phone,
-        email,
-        serviceName: consultationType,
-        propertyType: propertyStage ? `${propertyType} (${propertyStage})` : propertyType,
-        city,
-        appointmentDate: date,
-        appointmentTime: `${timeSlot} • ${consultationMode}`,
-        message,
-        source: '4-Step Guided Consultation Booking Form'
-      };
+      currentPayload = this.collectBookingFormData();
 
       formattedMessage = 
 `*VASTU SUTRAM – CONSULTATION ENQUIRY DOSSIER*
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-• *Client Name:* ${name}
-• *WhatsApp Number:* ${phone}${altPhone ? `\n• *Alternate Contact:* ${altPhone}` : ''}
-• *Email Address:* ${email}
-• *Consultation Type:* ${consultationType}
-• *Property Type:* ${propertyType}
-• *Property Stage:* ${propertyStage || 'Existing Property'}
-• *Location / City:* ${city}
-• *Consultation Mode:* ${consultationMode}
-• *Preferred Date:* ${date}
-• *Preferred Time Slot:* ${timeSlot}
+• *Client Name:* ${currentPayload.name}
+• *WhatsApp Number:* ${currentPayload.phone}
+• *Email Address:* ${currentPayload.email}
+• *Consultation Package:* ${currentPayload.serviceName}
+• *Confirmed Payable Fee:* ${currentPayload.amount}
+• *Property Type:* ${currentPayload.propertyType}
+• *Location / City:* ${currentPayload.city}
+• *Consultation Mode:* ${currentPayload.consultationMode}
+• *Preferred Date:* ${currentPayload.appointmentDate}
+• *Preferred Time Slot:* ${currentPayload.appointmentTime.split('•')[0].trim()}
 • *Client Query / Specific Concerns:*
-${message ? message : 'Standard spatial evaluation and energetic alignment requested.'}
+${currentPayload.message ? currentPayload.message : 'Standard spatial evaluation and energetic alignment requested.'}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 *Platform:* https://vastu-sutram.vercel.app`;
 
@@ -2200,8 +2281,7 @@ ${message ? message : 'Standard spatial evaluation and energetic alignment reque
 
     if (sendBtn) {
       sendBtn.addEventListener('click', async () => {
-        const rawWaNumber = (VASTU_DATA.config && VASTU_DATA.config.whatsappNumber) || '919181457155';
-        const cleanNumber = rawWaNumber.replace(/\D/g, '');
+        const cleanNumber = '918145715755';
         const encodedText = encodeURIComponent(formattedMessage);
         const waUrl = `https://api.whatsapp.com/send?phone=${cleanNumber}&text=${encodedText}`;
 
@@ -2228,17 +2308,16 @@ ${message ? message : 'Standard spatial evaluation and energetic alignment reque
     }
   }
 
-  // 13. RAZORPAY INTEGRATION & PAYMENT WORKFLOW
+  // 13. COMPLETE ONLINE PAYMENT INTEGRATION (STATE BANK OF INDIA UPI + RAZORPAY)
   initRazorpayPayment() {
     const modal = document.getElementById('razorpay-modal');
-    const modalContent = document.getElementById('razorpay-modal-content');
     const closeBtn = document.getElementById('razorpay-modal-close');
 
     if (closeBtn && modal) {
       closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
     }
 
-    // Attach to package card buttons
+    // Attach to package card "Instant Online Payment / Gateway" buttons
     document.addEventListener('click', (e) => {
       const target = e.target.closest('[data-book-package-id]');
       if (!target) return;
@@ -2247,112 +2326,669 @@ ${message ? message : 'Standard spatial evaluation and energetic alignment reque
       const pkg = (VASTU_DATA.packages || []).find(p => p.id === pkgId);
       if (!pkg) return;
 
-      if (!modal || !modalContent) {
-        this.openBookingModal();
-        return;
-      }
+      // Also pre-fill the booking form in the background so customer details stay synced
+      const existingFormData = typeof this.collectBookingFormData === 'function'
+        ? this.collectBookingFormData()
+        : {};
 
-      modalContent.innerHTML = `
-        <div class="p-4 rounded-xl bg-[#121011] border border-[#C6A15B]/30 space-y-2">
-          <div class="flex justify-between items-start">
-            <div>
-              <span class="text-[10px] uppercase tracking-widest text-[#C6A15B] font-bold">${pkg.duration} • ${pkg.mode}</span>
-              <h4 class="font-serif text-lg font-bold text-[#F8F3E9]">${pkg.name}</h4>
-            </div>
-            <span class="font-serif text-lg font-bold text-[#F9E29B]">${pkg.price}</span>
-          </div>
-          <p class="text-xs text-[#DCCBB0] font-light">${pkg.priceNote || 'Comprehensive Vedic Architectural Evaluation'}</p>
-        </div>
+      const initialBooking = {
+        id: `VS-2026-${Math.floor(1000 + Math.random() * 9000)}`,
+        name: existingFormData.name || '',
+        phone: existingFormData.phone || '',
+        whatsapp: existingFormData.whatsapp || '',
+        email: existingFormData.email || '',
+        city: existingFormData.city || '',
+        propertyType: existingFormData.propertyType || 'Residential Property',
+        packageId: pkg.id,
+        packageName: pkg.name,
+        consultationMode: existingFormData.consultationMode || pkg.mode || 'Online Video Consultation',
+        appointmentDate: existingFormData.appointmentDate || new Date(Date.now() + 2 * 86400000).toISOString().split('T')[0],
+        appointmentTime: existingFormData.appointmentTime || '11:30 AM - 12:30 PM',
+        amountPayable: pkg.rawPrice || 11000,
+        confirmedAmount: pkg.rawPrice || 11000
+      };
 
-        <div class="space-y-3 pt-2">
-          <button id="razorpay-online-pay-btn" class="w-full py-3.5 rounded-full bg-gradient-to-r from-[#D9A52D] via-[#F9E29B] to-[#C6A15B] text-[#171717] font-serif text-xs font-bold uppercase tracking-wider hover:shadow-lg transition-all flex items-center justify-center gap-2">
-            <span>Pay with Razorpay (Card / UPI / NetBanking)</span>
-            <span>💳</span>
-          </button>
-
-          <button id="razorpay-whatsapp-book-btn" class="w-full py-3.5 rounded-full bg-emerald-700 hover:bg-emerald-600 text-white font-serif text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2">
-            <span>Book via WhatsApp & Direct Bank Transfer</span>
-            <span>💬</span>
-          </button>
-        </div>
-
-        <div id="razorpay-status-message" class="hidden p-3 rounded-lg text-xs leading-relaxed"></div>
-      `;
-
-      modal.classList.remove('hidden');
-
-      const payBtn = document.getElementById('razorpay-online-pay-btn');
-      const waBtn = document.getElementById('razorpay-whatsapp-book-btn');
-      const statusBox = document.getElementById('razorpay-status-message');
-
-      if (waBtn) {
-        waBtn.addEventListener('click', () => {
-          modal.classList.add('hidden');
-          const rawWa = (VASTU_DATA.config && VASTU_DATA.config.whatsappNumber) || '9181457155';
-          const cleanWa = rawWa.replace(/\D/g, '');
-          const text = encodeURIComponent(`*VASTU SUTRAM – PACKAGE INQUIRY*\nI would like to book the *${pkg.name}* (${pkg.price}) consultation.`);
-          window.open(`https://api.whatsapp.com/send?phone=${cleanWa}&text=${text}`, '_blank');
-        });
-      }
-
-      if (payBtn) {
-        payBtn.addEventListener('click', async () => {
-          payBtn.disabled = true;
-          payBtn.innerHTML = `<span>Checking Gateway Connection...</span>`;
-
-          try {
-            const res = await fetch('/api/razorpay/create-order', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ packageId: pkg.id, amount: 510000, currency: 'INR' })
-            });
-            const data = await res.json();
-
-            if (data.setupMode) {
-              statusBox.className = 'p-3 rounded-lg bg-amber-950/60 border border-amber-500/40 text-xs text-amber-200 mt-3 leading-relaxed';
-              statusBox.innerHTML = `
-                <strong class="block mb-1 text-amber-300">⚙️ Payment Gateway Setup Notice:</strong>
-                ${data.message}<br/>
-                <span class="text-[11px] text-[#DCCBB0] mt-1 block">To complete this consultation immediately without gateway delay, please click the <strong>Book via WhatsApp</strong> option above.</span>
-              `;
-              statusBox.classList.remove('hidden');
-              payBtn.disabled = false;
-              payBtn.innerHTML = `<span>Pay with Razorpay</span> <span>💳</span>`;
-              return;
-            }
-
-            if (data.success && window.Razorpay) {
-              const options = {
-                key: data.keyId,
-                amount: data.amount,
-                currency: data.currency,
-                name: 'VASTU SUTRAM',
-                description: pkg.name,
-                order_id: data.orderId,
-                handler: async function (response) {
-                  await fetch('/api/razorpay/verify-payment', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(response)
-                  });
-                  alert('Payment Successful! Reference ID: ' + response.razorpay_payment_id);
-                  modal.classList.add('hidden');
-                },
-                theme: { color: '#C6A15B' }
-              };
-              const rzp = new window.Razorpay(options);
-              rzp.open();
-            }
-          } catch (err) {
-            statusBox.className = 'p-3 rounded-lg bg-red-950/60 border border-red-500/40 text-xs text-red-200 mt-3';
-            statusBox.textContent = 'Gateway connection initialized. Please complete via WhatsApp booking.';
-            statusBox.classList.remove('hidden');
-            payBtn.disabled = false;
-            payBtn.innerHTML = `<span>Pay with Razorpay</span> <span>💳</span>`;
-          }
-        });
-      }
+      this.openOnlinePaymentPortal(initialBooking, pkg);
     });
+  }
+
+  openOnlinePaymentPortal(bookingRecord, pkg) {
+    const modal = document.getElementById('razorpay-modal');
+    const modalContent = document.getElementById('razorpay-modal-content');
+    if (!modal || !modalContent) return;
+
+    const booking = bookingRecord || {};
+    const bookingRef = booking.id || booking.bookingId || `VS-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+    const packageName = (pkg && pkg.name) || booking.packageName || 'Complete Home Vastu Analysis';
+    const packageId = (pkg && pkg.id) || booking.packageId || 'pkg-res-complete';
+    const startingPriceLabel = (pkg && pkg.price) || `Starting from ₹${(booking.amountPayable || 11000).toLocaleString('en-IN')}`;
+    let confirmedAmount = Math.max(
+      1,
+      Math.round(Number(booking.amountPayable || booking.confirmedAmount || (pkg && pkg.rawPrice) || 11000))
+    );
+
+    const buildUpiDeepLink = (amountInr, refId) => {
+      const cleanAmt = Number(amountInr || 5100).toFixed(2);
+      return `upi://pay?pa=gauriomji@oksbi&pn=${encodeURIComponent('Vastu Sutram')}&am=${encodeURIComponent(cleanAmt)}&cu=INR&tn=${encodeURIComponent(refId)}`;
+    };
+
+    const buildQrCodeUrl = (upiUri) => {
+      return `https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=10&color=12080B&bgcolor=FFFDF8&data=${encodeURIComponent(upiUri)}`;
+    };
+
+    const upiUri = buildUpiDeepLink(confirmedAmount, bookingRef);
+    const qrUrl = buildQrCodeUrl(upiUri);
+
+    modalContent.innerHTML = `
+      <!-- Top Booking & Fee Summary Dossier -->
+      <div class="p-5 rounded-2xl bg-[#12080B]/95 border border-[#C6A15B]/40 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#C6A15B]/20 pb-3.5">
+          <div>
+            <span class="text-[10px] uppercase tracking-[0.2em] text-[#C6A15B] font-bold block">SELECTED CONSULTATION PACKAGE</span>
+            <h4 class="font-serif text-lg sm:text-xl font-bold text-[#F8F3E9]">${packageName}</h4>
+            <span class="text-[11px] text-[#DCCBB0]">${startingPriceLabel} • Currency: INR (₹)</span>
+          </div>
+          <div class="sm:text-right">
+            <span class="text-[10px] uppercase tracking-[0.2em] text-[#C6A15B] font-bold block">BOOKING REFERENCE</span>
+            <span id="pay-portal-ref" class="font-mono text-base sm:text-lg font-bold text-[#F9E29B] bg-[#481C25]/70 px-3 py-1 rounded-lg border border-[#C6A15B]/40 inline-block mt-0.5">${bookingRef}</span>
+          </div>
+        </div>
+
+        <!-- Customer Details Row (Editable if not yet filled) -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+          <div>
+            <label class="block text-[10px] uppercase tracking-wider text-[#C6A15B] font-semibold mb-1">Customer Name *</label>
+            <input type="text" id="pay-cust-name" value="${(booking.name || '').replace(/"/g, '&quot;')}" placeholder="Enter Full Name" class="w-full px-3 py-2 rounded-xl bg-[#1B0D12] border border-[#C6A15B]/35 text-xs text-[#F8F3E9] outline-none focus:border-[#F9E29B]" />
+          </div>
+          <div>
+            <label class="block text-[10px] uppercase tracking-wider text-[#C6A15B] font-semibold mb-1">Mobile / WhatsApp *</label>
+            <input type="tel" id="pay-cust-phone" value="${(booking.phone || '').replace(/"/g, '&quot;')}" placeholder="+91 98765 43210" class="w-full px-3 py-2 rounded-xl bg-[#1B0D12] border border-[#C6A15B]/35 text-xs text-[#F8F3E9] outline-none focus:border-[#F9E29B]" />
+          </div>
+          <div>
+            <label class="block text-[10px] uppercase tracking-wider text-[#C6A15B] font-semibold mb-1">Email Address *</label>
+            <input type="email" id="pay-cust-email" value="${(booking.email || '').replace(/"/g, '&quot;')}" placeholder="client@example.com" class="w-full px-3 py-2 rounded-xl bg-[#1B0D12] border border-[#C6A15B]/35 text-xs text-[#F8F3E9] outline-none focus:border-[#F9E29B]" />
+          </div>
+        </div>
+
+        <!-- Confirmed Payable Amount Control -->
+        <div class="p-3.5 rounded-xl bg-[#481C25]/45 border border-[#C6A15B]/35 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <span class="text-[10px] uppercase tracking-[0.18em] text-[#F9E29B] font-bold block">CONFIRMED PAYABLE AMOUNT (INR)</span>
+            <p class="text-[11px] text-[#DCCBB0] font-light">
+              Package prices are starting prices. Confirm or adjust the exact agreed consultation fee below:
+            </p>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <span class="font-serif text-lg font-bold text-[#F9E29B]">₹</span>
+            <input
+              type="number"
+              id="pay-confirmed-amount-input"
+              min="1"
+              step="1"
+              value="${confirmedAmount}"
+              class="w-36 px-3 py-2 rounded-xl bg-[#12080B] border border-[#F9E29B]/60 font-mono text-base font-bold text-[#F9E29B] outline-none text-right"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Payment Method Selector Tabs -->
+      <div class="grid grid-cols-2 gap-3" role="tablist">
+        <button
+          type="button"
+          id="tab-btn-upi"
+          class="p-3.5 rounded-2xl border border-[#F9E29B] bg-[#481C25]/85 text-left transition-all flex items-center justify-between"
+        >
+          <div>
+            <span class="text-[10px] uppercase tracking-[0.18em] text-[#F9E29B] font-bold block">OPTION A • DIRECT BANK UPI</span>
+            <span class="font-serif text-sm font-bold text-[#F8F3E9]">Pay Using SBI UPI</span>
+          </div>
+          <span class="text-lg">📲</span>
+        </button>
+
+        <button
+          type="button"
+          id="tab-btn-razorpay"
+          class="p-3.5 rounded-2xl border border-[#C6A15B]/30 bg-[#12080B]/75 hover:border-[#C6A15B]/60 text-left transition-all flex items-center justify-between"
+        >
+          <div>
+            <span class="text-[10px] uppercase tracking-[0.18em] text-[#C6A15B] font-bold block">OPTION B • INSTANT GATEWAY</span>
+            <span class="font-serif text-sm font-bold text-[#F8F3E9]">Pay Using Razorpay</span>
+          </div>
+          <span class="text-lg">💳</span>
+        </button>
+      </div>
+
+      <!-- ========================================================== -->
+      <!-- OPTION A PANEL: STATE BANK OF INDIA UPI (gauriomji@oksbi)  -->
+      <!-- ========================================================== -->
+      <div id="panel-pay-upi" class="p-5 rounded-2xl bg-[#12080B]/90 border border-[#C6A15B]/40 space-y-5">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+          <!-- Left: Scannable Dynamic QR Code -->
+          <div class="md:col-span-5 flex flex-col items-center text-center p-4 rounded-2xl bg-[#FFFDF8] text-[#171717] border-2 border-[#C6A15B] shadow-lg">
+            <span class="text-[10px] uppercase tracking-[0.2em] font-bold text-[#481C25] mb-2">SCAN WITH ANY UPI APP</span>
+            <img
+              id="upi-dynamic-qr-img"
+              src="${qrUrl}"
+              alt="Vastu Sutram State Bank of India UPI QR Code (gauriomji@oksbi)"
+              class="w-44 h-44 object-contain rounded-lg border border-[#C6A15B]/30"
+            />
+            <span class="text-[11px] font-mono font-bold text-[#481C25] mt-2">UPI ID: gauriomji@oksbi</span>
+            <span class="text-[10px] text-[#171717]/75">GPay • PhonePe • Paytm • BHIM • SBI Pay</span>
+          </div>
+
+          <!-- Right: Verified Merchant UPI Credentials & Mobile Deep Link -->
+          <div class="md:col-span-7 space-y-3.5 text-xs">
+            <div class="p-3.5 rounded-xl bg-[#1B0D12] border border-[#C6A15B]/30 space-y-2">
+              <div class="flex justify-between items-center">
+                <span class="text-[#DCCBB0]">Payee Name:</span>
+                <strong class="text-[#F8F3E9] font-serif">Vastu Sutram</strong>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-[#DCCBB0]">Official UPI ID:</span>
+                <div class="flex items-center gap-2">
+                  <strong class="text-[#F9E29B] font-mono text-sm">gauriomji@oksbi</strong>
+                  <button type="button" id="copy-upi-id-btn" class="px-2 py-0.5 rounded bg-[#481C25] border border-[#C6A15B]/50 text-[10px] text-[#F9E29B] hover:bg-[#C6A15B] hover:text-[#12080B] transition-all">Copy</button>
+                </div>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-[#DCCBB0]">Payment Provider:</span>
+                <strong class="text-[#F8F3E9]">State Bank of India UPI</strong>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-[#DCCBB0]">Exact Payable Amount:</span>
+                <strong id="upi-amount-readout" class="text-[#F9E29B] font-serif text-base">₹${confirmedAmount.toLocaleString('en-IN')}</strong>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-[#DCCBB0]">Booking Reference Note:</span>
+                <strong class="text-[#F8F3E9] font-mono">${bookingRef}</strong>
+              </div>
+            </div>
+
+            <!-- Mobile Deep-Link Button -->
+            <a
+              id="upi-open-app-link"
+              href="${upiUri}"
+              class="vastu-pkg-cta-btn w-full py-3.5 px-5 rounded-full font-serif text-xs font-bold uppercase tracking-[0.16em] flex items-center justify-center gap-2 text-center"
+            >
+              <span>📱 Open UPI App to Pay ₹<span id="upi-btn-amt">${confirmedAmount.toLocaleString('en-IN')}</span></span>
+              <span>➔</span>
+            </a>
+
+            <!-- UTR / UPI Reference Submission for Admin Verification -->
+            <div class="p-3.5 rounded-xl bg-[#181215] border border-[#C6A15B]/30 space-y-2.5">
+              <label for="upi-utr-input" class="block text-[11px] font-serif text-[#F9E29B] font-semibold">
+                Completed UPI Transfer? Enter 12-Digit UTR / UPI Reference No:
+              </label>
+              <div class="flex flex-col sm:flex-row gap-2">
+                <input
+                  type="text"
+                  id="upi-utr-input"
+                  placeholder="e.g. 431098765432 (Optional / Recommended)"
+                  class="flex-1 px-3.5 py-2.5 rounded-xl bg-[#12080B] border border-[#C6A15B]/40 text-xs font-mono text-[#F8F3E9] outline-none focus:border-[#F9E29B]"
+                />
+                <button
+                  type="button"
+                  id="upi-submit-verification-btn"
+                  class="px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white font-serif text-xs font-bold uppercase tracking-wider transition-all shrink-0"
+                >
+                  Submit UPI Payment ➔
+                </button>
+              </div>
+              <p class="text-[10px] text-[#DCCBB0]/80 leading-relaxed">
+                <strong>Verification Policy:</strong> Direct UPI transfers to <span class="font-mono text-[#F9E29B]">gauriomji@oksbi</span> are recorded as <em>Manual Verification Required</em> and marked <em>Paid</em> once verified against State Bank of India settlement records.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========================================================== -->
+      <!-- OPTION B PANEL: RAZORPAY CHECKOUT GATEWAY                  -->
+      <!-- ========================================================== -->
+      <div id="panel-pay-razorpay" class="hidden p-5 rounded-2xl bg-[#12080B]/90 border border-[#C6A15B]/40 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#C6A15B]/20">
+          <div>
+            <span class="text-[10px] uppercase tracking-[0.2em] text-[#C6A15B] font-bold block">INSTANT AUTOMATED VERIFICATION</span>
+            <h5 class="font-serif text-base font-bold text-[#F8F3E9]">Razorpay Secure Checkout (256-Bit SSL)</h5>
+          </div>
+          <div class="flex flex-wrap gap-1.5 text-[10px] text-[#F9E29B]">
+            <span class="px-2.5 py-1 rounded-full bg-[#481C25]/70 border border-[#C6A15B]/35">UPI / GPay / PhonePe</span>
+            <span class="px-2.5 py-1 rounded-full bg-[#481C25]/70 border border-[#C6A15B]/35">Credit &amp; Debit Cards</span>
+            <span class="px-2.5 py-1 rounded-full bg-[#481C25]/70 border border-[#C6A15B]/35">Net Banking</span>
+          </div>
+        </div>
+
+        <p class="text-xs text-[#DCCBB0] font-light leading-relaxed">
+          Pay securely via Razorpay using UPI, Visa/MasterCard/RuPay Cards, or Net Banking. Your payment signature is verified cryptographically on our server for instant booking confirmation.
+        </p>
+
+        <button
+          type="button"
+          id="razorpay-online-pay-btn"
+          class="btn-gold-shimmer w-full py-4 rounded-full text-xs sm:text-sm font-serif font-bold uppercase tracking-[0.18em] flex items-center justify-center gap-2.5 shadow-xl"
+        >
+          <span>💳 Pay ₹<span id="rzp-btn-amt">${confirmedAmount.toLocaleString('en-IN')}</span> via Razorpay Checkout</span>
+          <span>➔</span>
+        </button>
+      </div>
+
+      <!-- Status / Error Alert Box -->
+      <div id="razorpay-status-message" class="hidden p-4 rounded-xl text-xs leading-relaxed"></div>
+    `;
+
+    modal.classList.remove('hidden');
+
+    // Bind interactive elements inside the payment portal
+    const amtInput = document.getElementById('pay-confirmed-amount-input');
+    const qrImg = document.getElementById('upi-dynamic-qr-img');
+    const upiReadout = document.getElementById('upi-amount-readout');
+    const upiBtnAmt = document.getElementById('upi-btn-amt');
+    const rzpBtnAmt = document.getElementById('rzp-btn-amt');
+    const upiLink = document.getElementById('upi-open-app-link');
+    const tabUpi = document.getElementById('tab-btn-upi');
+    const tabRzp = document.getElementById('tab-btn-razorpay');
+    const panelUpi = document.getElementById('panel-pay-upi');
+    const panelRzp = document.getElementById('panel-pay-razorpay');
+    const copyBtn = document.getElementById('copy-upi-id-btn');
+    const upiSubmitBtn = document.getElementById('upi-submit-verification-btn');
+    const rzpPayBtn = document.getElementById('razorpay-online-pay-btn');
+    const statusBox = document.getElementById('razorpay-status-message');
+
+    const getCustomerInputs = () => {
+      const name = (document.getElementById('pay-cust-name')?.value || '').trim();
+      const phone = (document.getElementById('pay-cust-phone')?.value || '').trim();
+      const email = (document.getElementById('pay-cust-email')?.value || '').trim();
+      return {
+        name: name || booking.name || 'Valued Client',
+        fullName: name || booking.name || 'Valued Client',
+        phone: phone || booking.phone || '',
+        whatsapp: phone || booking.whatsapp || booking.phone || '',
+        email: email || booking.email || '',
+        city: booking.city || '',
+        propertyType: booking.propertyType || 'Residential Property',
+        consultationMode: booking.consultationMode || 'Online Video Consultation',
+        appointmentDate: booking.appointmentDate || '',
+        appointmentTime: booking.appointmentTime || ''
+      };
+    };
+
+    const showPortalAlert = (html, type = 'amber') => {
+      if (!statusBox) return;
+      const styles = {
+        amber: 'p-4 rounded-xl bg-amber-950/75 border border-amber-400/45 text-xs text-amber-100 leading-relaxed',
+        rose: 'p-4 rounded-xl bg-rose-950/75 border border-rose-400/45 text-xs text-rose-100 leading-relaxed',
+        emerald: 'p-4 rounded-xl bg-emerald-950/75 border border-emerald-400/45 text-xs text-emerald-100 leading-relaxed'
+      };
+      statusBox.className = styles[type] || styles.amber;
+      statusBox.innerHTML = html;
+      statusBox.classList.remove('hidden');
+    };
+
+    if (amtInput) {
+      amtInput.addEventListener('input', () => {
+        const val = Math.max(1, Math.round(Number(amtInput.value || 1)));
+        confirmedAmount = val;
+        const formatted = val.toLocaleString('en-IN');
+        if (upiReadout) upiReadout.textContent = `₹${formatted}`;
+        if (upiBtnAmt) upiBtnAmt.textContent = formatted;
+        if (rzpBtnAmt) rzpBtnAmt.textContent = formatted;
+        const nextUri = buildUpiDeepLink(val, bookingRef);
+        if (upiLink) upiLink.setAttribute('href', nextUri);
+        if (qrImg) qrImg.setAttribute('src', buildQrCodeUrl(nextUri));
+      });
+    }
+
+    if (tabUpi && tabRzp && panelUpi && panelRzp) {
+      tabUpi.addEventListener('click', () => {
+        panelUpi.classList.remove('hidden');
+        panelRzp.classList.add('hidden');
+        tabUpi.className = 'p-3.5 rounded-2xl border border-[#F9E29B] bg-[#481C25]/85 text-left transition-all flex items-center justify-between';
+        tabRzp.className = 'p-3.5 rounded-2xl border border-[#C6A15B]/30 bg-[#12080B]/75 hover:border-[#C6A15B]/60 text-left transition-all flex items-center justify-between';
+      });
+      tabRzp.addEventListener('click', () => {
+        panelRzp.classList.remove('hidden');
+        panelUpi.classList.add('hidden');
+        tabRzp.className = 'p-3.5 rounded-2xl border border-[#F9E29B] bg-[#481C25]/85 text-left transition-all flex items-center justify-between';
+        tabUpi.className = 'p-3.5 rounded-2xl border border-[#C6A15B]/30 bg-[#12080B]/75 hover:border-[#C6A15B]/60 text-left transition-all flex items-center justify-between';
+      });
+    }
+
+    if (copyBtn) {
+      copyBtn.addEventListener('click', () => {
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText('gauriomji@oksbi');
+        }
+        copyBtn.textContent = 'Copied ✓';
+        setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2000);
+      });
+    }
+
+    // Option A Handler: Submit Direct SBI UPI Payment Reference (Marks Manual Verification Required)
+    if (upiSubmitBtn) {
+      upiSubmitBtn.addEventListener('click', async () => {
+        const cust = getCustomerInputs();
+        if (!cust.name || !cust.phone) {
+          showPortalAlert('⚠️ Please enter your Full Name and Mobile / WhatsApp number above before submitting your UPI payment reference.', 'rose');
+          return;
+        }
+        const utrVal = (document.getElementById('upi-utr-input')?.value || '').trim();
+        upiSubmitBtn.disabled = true;
+        upiSubmitBtn.textContent = 'Recording...';
+
+        try {
+          const res = await fetch('/api/payments/upi-submit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              bookingId: bookingRef,
+              packageId,
+              packageName,
+              confirmedAmount,
+              utrNumber: utrVal || 'SUBMITTED-VIA-SBI-UPI',
+              customerData: cust
+            })
+          });
+          const data = await res.json();
+          if (!res.ok || !data.success) {
+            showPortalAlert(`⚠️ ${data.error || 'Could not record UPI submission.'}`, 'rose');
+            upiSubmitBtn.disabled = false;
+            upiSubmitBtn.textContent = 'Submit UPI Payment ➔';
+            return;
+          }
+          this.renderPaymentConfirmationScreen(modalContent, data.booking, {
+            isVerifiedPaid: false,
+            isManualUpi: true
+          });
+        } catch (err) {
+          showPortalAlert('⚠️ Network error while recording UPI reference. Please try again.', 'rose');
+          upiSubmitBtn.disabled = false;
+          upiSubmitBtn.textContent = 'Submit UPI Payment ➔';
+        }
+      });
+    }
+
+    // Option B Handler: Razorpay Order Creation & Cryptographic Signature Verification
+    if (rzpPayBtn) {
+      rzpPayBtn.addEventListener('click', async () => {
+        const cust = getCustomerInputs();
+        if (!cust.name || !cust.phone) {
+          showPortalAlert('⚠️ Please enter your Full Name and Mobile / WhatsApp number above before initiating Razorpay checkout.', 'rose');
+          return;
+        }
+
+        rzpPayBtn.disabled = true;
+        const origLabel = rzpPayBtn.innerHTML;
+        rzpPayBtn.innerHTML = `<span>Initializing Secure Razorpay Order...</span>`;
+
+        try {
+          const res = await fetch('/api/payments/create-order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              bookingId: bookingRef,
+              packageId,
+              packageName,
+              confirmedAmount,
+              customerData: cust
+            })
+          });
+          const orderData = await res.json();
+
+          if (orderData.alreadyPaid) {
+            showPortalAlert(`✓ ${orderData.error}`, 'emerald');
+            rzpPayBtn.disabled = false;
+            rzpPayBtn.innerHTML = origLabel;
+            return;
+          }
+
+          if (orderData.setupMode) {
+            showPortalAlert(`
+              <strong class="block text-amber-300 mb-1">⚙️ Razorpay Credentials Required for Card/Gateway Checkout:</strong>
+              ${orderData.message}
+              <div class="mt-2 pt-2 border-t border-amber-400/25 flex flex-wrap items-center justify-between gap-2">
+                <span class="text-[11px] text-[#F9E29B]">You can pay immediately right now using <strong>Option A: State Bank of India UPI (gauriomji@oksbi)</strong>.</span>
+                <button type="button" id="switch-to-upi-tab-btn" class="px-3 py-1 rounded-lg bg-[#C6A15B] text-[#12080B] font-serif font-bold text-[11px] uppercase">Switch to SBI UPI QR ➔</button>
+              </div>
+            `, 'amber');
+            const swBtn = document.getElementById('switch-to-upi-tab-btn');
+            if (swBtn && tabUpi) swBtn.addEventListener('click', () => tabUpi.click());
+            rzpPayBtn.disabled = false;
+            rzpPayBtn.innerHTML = origLabel;
+            return;
+          }
+
+          if (!orderData.success || !orderData.orderId) {
+            showPortalAlert(`⚠️ ${orderData.error || 'Could not create Razorpay order.'}`, 'rose');
+            rzpPayBtn.disabled = false;
+            rzpPayBtn.innerHTML = origLabel;
+            return;
+          }
+
+          if (!window.Razorpay) {
+            showPortalAlert('⚠️ Razorpay Checkout SDK could not be loaded. Please check your internet connection or use Option A: State Bank of India UPI (gauriomji@oksbi).', 'rose');
+            rzpPayBtn.disabled = false;
+            rzpPayBtn.innerHTML = origLabel;
+            return;
+          }
+
+          const options = {
+            key: orderData.keyId,
+            amount: orderData.amount,
+            currency: orderData.currency || 'INR',
+            name: 'Vastu Sutram',
+            description: `${packageName} (${bookingRef})`,
+            image: 'assets/logo-emblem.png',
+            order_id: orderData.orderId,
+            prefill: {
+              name: cust.name,
+              email: cust.email,
+              contact: cust.phone
+            },
+            notes: {
+              bookingReference: bookingRef,
+              packageName
+            },
+            theme: { color: '#C6A15B' },
+            handler: async (response) => {
+              showPortalAlert('🔒 Verifying cryptographic payment signature with Vastu Sutram server...', 'amber');
+              try {
+                const verifyRes = await fetch('/api/payments/verify', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    bookingId: bookingRef,
+                    razorpay_order_id: response.razorpay_order_id,
+                    razorpay_payment_id: response.razorpay_payment_id,
+                    razorpay_signature: response.razorpay_signature,
+                    confirmedAmount,
+                    customerName: cust.name,
+                    phone: cust.phone,
+                    email: cust.email,
+                    packageName
+                  })
+                });
+                const verifyData = await verifyRes.json();
+                if (verifyRes.ok && verifyData.verified) {
+                  this.renderPaymentConfirmationScreen(modalContent, verifyData.booking, {
+                    isVerifiedPaid: true,
+                    isManualUpi: false
+                  });
+                } else {
+                  showPortalAlert(`❌ Payment Verification Failed: ${verifyData.error || 'Signature mismatch.'} If any amount was debited, please contact vastusutram@gmail.com with reference ${bookingRef}.`, 'rose');
+                  rzpPayBtn.disabled = false;
+                  rzpPayBtn.innerHTML = origLabel;
+                }
+              } catch (verErr) {
+                showPortalAlert('❌ Server verification request interrupted. Please contact support with your payment ID.', 'rose');
+                rzpPayBtn.disabled = false;
+                rzpPayBtn.innerHTML = origLabel;
+              }
+            },
+            modal: {
+              ondismiss: () => {
+                rzpPayBtn.disabled = false;
+                rzpPayBtn.innerHTML = origLabel;
+              }
+            }
+          };
+
+          const rzpInstance = new window.Razorpay(options);
+          rzpInstance.on('payment.failed', (failResp) => {
+            const errDesc = failResp?.error?.description || 'Transaction was declined or cancelled by the bank.';
+            showPortalAlert(`❌ <strong>Payment Failed:</strong> ${errDesc} You may retry with Razorpay or use Option A: State Bank of India UPI (<span class="font-mono">gauriomji@oksbi</span>).`, 'rose');
+            rzpPayBtn.disabled = false;
+            rzpPayBtn.innerHTML = origLabel;
+          });
+          rzpInstance.open();
+        } catch (err) {
+          showPortalAlert(`⚠️ Unable to reach payment gateway: ${err.message}`, 'rose');
+          rzpPayBtn.disabled = false;
+          rzpPayBtn.innerHTML = origLabel;
+        }
+      });
+    }
+  }
+
+  renderPaymentConfirmationScreen(container, booking, { isVerifiedPaid = false, isManualUpi = false } = {}) {
+    if (!container || !booking) return;
+
+    const paymentDate = new Date(booking.paidAt || booking.upiSubmittedAt || booking.createdAt || Date.now()).toLocaleString('en-IN', {
+      dateStyle: 'medium',
+      timeStyle: 'short'
+    });
+    const amountFormatted = `₹${Number(booking.amountPayable || 0).toLocaleString('en-IN')}`;
+    const txId = booking.transactionId || 'Pending';
+    const paymentStatusBadge = isVerifiedPaid ? 'Paid' : (booking.paymentStatus || 'Manual Verification Required');
+    const bookingStatusBadge = isVerifiedPaid ? 'Confirmed' : (booking.status || 'Pending Verification');
+
+    const waMessage =
+`Hello Vastu Sutram, I have completed my consultation payment.
+
+Customer Name: ${booking.name || booking.fullName || ''}
+Booking Reference: ${booking.id || ''}
+Consultation Package: ${booking.packageName || ''}
+Amount Paid: ${amountFormatted}
+Transaction ID: ${txId}
+Payment Method: ${booking.paymentMethod || ''}
+Payment Status: ${paymentStatusBadge}
+Preferred Date: ${booking.appointmentDate || 'As Scheduled'}`;
+
+    const waUrl = `https://api.whatsapp.com/send?phone=918145715755&text=${encodeURIComponent(waMessage)}`;
+
+    container.innerHTML = `
+      <div class="text-center py-4 space-y-5" id="vastu-payment-receipt-card">
+        <!-- Animated Golden Emblem Seal -->
+        <div class="w-20 h-20 mx-auto rounded-full ${
+          isVerifiedPaid
+            ? 'bg-gradient-to-br from-[#D9A52D] via-[#FFF2C2] to-[#C6A15B] text-[#12080B] shadow-[0_0_40px_rgba(249,226,155,0.6)]'
+            : 'bg-[#481C25] border-2 border-[#F9E29B] text-[#F9E29B] shadow-[0_0_30px_rgba(198,161,91,0.35)]'
+        } flex items-center justify-center text-4xl font-bold">
+          ${isVerifiedPaid ? '✓' : '⏳'}
+        </div>
+
+        <div>
+          <span class="text-[10px] uppercase tracking-[0.24em] text-[#C6A15B] font-bold block mb-1">
+            ${isVerifiedPaid ? 'OFFICIAL PAYMENT RECEIPT & CONFIRMATION' : 'DIRECT SBI UPI SUBMISSION RECORDED'}
+          </span>
+          <h3 class="font-serif text-2xl sm:text-3xl font-bold text-[#F9E29B]">
+            ${isVerifiedPaid ? 'Payment Successful!' : 'Payment Reference Submitted'}
+          </h3>
+          <p class="text-xs sm:text-sm text-[#F8F3E9] font-serif italic mt-1">
+            "Thank you for choosing Vastu Sutram."
+          </p>
+        </div>
+
+        <!-- Detailed Receipt Grid -->
+        <div class="p-5 rounded-2xl bg-[#12080B] border border-[#C6A15B]/45 text-left space-y-3 text-xs shadow-xl">
+          <div class="flex items-center justify-between border-b border-[#C6A15B]/20 pb-3">
+            <div class="flex items-center gap-2.5">
+              <img src="assets/logo-emblem.png" alt="Vastu Sutram" class="h-9 w-auto object-contain original-brand-logo" />
+              <div>
+                <div class="font-serif font-bold text-sm text-[#F9E29B]">VASTU SUTRAM</div>
+                <div class="text-[10px] text-[#C6A15B] tracking-widest uppercase">State Bank of India UPI • Razorpay</div>
+              </div>
+            </div>
+            <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+              isVerifiedPaid
+                ? 'bg-emerald-950/90 text-emerald-300 border border-emerald-400/50'
+                : 'bg-amber-950/90 text-amber-300 border border-amber-400/50'
+            }">
+              ${paymentStatusBadge}
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+            <div class="p-3 rounded-xl bg-[#1B0D12]/90 border border-[#C6A15B]/20">
+              <span class="text-[10px] uppercase tracking-wider text-[#C6A15B] block">Customer Name</span>
+              <strong class="text-sm text-[#F8F3E9]">${booking.name || booking.fullName || 'Client'}</strong>
+            </div>
+            <div class="p-3 rounded-xl bg-[#1B0D12]/90 border border-[#C6A15B]/20">
+              <span class="text-[10px] uppercase tracking-wider text-[#C6A15B] block">Booking Reference ID</span>
+              <strong class="text-sm font-mono text-[#F9E29B]">${booking.id}</strong>
+            </div>
+            <div class="p-3 rounded-xl bg-[#1B0D12]/90 border border-[#C6A15B]/20">
+              <span class="text-[10px] uppercase tracking-wider text-[#C6A15B] block">Selected Package</span>
+              <strong class="text-sm text-[#F8F3E9]">${booking.packageName || 'Vastu Consultation'}</strong>
+            </div>
+            <div class="p-3 rounded-xl bg-[#1B0D12]/90 border border-[#C6A15B]/20">
+              <span class="text-[10px] uppercase tracking-wider text-[#C6A15B] block">${isVerifiedPaid ? 'Amount Paid' : 'Confirmed Payable Amount'}</span>
+              <strong class="text-base font-serif text-[#F9E29B]">${amountFormatted}</strong>
+            </div>
+            <div class="p-3 rounded-xl bg-[#1B0D12]/90 border border-[#C6A15B]/20">
+              <span class="text-[10px] uppercase tracking-wider text-[#C6A15B] block">Transaction / UTR ID</span>
+              <strong class="text-xs font-mono text-[#F8F3E9] break-all">${txId}</strong>
+            </div>
+            <div class="p-3 rounded-xl bg-[#1B0D12]/90 border border-[#C6A15B]/20">
+              <span class="text-[10px] uppercase tracking-wider text-[#C6A15B] block">Payment Date &amp; Status</span>
+              <strong class="text-xs text-[#F8F3E9]">${paymentDate} • ${bookingStatusBadge}</strong>
+            </div>
+          </div>
+
+          <div class="p-3 rounded-xl bg-[#481C25]/40 border border-[#C6A15B]/30 text-[11px] text-[#DCCBB0] leading-relaxed">
+            ${
+              isVerifiedPaid
+                ? `✓ Your payment has been cryptographically verified and your consultation booking is <strong>Confirmed</strong>. A confirmation record has been logged for <strong>${booking.email || 'your email'}</strong> from <strong>vastusutram@gmail.com</strong>.`
+                : `⏳ Your direct UPI payment reference to <strong>gauriomji@oksbi</strong> (State Bank of India UPI) is recorded with status <strong>Manual Verification Required</strong>. Once verified by our administration, your booking status will be updated to <strong>Paid &amp; Confirmed</strong>.`
+            }
+          </div>
+        </div>
+
+        <!-- Action Buttons: WhatsApp Notification (+91 81457 15755) + Print Receipt -->
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+          <a
+            href="${waUrl}"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="w-full sm:w-auto flex-1 py-3.5 px-6 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-serif text-xs font-bold uppercase tracking-[0.15em] flex items-center justify-center gap-2 shadow-lg transition-all"
+          >
+            <span>💬 Send Payment Details on WhatsApp (+91 81457 15755)</span>
+            <span>➔</span>
+          </a>
+
+          <button
+            type="button"
+            id="btn-print-payment-receipt"
+            class="w-full sm:w-auto px-6 py-3.5 rounded-full border border-[#C6A15B]/60 text-[#F9E29B] hover:bg-[#481C25] font-serif text-xs font-semibold uppercase tracking-[0.14em] transition-all"
+          >
+            🖨️ Print Receipt
+          </button>
+        </div>
+      </div>
+    `;
+
+    if (window.gsap) {
+      window.gsap.fromTo(
+        container.firstElementChild,
+        { opacity: 0, scale: 0.95, y: 12 },
+        { opacity: 1, scale: 1, y: 0, duration: 0.5, ease: 'power3.out' }
+      );
+    }
+
+    const printBtn = document.getElementById('btn-print-payment-receipt');
+    if (printBtn) {
+      printBtn.addEventListener('click', () => window.print());
+    }
   }
 
   // 14. CONTACT FORM

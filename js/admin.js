@@ -79,6 +79,7 @@ class VastuAdminDashboard {
         <div class="flex items-center gap-2 overflow-x-auto border-b border-[#C6A15B]/20 pb-3 mb-6 text-xs">
           ${[
             { id: 'bookings', label: 'Bookings & Appointments', count: this.bookings.length },
+            { id: 'payments', label: 'Payments & SBI UPI Ledger', count: this.bookings.length },
             { id: 'inquiries', label: 'Client Inquiries', count: this.inquiries.length },
             { id: 'slots', label: 'Availability & Slots' },
             { id: 'packages', label: 'Package & Price Editor' },
@@ -150,6 +151,8 @@ class VastuAdminDashboard {
     switch (this.activeTab) {
       case 'bookings':
         return this.renderBookingsTab();
+      case 'payments':
+        return this.renderPaymentsTab();
       case 'inquiries':
         return this.renderInquiriesTab();
       case 'slots':
@@ -163,6 +166,179 @@ class VastuAdminDashboard {
       default:
         return ``;
     }
+  }
+
+  getPaymentStatusBadgeClass(status) {
+    const s = (status || 'Pending').toLowerCase();
+    if (s === 'paid') return 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
+    if (s.includes('manual verification')) return 'bg-amber-500/20 text-amber-300 border border-amber-500/40';
+    if (s === 'failed') return 'bg-rose-500/20 text-rose-300 border border-rose-500/40';
+    if (s.includes('refund')) return 'bg-purple-500/20 text-purple-300 border border-purple-500/40';
+    return 'bg-slate-500/20 text-[#DCCBB0] border border-[#C6A15B]/30';
+  }
+
+  // 1A. DEDICATED PAYMENTS & SBI UPI MANAGEMENT TAB
+  renderPaymentsTab() {
+    const validStatuses = [
+      'Pending',
+      'Paid',
+      'Failed',
+      'Refund Initiated',
+      'Refunded',
+      'Manual Verification Required'
+    ];
+
+    let filtered = this.bookings;
+    if (this.statusFilter !== 'all') {
+      filtered = filtered.filter(
+        b => (b.paymentStatus || 'Pending').toLowerCase() === this.statusFilter.toLowerCase()
+      );
+    }
+    if (this.searchFilter) {
+      const q = this.searchFilter.toLowerCase();
+      filtered = filtered.filter(b =>
+        (b.name || b.fullName || '').toLowerCase().includes(q) ||
+        (b.id || '').toLowerCase().includes(q) ||
+        (b.email || '').toLowerCase().includes(q) ||
+        (b.transactionId || '').toLowerCase().includes(q) ||
+        (b.phone || '').toLowerCase().includes(q)
+      );
+    }
+
+    const totalReceivable = this.bookings.reduce((sum, b) => sum + (Number(b.amountPayable) || 0), 0);
+    const totalReceived = this.bookings
+      .filter(b => b.paymentStatus === 'Paid')
+      .reduce((sum, b) => sum + (Number(b.amountReceived || b.amountPayable) || 0), 0);
+    const pendingManualCount = this.bookings.filter(
+      b => b.paymentStatus === 'Manual Verification Required'
+    ).length;
+
+    return `
+      <div class="space-y-4">
+        <!-- Summary Metrics Banner -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+          <div class="p-3.5 rounded-xl bg-[#12080B] border border-[#C6A15B]/30">
+            <span class="text-[10px] uppercase tracking-wider text-[#C6A15B] block">Official SBI UPI Settlement ID</span>
+            <strong class="font-mono text-sm text-[#F9E29B]">gauriomji@oksbi</strong>
+            <span class="text-[10px] text-[#DCCBB0] block mt-0.5">State Bank of India UPI • Vastu Sutram</span>
+          </div>
+          <div class="p-3.5 rounded-xl bg-[#12080B] border border-emerald-500/30">
+            <span class="text-[10px] uppercase tracking-wider text-emerald-300 block">Verified Revenue Received (Paid)</span>
+            <strong class="font-serif text-base text-emerald-300">₹${totalReceived.toLocaleString('en-IN')}</strong>
+            <span class="text-[10px] text-[#DCCBB0] block mt-0.5">Total Booked Pipeline: ₹${totalReceivable.toLocaleString('en-IN')}</span>
+          </div>
+          <div class="p-3.5 rounded-xl bg-[#12080B] border border-amber-500/30">
+            <span class="text-[10px] uppercase tracking-wider text-amber-300 block">Awaiting SBI UPI Manual Verification</span>
+            <strong class="font-serif text-base text-amber-300">${pendingManualCount} Booking(s)</strong>
+            <span class="text-[10px] text-[#DCCBB0] block mt-0.5">Verify against SBI statement before marking Paid</span>
+          </div>
+        </div>
+
+        <!-- Search & Payment Status Filter -->
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div class="relative w-full sm:w-80">
+            <input type="text" id="payment-search" value="${this.searchFilter}" placeholder="Search name, Booking Ref, UTR, phone..." class="w-full px-3.5 py-2 pl-8 rounded-lg bg-[#12080B] border border-[#C6A15B]/30 text-xs text-[#F8F3E9] outline-none" />
+            <span class="absolute left-2.5 top-2.5 text-xs text-[#C6A15B]">🔍</span>
+          </div>
+
+          <div class="flex items-center gap-2 text-xs w-full sm:w-auto">
+            <span class="text-[#DCCBB0]">Payment Status:</span>
+            <select id="payment-status-filter" class="px-3 py-1.5 rounded-lg bg-[#12080B] border border-[#C6A15B]/30 text-xs text-[#F8F3E9] outline-none">
+              <option value="all" ${this.statusFilter === 'all' ? 'selected' : ''}>All Statuses (${this.bookings.length})</option>
+              ${validStatuses.map(st => `
+                <option value="${st}" ${this.statusFilter === st ? 'selected' : ''}>${st}</option>
+              `).join('')}
+            </select>
+          </div>
+        </div>
+
+        <!-- Complete Admin Payment Management Table -->
+        <div class="overflow-x-auto rounded-xl border border-[#C6A15B]/25 bg-[#12080B]/70">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-[#481C25]/70 text-[#C6A15B] font-serif border-b border-[#C6A15B]/25 uppercase tracking-wider text-[10px]">
+              <tr>
+                <th class="p-3">Booking Ref &amp; Date</th>
+                <th class="p-3">Customer Details</th>
+                <th class="p-3">Consultation Package</th>
+                <th class="p-3">Amount Payable</th>
+                <th class="p-3">Amount Received</th>
+                <th class="p-3">Transaction ID / UTR</th>
+                <th class="p-3">Payment Method</th>
+                <th class="p-3">Payment Status</th>
+                <th class="p-3 text-right">Verification Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-[#C6A15B]/15">
+              ${filtered.length === 0 ? `
+                <tr><td colspan="9" class="p-8 text-center text-[#DCCBB0]/70 italic">No payment records matching the selected filter.</td></tr>
+              ` : filtered.map(b => {
+                const payable = b.amountPayable !== undefined ? Number(b.amountPayable) : parseInt(String(b.amount || '0').replace(/[^0-9]/g, ''), 10) || 0;
+                const received = b.amountReceived !== undefined ? Number(b.amountReceived) : (b.paymentStatus === 'Paid' ? payable : 0);
+                const pStatus = b.paymentStatus || 'Pending';
+                const bDate = b.createdAt ? b.createdAt.substring(0, 10) : (b.appointmentDate || '—');
+                return `
+                  <tr class="hover:bg-[#481C25]/20 transition-all">
+                    <td class="p-3 whitespace-nowrap">
+                      <div class="font-mono font-bold text-[#F9E29B]">${b.id}</div>
+                      <div class="text-[10px] text-[#DCCBB0]/75">Booked: ${bDate}</div>
+                    </td>
+                    <td class="p-3">
+                      <div class="font-semibold text-[#F8F3E9]">${b.name || b.fullName || 'Client'}</div>
+                      <div class="text-[11px] text-[#DCCBB0] font-mono">${b.phone || '—'}</div>
+                      <div class="text-[10px] text-[#C6A15B] truncate max-w-[160px]">${b.email || '—'}</div>
+                    </td>
+                    <td class="p-3">
+                      <div class="font-medium text-[#F8F3E9]">${b.packageName || b.serviceName || b.package || 'Vastu Consultation'}</div>
+                      <div class="text-[10px] text-[#DCCBB0]">${b.consultationMode || ''}</div>
+                    </td>
+                    <td class="p-3 font-mono font-bold text-[#F9E29B] whitespace-nowrap">
+                      ₹${payable.toLocaleString('en-IN')}
+                    </td>
+                    <td class="p-3 font-mono font-bold ${received > 0 ? 'text-emerald-300' : 'text-[#DCCBB0]/60'} whitespace-nowrap">
+                      ₹${received.toLocaleString('en-IN')}
+                    </td>
+                    <td class="p-3 font-mono text-[11px] text-[#F8F3E9]">
+                      ${b.transactionId || '—'}
+                    </td>
+                    <td class="p-3 text-[11px] text-[#DCCBB0]">
+                      ${b.paymentMethod || 'Unselected'}
+                    </td>
+                    <td class="p-3 whitespace-nowrap">
+                      <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${this.getPaymentStatusBadgeClass(pStatus)}">
+                        ${pStatus}
+                      </span>
+                    </td>
+                    <td class="p-3 text-right whitespace-nowrap">
+                      <div class="flex items-center justify-end gap-1.5">
+                        ${pStatus !== 'Paid' ? `
+                          <button
+                            type="button"
+                            data-verify-upi-paid="${b.id}"
+                            data-payable="${payable}"
+                            class="px-2.5 py-1 rounded bg-emerald-700 hover:bg-emerald-600 text-white text-[10px] font-semibold shadow"
+                            title="Verify SBI UPI / Bank Receipt & Mark Paid"
+                          >
+                            ✓ Verify &amp; Mark Paid
+                          </button>
+                        ` : ''}
+                        <select
+                          data-admin-payment-status="${b.id}"
+                          class="px-2 py-1 rounded bg-[#12080B] border border-[#C6A15B]/35 text-[10px] text-[#F8F3E9] outline-none"
+                        >
+                          ${validStatuses.map(st => `
+                            <option value="${st}" ${pStatus === st ? 'selected' : ''}>${st}</option>
+                          `).join('')}
+                        </select>
+                      </div>
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
   }
 
   // 1. BOOKINGS TAB
@@ -537,6 +713,84 @@ class VastuAdminDashboard {
         this.bindEvents();
       });
     }
+
+    // Payment Search & Status Filter
+    const paySearchInput = document.getElementById('payment-search');
+    if (paySearchInput) {
+      paySearchInput.addEventListener('input', (e) => {
+        this.searchFilter = e.target.value;
+        const container = document.getElementById('admin-tab-content');
+        if (container) container.innerHTML = this.renderPaymentsTab();
+        this.bindEvents();
+      });
+    }
+
+    const payFilterSelect = document.getElementById('payment-status-filter');
+    if (payFilterSelect) {
+      payFilterSelect.addEventListener('change', (e) => {
+        this.statusFilter = e.target.value;
+        const container = document.getElementById('admin-tab-content');
+        if (container) container.innerHTML = this.renderPaymentsTab();
+        this.bindEvents();
+      });
+    }
+
+    // One-Click Verify SBI UPI & Mark Paid
+    document.querySelectorAll('[data-verify-upi-paid]').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const bookingId = e.currentTarget.getAttribute('data-verify-upi-paid');
+        const payable = Number(e.currentTarget.getAttribute('data-payable') || 0);
+        try {
+          const res = await fetch('/api/payments/admin-update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              bookingId,
+              paymentStatus: 'Paid',
+              amountReceived: payable
+            })
+          });
+          if (res.ok) {
+            const data = await res.json();
+            const idx = this.bookings.findIndex(b => b.id === bookingId);
+            if (idx !== -1 && data.booking) {
+              this.bookings[idx] = data.booking;
+            }
+            this.render();
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      });
+    });
+
+    // Admin Payment Status Select Dropdown (Pending | Paid | Failed | Refund Initiated | Refunded | Manual Verification Required)
+    document.querySelectorAll('[data-admin-payment-status]').forEach(sel => {
+      sel.addEventListener('change', async (e) => {
+        const bookingId = e.currentTarget.getAttribute('data-admin-payment-status');
+        const nextStatus = e.currentTarget.value;
+        try {
+          const res = await fetch('/api/payments/admin-update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              bookingId,
+              paymentStatus: nextStatus
+            })
+          });
+          if (res.ok) {
+            const data = await res.json();
+            const idx = this.bookings.findIndex(b => b.id === bookingId);
+            if (idx !== -1 && data.booking) {
+              this.bookings[idx] = data.booking;
+            }
+            this.render();
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      });
+    });
 
     // Booking Status Filter
     const filterSelect = document.getElementById('booking-status-filter');

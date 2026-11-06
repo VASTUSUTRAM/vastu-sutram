@@ -5,10 +5,115 @@
 
 const http = require('http');
 const https = require('https');
+const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const url = require('url');
 const VASTU_DATA = require('./js/data.js');
+
+// Official Vastu Sutram Payment & Settlement Configuration
+const PAYMENT_CONFIG = {
+  businessName: 'Vastu Sutram',
+  upiId: 'gauriomji@oksbi',
+  paymentProvider: 'State Bank of India UPI',
+  currency: 'INR',
+  currencySymbol: '₹',
+  officialEmail: 'vastusutram@gmail.com',
+  whatsappNotify: '918145715755',
+  whatsappSecondary: '919181457155',
+  validPaymentStatuses: [
+    'Pending',
+    'Paid',
+    'Failed',
+    'Refund Initiated',
+    'Refunded',
+    'Manual Verification Required'
+  ]
+};
+
+// Parse numeric INR amount from numbers or strings like "Starting from ₹11,000" or "₹5,100"
+function parseInrAmount(val, fallback = 5100) {
+  if (typeof val === 'number' && Number.isFinite(val) && val > 0) {
+    return Math.round(val);
+  }
+  if (typeof val === 'string') {
+    const cleaned = val.replace(/[^0-9.]/g, '');
+    const num = parseFloat(cleaned);
+    if (Number.isFinite(num) && num > 0) {
+      return Math.round(num);
+    }
+  }
+  return fallback;
+}
+
+// Helper for Customer Email Confirmation (via Resend / Email API when configured, with structured server log fallback)
+async function sendPaymentConfirmationEmail(booking) {
+  if (!booking || !booking.email) {
+    return { sent: false, reason: 'no_customer_email' };
+  }
+
+  const subject = `Vastu Sutram – Consultation Booking & Payment Confirmation (${booking.id})`;
+  const textBody = [
+    `Dear ${booking.name || booking.fullName || 'Valued Client'},`,
+    ``,
+    `Thank you for choosing Vastu Sutram – The Principles of Vastu.`,
+    `Your consultation booking and payment have been verified.`,
+    ``,
+    `BOOKING & PAYMENT SUMMARY`,
+    `--------------------------------------------------`,
+    `Booking Reference ID : ${booking.id}`,
+    `Customer Name        : ${booking.name || booking.fullName || ''}`,
+    `Consultation Package : ${booking.packageName || booking.serviceName || ''}`,
+    `Confirmed Amount     : ₹${Number(booking.amountPayable || 0).toLocaleString('en-IN')}`,
+    `Amount Received      : ₹${Number(booking.amountReceived || 0).toLocaleString('en-IN')}`,
+    `Transaction / Ref ID : ${booking.transactionId || 'N/A'}`,
+    `Payment Method       : ${booking.paymentMethod || 'Online'}`,
+    `Payment Status       : ${booking.paymentStatus || 'Paid'}`,
+    `Preferred Schedule   : ${booking.appointmentDate || ''} (${booking.appointmentTime || ''})`,
+    `Consultation Mode    : ${booking.consultationMode || 'Online / On-Site'}`,
+    `--------------------------------------------------`,
+    ``,
+    `Senior Vastu Consultant Rajni Singh's desk will connect with you regarding your blueprint / floor plan evaluation.`,
+    `Official Email: ${PAYMENT_CONFIG.officialEmail}`,
+    `Official WhatsApp: +91 81457 15755`,
+    ``,
+    `Warm regards,`,
+    `Vastu Sutram – The Principles of Vastu`
+  ].join('\n');
+
+  const resendApiKey = process.env.RESEND_API_KEY;
+  const fromEmail = process.env.EMAIL_FROM || `Vastu Sutram <${PAYMENT_CONFIG.officialEmail}>`;
+
+  if (resendApiKey) {
+    try {
+      const resp = await postJsonHttps(
+        'https://api.resend.com/emails',
+        { Authorization: `Bearer ${resendApiKey}` },
+        {
+          from: fromEmail,
+          to: [booking.email],
+          cc: [PAYMENT_CONFIG.officialEmail],
+          reply_to: PAYMENT_CONFIG.officialEmail,
+          subject,
+          text: textBody
+        }
+      );
+      return { sent: true, provider: 'resend', id: resp.id || null };
+    } catch (err) {
+      console.warn('Email API warning:', err.message);
+      return { sent: false, provider: 'resend', error: err.message };
+    }
+  }
+
+  console.log(`[VASTU SUTRAM EMAIL CONFIRMATION DISPATCH] To: ${booking.email} | Copy: ${PAYMENT_CONFIG.officialEmail} | Ref: ${booking.id} | Status: ${booking.paymentStatus}`);
+  return {
+    sent: false,
+    queuedForSmtp: true,
+    officialEmail: PAYMENT_CONFIG.officialEmail,
+    recipient: booking.email,
+    subject
+  };
+}
 
 // In-memory rate limiter for /api/chat (per IP, max 25 requests per minute)
 const chatRateLimits = new Map();
@@ -433,35 +538,81 @@ function writeDb(data) {
   }
 }
 
-// Helper to parse JSON body (safe for both local streams & pre-parsed serverless bodies)
-function getJsonBody(req) {
-  if (req.body) {
+// Helper to parse both raw string and JSON body (essential for HMAC webhook verification)
+function getRawAndJsonBody(req) {
+  if (req.body !== undefined) {
     if (typeof req.body === 'string') {
       try {
-        return Promise.resolve(JSON.parse(req.body));
+        return Promise.resolve({ raw: req.body, json: JSON.parse(req.body) });
       } catch (e) {
-        return Promise.resolve({});
+        return Promise.resolve({ raw: req.body, json: {} });
       }
     }
-    return Promise.resolve(req.body);
+    if (Buffer.isBuffer(req.body)) {
+      const str = req.body.toString('utf8');
+      try {
+        return Promise.resolve({ raw: str, json: JSON.parse(str) });
+      } catch (e) {
+        return Promise.resolve({ raw: str, json: {} });
+      }
+    }
+    const serialized = JSON.stringify(req.body);
+    return Promise.resolve({ raw: serialized, json: req.body });
   }
   return new Promise((resolve, reject) => {
     let body = '';
     req.on('data', chunk => {
       body += chunk.toString();
-      if (body.length > 50 * 1024 * 1024) { // 50MB limit
+      if (body.length > 50 * 1024 * 1024) {
         reject(new Error('Payload too large'));
       }
     });
     req.on('end', () => {
       try {
-        resolve(body ? JSON.parse(body) : {});
+        resolve({ raw: body, json: body ? JSON.parse(body) : {} });
       } catch (err) {
-        resolve({});
+        resolve({ raw: body, json: {} });
       }
     });
     req.on('error', reject);
   });
+}
+
+async function getJsonBody(req) {
+  const { json } = await getRawAndJsonBody(req);
+  return json;
+}
+
+function resolveRazorpayCredentials(dbData) {
+  const settings = (dbData && dbData.settings) || {};
+  const rawKeyId = (process.env.RAZORPAY_KEY_ID || settings.razorpayKeyId || '').trim();
+  const rawKeySecret = (
+    process.env.RAZORPAY_KEY_SECRET ||
+    settings.razorpayKeySecret ||
+    settings.razorpaySecret ||
+    ''
+  ).trim();
+  const webhookSecret = (process.env.RAZORPAY_WEBHOOK_SECRET || settings.razorpayWebhookSecret || '').trim();
+
+  const isPlaceholder =
+    !rawKeyId ||
+    !rawKeySecret ||
+    rawKeyId.includes('placeholder') ||
+    rawKeySecret.includes('placeholder');
+
+  const mode = isPlaceholder
+    ? 'setup_required'
+    : rawKeyId.startsWith('rzp_live_')
+    ? 'live'
+    : 'test';
+
+  return {
+    configured: !isPlaceholder,
+    mode,
+    keyId: isPlaceholder ? '' : rawKeyId,
+    keySecret: isPlaceholder ? '' : rawKeySecret,
+    webhookSecret
+  };
 }
 
 // Request Handler
@@ -472,7 +623,7 @@ const requestHandler = async (req, res) => {
   // Set standard CORS headers for local APIs
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Razorpay-Signature');
 
   if (req.method === 'OPTIONS') {
     res.writeHead(204);
@@ -491,11 +642,39 @@ const requestHandler = async (req, res) => {
     return;
   }
 
+  // Public Payment & UPI Configuration Endpoint
+  if (pathname === '/api/payments/config' && req.method === 'GET') {
+    const data = readDb();
+    const rzp = resolveRazorpayCredentials(data);
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({
+      businessName: PAYMENT_CONFIG.businessName,
+      upiId: PAYMENT_CONFIG.upiId,
+      paymentProvider: PAYMENT_CONFIG.paymentProvider,
+      currency: PAYMENT_CONFIG.currency,
+      currencySymbol: PAYMENT_CONFIG.currencySymbol,
+      officialEmail: PAYMENT_CONFIG.officialEmail,
+      whatsappNotify: PAYMENT_CONFIG.whatsappNotify,
+      whatsappSecondary: PAYMENT_CONFIG.whatsappSecondary,
+      razorpayConfigured: rzp.configured,
+      razorpayMode: rzp.mode,
+      razorpayKeyId: rzp.keyId,
+      validPaymentStatuses: PAYMENT_CONFIG.validPaymentStatuses,
+      requiredEnvVars: ['RAZORPAY_KEY_ID', 'RAZORPAY_KEY_SECRET', 'RAZORPAY_WEBHOOK_SECRET']
+    }));
+    return;
+  }
+
   // Entire Database
   if (pathname === '/api/db' && req.method === 'GET') {
     const data = readDb();
+    // Redact secret keys from public /api/db payload
+    const safeSettings = { ...(data.settings || {}) };
+    delete safeSettings.razorpaySecret;
+    delete safeSettings.razorpayKeySecret;
+    delete safeSettings.razorpayWebhookSecret;
     res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify(data));
+    res.end(JSON.stringify({ ...data, settings: safeSettings }));
     return;
   }
 
@@ -521,20 +700,68 @@ const requestHandler = async (req, res) => {
     return;
   }
 
-  // Bookings: POST (Create New Booking)
+  // Bookings: POST (Create New Booking – Never marks Paid without backend verification)
   if (pathname === '/api/bookings' && req.method === 'POST') {
     try {
-      const newBooking = await getJsonBody(req);
+      const rawBooking = await getJsonBody(req);
       const data = readDb();
       if (!data.bookings) data.bookings = [];
 
-      // Generate Reference Code: VS-2026-XXXX
-      const refNum = Math.floor(1000 + Math.random() * 9000);
-      newBooking.id = newBooking.id || `VS-2026-${refNum}`;
-      newBooking.createdAt = new Date().toISOString();
-      newBooking.status = newBooking.status || 'Pending Review';
+      // Look up default package starting price if packageId or packageName matches
+      const matchedPkg = (VASTU_DATA.packages || []).find(
+        p => p.id === rawBooking.packageId || p.id === rawBooking.package || p.name === rawBooking.packageName
+      );
+      const defaultPrice = matchedPkg ? matchedPkg.rawPrice : 5100;
+      const confirmedPayable = parseInrAmount(
+        rawBooking.amountPayable || rawBooking.confirmedAmount || rawBooking.amount,
+        defaultPrice
+      );
 
-      data.bookings.unshift(newBooking);
+      // Generate unique Reference Code: VS-2026-XXXX
+      const refNum = Math.floor(1000 + Math.random() * 9000);
+      const bookingId = rawBooking.id || rawBooking.bookingId || `VS-2026-${refNum}`;
+
+      // Security: Never trust client-supplied 'Paid' or 'Payment Verified' on creation
+      const safePaymentStatus =
+        rawBooking.paymentStatus === 'Manual Verification Required'
+          ? 'Manual Verification Required'
+          : 'Pending';
+
+      const newBooking = {
+        ...rawBooking,
+        id: bookingId,
+        bookingId,
+        name: rawBooking.name || rawBooking.fullName || 'Client',
+        fullName: rawBooking.fullName || rawBooking.name || 'Client',
+        phone: rawBooking.phone || rawBooking.whatsapp || '',
+        whatsapp: rawBooking.whatsapp || rawBooking.phone || '',
+        email: rawBooking.email || '',
+        city: rawBooking.city || '',
+        propertyType: rawBooking.propertyType || 'Residential Property',
+        packageId: rawBooking.packageId || rawBooking.package || (matchedPkg ? matchedPkg.id : 'pkg-res-basic'),
+        packageName: rawBooking.packageName || rawBooking.serviceName || (matchedPkg ? matchedPkg.name : 'Vastu Consultation'),
+        consultationMode: rawBooking.consultationMode || 'Online Video Consultation',
+        appointmentDate: rawBooking.appointmentDate || '',
+        appointmentTime: rawBooking.appointmentTime || '',
+        amountPayable: confirmedPayable,
+        amountReceived: 0,
+        amount: `₹${confirmedPayable.toLocaleString('en-IN')}`,
+        currency: 'INR',
+        paymentMethod: rawBooking.paymentMethod || 'Unselected',
+        transactionId: rawBooking.transactionId || '',
+        paymentStatus: safePaymentStatus,
+        status: safePaymentStatus === 'Manual Verification Required' ? 'Pending Verification' : 'Pending Payment',
+        createdAt: new Date().toISOString()
+      };
+
+      // Upsert if bookingId already exists
+      const existingIdx = data.bookings.findIndex(b => b.id === bookingId);
+      if (existingIdx !== -1 && data.bookings[existingIdx].paymentStatus !== 'Paid') {
+        data.bookings[existingIdx] = { ...data.bookings[existingIdx], ...newBooking, updatedAt: new Date().toISOString() };
+      } else if (existingIdx === -1) {
+        data.bookings.unshift(newBooking);
+      }
+
       writeDb(data);
 
       res.writeHead(201, { 'Content-Type': 'application/json' });
@@ -546,7 +773,7 @@ const requestHandler = async (req, res) => {
     return;
   }
 
-  // Bookings: PATCH (Update Status / Notes)
+  // Bookings: PATCH (Update Status / Notes / Payment Status by Admin)
   if (pathname.startsWith('/api/bookings/') && req.method === 'PATCH') {
     try {
       const bookingId = pathname.replace('/api/bookings/', '');
@@ -560,7 +787,28 @@ const requestHandler = async (req, res) => {
         return;
       }
 
-      data.bookings[index] = { ...data.bookings[index], ...updates, updatedAt: new Date().toISOString() };
+      const current = data.bookings[index];
+      const nextBooking = { ...current, ...updates, updatedAt: new Date().toISOString() };
+
+      if (updates.amountPayable !== undefined) {
+        nextBooking.amountPayable = parseInrAmount(updates.amountPayable, current.amountPayable || 5100);
+        nextBooking.amount = `₹${nextBooking.amountPayable.toLocaleString('en-IN')}`;
+      }
+      if (updates.amountReceived !== undefined) {
+        nextBooking.amountReceived = Math.max(0, Number(updates.amountReceived) || 0);
+      }
+
+      // If Admin marks paymentStatus as Paid, sync booking status and amountReceived
+      if (updates.paymentStatus === 'Paid' && current.paymentStatus !== 'Paid') {
+        nextBooking.status = 'Confirmed';
+        if (!nextBooking.amountReceived) {
+          nextBooking.amountReceived = nextBooking.amountPayable || parseInrAmount(nextBooking.amount, 5100);
+        }
+        nextBooking.paidAt = new Date().toISOString();
+        await sendPaymentConfirmationEmail(nextBooking);
+      }
+
+      data.bookings[index] = nextBooking;
       writeDb(data);
 
       res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -583,30 +831,49 @@ const requestHandler = async (req, res) => {
     return;
   }
 
-  // Export Bookings as CSV
+  // Export Bookings & Payments as CSV
   if (pathname === '/api/export/bookings.csv' && req.method === 'GET') {
     const data = readDb();
     const bookings = data.bookings || [];
-    const headers = ['Booking ID', 'Created At', 'Name', 'Phone', 'Email', 'City', 'Service', 'Package', 'Date', 'Time Slot', 'Mode', 'Status'];
+    const headers = [
+      'Booking Reference',
+      'Booking Date',
+      'Customer Name',
+      'Phone Number',
+      'Email',
+      'City',
+      'Consultation Package',
+      'Amount Payable (INR)',
+      'Amount Received (INR)',
+      'Transaction ID / UTR',
+      'Payment Method',
+      'Payment Status',
+      'Appointment Date',
+      'Time Slot & Mode',
+      'Booking Status'
+    ];
     const rows = bookings.map(b => [
       `"${b.id || ''}"`,
       `"${b.createdAt ? b.createdAt.substring(0, 10) : ''}"`,
-      `"${(b.name || '').replace(/"/g, '""')}"`,
+      `"${(b.name || b.fullName || '').replace(/"/g, '""')}"`,
       `"${(b.phone || '').replace(/"/g, '""')}"`,
       `"${(b.email || '').replace(/"/g, '""')}"`,
       `"${(b.city || '').replace(/"/g, '""')}"`,
-      `"${(b.serviceName || b.service || '').replace(/"/g, '""')}"`,
-      `"${(b.packageName || b.package || '').replace(/"/g, '""')}"`,
+      `"${(b.packageName || b.serviceName || b.package || '').replace(/"/g, '""')}"`,
+      `"${b.amountPayable !== undefined ? b.amountPayable : parseInrAmount(b.amount, 0)}"`,
+      `"${b.amountReceived !== undefined ? b.amountReceived : (b.paymentStatus === 'Paid' ? parseInrAmount(b.amount, 0) : 0)}"`,
+      `"${(b.transactionId || '').replace(/"/g, '""')}"`,
+      `"${(b.paymentMethod || '').replace(/"/g, '""')}"`,
+      `"${(b.paymentStatus || 'Pending').replace(/"/g, '""')}"`,
       `"${b.appointmentDate || ''}"`,
-      `"${b.appointmentTime || ''}"`,
-      `"${b.consultationMode || ''}"`,
+      `"${(b.appointmentTime || '')} ${b.consultationMode || ''}"`,
       `"${b.status || ''}"`
     ]);
 
     const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
     res.writeHead(200, {
       'Content-Type': 'text/csv; charset=utf-8',
-      'Content-Disposition': 'attachment; filename="Vastu_Sutram_Bookings.csv"'
+      'Content-Disposition': 'attachment; filename="Vastu_Sutram_Bookings_Payments.csv"'
     });
     res.end(csvContent);
     return;
@@ -692,34 +959,375 @@ const requestHandler = async (req, res) => {
     return;
   }
 
-  // Razorpay Order Creation
-  if (pathname === '/api/razorpay/create-order' && req.method === 'POST') {
+  // -------------------------------------------------------------
+  // ONLINE PAYMENT & VERIFICATION ENGINE (SBI UPI + RAZORPAY)
+  // -------------------------------------------------------------
+
+  // 1. Create Razorpay Order (POST /api/payments/create-order or /api/razorpay/create-order)
+  if ((pathname === '/api/payments/create-order' || pathname === '/api/razorpay/create-order') && req.method === 'POST') {
     try {
       const payload = await getJsonBody(req);
       const data = readDb();
-      const keyId = process.env.RAZORPAY_KEY_ID || (data.settings && data.settings.razorpayKeyId);
-      const keySecret = process.env.RAZORPAY_KEY_SECRET || (data.settings && data.settings.razorpayKeySecret);
+      if (!data.bookings) data.bookings = [];
 
-      if (!keyId || !keySecret || keyId === 'rzp_test_placeholder') {
-        res.writeHead(200, { 'Content-Type': 'application/json' });
+      const matchedPkg = (VASTU_DATA.packages || []).find(
+        p => p.id === payload.packageId || p.name === payload.packageName
+      );
+      const defaultInr = matchedPkg ? matchedPkg.rawPrice : 5100;
+
+      // IMPORTANT: Use confirmedAmount (INR) explicitly confirmed by the customer/admin
+      const confirmedInr = parseInrAmount(
+        payload.confirmedAmount !== undefined ? payload.confirmedAmount : payload.amountInr,
+        payload.amount && payload.amount >= 100000 ? Math.round(payload.amount / 100) : parseInrAmount(payload.amount, defaultInr)
+      );
+
+      if (!confirmedInr || confirmedInr < 1) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Confirmed payable amount (INR) must be greater than 0.' }));
+        return;
+      }
+
+      // Ensure a persistent booking record exists for this order
+      let bookingId = payload.bookingId;
+      let bookingIdx = bookingId ? data.bookings.findIndex(b => b.id === bookingId) : -1;
+
+      if (bookingIdx !== -1 && data.bookings[bookingIdx].paymentStatus === 'Paid') {
+        res.writeHead(409, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({
           success: false,
-          setupMode: true,
-          message: 'Razorpay payment gateway is currently in setup mode. You can book directly via WhatsApp or configure live credentials in Admin.'
+          alreadyPaid: true,
+          error: `Duplicate payment prevented: Booking ${bookingId} is already Paid (Transaction ID: ${data.bookings[bookingIdx].transactionId || 'Verified'}).`
         }));
         return;
       }
 
-      // If keys exist, create simulated / live order format
-      const orderId = `order_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+      if (bookingIdx === -1) {
+        bookingId = bookingId || `VS-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+        const customer = payload.customerData || {};
+        const createdBooking = {
+          id: bookingId,
+          bookingId,
+          name: customer.name || customer.fullName || payload.customerName || 'Client',
+          fullName: customer.fullName || customer.name || payload.customerName || 'Client',
+          phone: customer.phone || payload.phone || '',
+          whatsapp: customer.whatsapp || customer.phone || payload.phone || '',
+          email: customer.email || payload.email || '',
+          city: customer.city || payload.city || '',
+          propertyType: customer.propertyType || payload.propertyType || 'Residential Property',
+          packageId: payload.packageId || (matchedPkg ? matchedPkg.id : 'pkg-res-basic'),
+          packageName: payload.packageName || (matchedPkg ? matchedPkg.name : 'Vastu Consultation'),
+          consultationMode: customer.consultationMode || payload.consultationMode || 'Online Video Consultation',
+          appointmentDate: customer.appointmentDate || payload.appointmentDate || '',
+          appointmentTime: customer.appointmentTime || payload.appointmentTime || '',
+          message: customer.message || payload.notes || '',
+          amountPayable: confirmedInr,
+          amountReceived: 0,
+          amount: `₹${confirmedInr.toLocaleString('en-IN')}`,
+          currency: 'INR',
+          paymentMethod: 'Razorpay',
+          transactionId: '',
+          paymentStatus: 'Pending',
+          status: 'Pending Payment',
+          createdAt: new Date().toISOString()
+        };
+        data.bookings.unshift(createdBooking);
+        bookingIdx = 0;
+      } else {
+        data.bookings[bookingIdx].amountPayable = confirmedInr;
+        data.bookings[bookingIdx].amount = `₹${confirmedInr.toLocaleString('en-IN')}`;
+        data.bookings[bookingIdx].paymentMethod = 'Razorpay';
+        data.bookings[bookingIdx].updatedAt = new Date().toISOString();
+      }
+
+      const rzp = resolveRazorpayCredentials(data);
+      const amountInPaise = Math.round(confirmedInr * 100);
+
+      if (!rzp.configured) {
+        writeDb(data);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          success: false,
+          setupMode: true,
+          bookingId,
+          confirmedAmount: confirmedInr,
+          upiId: PAYMENT_CONFIG.upiId,
+          message: 'Razorpay API credentials (RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET) are not configured yet. Please use Option A: State Bank of India UPI (gauriomji@oksbi) or configure your Razorpay credentials in Vercel Environment Variables / Admin Settings.'
+        }));
+        return;
+      }
+
+      let orderId = '';
+      // If using local sandbox test key prefix (rzp_test_local_) for deterministic verification testing, generate order ID locally; otherwise call official Razorpay Orders API
+      if (rzp.keyId.startsWith('rzp_test_local_') || process.env.RAZORPAY_LOCAL_TEST === 'true') {
+        orderId = `order_${Date.now()}${Math.floor(100 + Math.random() * 899)}`;
+      } else {
+        const authHeader = 'Basic ' + Buffer.from(`${rzp.keyId}:${rzp.keySecret}`).toString('base64');
+        const rzpOrder = await postJsonHttps(
+          'https://api.razorpay.com/v1/orders',
+          { Authorization: authHeader },
+          {
+            amount: amountInPaise,
+            currency: 'INR',
+            receipt: bookingId,
+            notes: {
+              bookingId,
+              customerName: data.bookings[bookingIdx].name || '',
+              packageName: data.bookings[bookingIdx].packageName || ''
+            }
+          }
+        );
+        orderId = rzpOrder.id;
+      }
+
+      data.bookings[bookingIdx].razorpayOrderId = orderId;
+      writeDb(data);
+
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({
         success: true,
+        bookingId,
         orderId,
-        amount: payload.amount || 510000,
-        currency: payload.currency || 'INR',
-        keyId
+        amount: amountInPaise,
+        confirmedAmountInr: confirmedInr,
+        currency: 'INR',
+        keyId: rzp.keyId,
+        mode: rzp.mode
       }));
+    } catch (err) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
+        success: false,
+        error: `Unable to initialize Razorpay order: ${err.message}`
+      }));
+    }
+    return;
+  }
+
+  // 2. Cryptographic Razorpay Payment Verification (POST /api/payments/verify or /api/razorpay/verify-payment)
+  if ((pathname === '/api/payments/verify' || pathname === '/api/razorpay/verify-payment') && req.method === 'POST') {
+    try {
+      const payload = await getJsonBody(req);
+      const {
+        bookingId,
+        razorpay_order_id,
+        razorpay_payment_id,
+        razorpay_signature
+      } = payload;
+
+      if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          success: false,
+          verified: false,
+          error: 'Missing required verification fields (razorpay_order_id, razorpay_payment_id, razorpay_signature).'
+        }));
+        return;
+      }
+
+      const data = readDb();
+      if (!data.bookings) data.bookings = [];
+      const rzp = resolveRazorpayCredentials(data);
+
+      if (!rzp.configured || !rzp.keySecret) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          success: false,
+          verified: false,
+          error: 'Razorpay secret key is not configured on the server; cannot verify payment signature.'
+        }));
+        return;
+      }
+
+      // Duplicate Transaction ID Prevention
+      const duplicateTxBooking = data.bookings.find(
+        b => b.transactionId === razorpay_payment_id && b.paymentStatus === 'Paid'
+      );
+      if (duplicateTxBooking) {
+        if (bookingId && duplicateTxBooking.id !== bookingId) {
+          res.writeHead(409, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({
+            success: false,
+            verified: false,
+            error: 'Duplicate transaction ID detected for another booking.'
+          }));
+          return;
+        }
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          success: true,
+          verified: true,
+          idempotent: true,
+          paymentId: razorpay_payment_id,
+          booking: duplicateTxBooking,
+          message: 'Payment already verified.'
+        }));
+        return;
+      }
+
+      // Compute HMAC-SHA256 Signature: hmac_sha256(order_id + "|" + razorpay_payment_id, secret)
+      const expectedSignature = crypto
+        .createHmac('sha256', rzp.keySecret)
+        .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+        .digest('hex');
+
+      const sigBufA = Buffer.from(expectedSignature, 'utf8');
+      const sigBufB = Buffer.from(String(razorpay_signature), 'utf8');
+      const isSignatureValid =
+        sigBufA.length === sigBufB.length && crypto.timingSafeEqual(sigBufA, sigBufB);
+
+      const bookingIdx = data.bookings.findIndex(
+        b => (bookingId && b.id === bookingId) || b.razorpayOrderId === razorpay_order_id
+      );
+
+      if (!isSignatureValid) {
+        if (bookingIdx !== -1 && data.bookings[bookingIdx].paymentStatus !== 'Paid') {
+          data.bookings[bookingIdx].paymentStatus = 'Failed';
+          data.bookings[bookingIdx].status = 'Payment Failed';
+          data.bookings[bookingIdx].updatedAt = new Date().toISOString();
+          writeDb(data);
+        }
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          success: false,
+          verified: false,
+          error: 'Payment signature verification failed. Booking has not been marked as Paid.'
+        }));
+        return;
+      }
+
+      // Valid cryptographic signature -> update booking to Paid & Confirmed
+      const nowIso = new Date().toISOString();
+      let verifiedBooking = null;
+
+      if (bookingIdx !== -1) {
+        const b = data.bookings[bookingIdx];
+        const payable = b.amountPayable || parseInrAmount(b.amount, 5100);
+        b.amountPayable = payable;
+        b.amountReceived = payable;
+        b.amount = `₹${payable.toLocaleString('en-IN')}`;
+        b.razorpayOrderId = razorpay_order_id;
+        b.transactionId = razorpay_payment_id;
+        b.paymentMethod = 'Razorpay';
+        b.paymentStatus = 'Paid';
+        b.status = 'Confirmed';
+        b.paidAt = nowIso;
+        b.updatedAt = nowIso;
+        verifiedBooking = b;
+      } else {
+        const newId = bookingId || `VS-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+        const payable = parseInrAmount(payload.confirmedAmount, 5100);
+        verifiedBooking = {
+          id: newId,
+          bookingId: newId,
+          name: payload.customerName || 'Client',
+          fullName: payload.customerName || 'Client',
+          phone: payload.phone || '',
+          email: payload.email || '',
+          packageName: payload.packageName || 'Vastu Consultation',
+          amountPayable: payable,
+          amountReceived: payable,
+          amount: `₹${payable.toLocaleString('en-IN')}`,
+          razorpayOrderId: razorpay_order_id,
+          transactionId: razorpay_payment_id,
+          paymentMethod: 'Razorpay',
+          paymentStatus: 'Paid',
+          status: 'Confirmed',
+          createdAt: nowIso,
+          paidAt: nowIso
+        };
+        data.bookings.unshift(verifiedBooking);
+      }
+
+      const emailResult = await sendPaymentConfirmationEmail(verifiedBooking);
+      verifiedBooking.emailConfirmation = emailResult;
+      writeDb(data);
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
+        success: true,
+        verified: true,
+        paymentId: razorpay_payment_id,
+        orderId: razorpay_order_id,
+        booking: verifiedBooking,
+        emailConfirmation: emailResult,
+        message: 'Payment cryptographically verified and booking confirmed.'
+      }));
+    } catch (err) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: false, verified: false, error: err.message }));
+    }
+    return;
+  }
+
+  // 3. Razorpay Webhook Endpoint (POST /api/payments/webhook)
+  if (pathname === '/api/payments/webhook' && req.method === 'POST') {
+    try {
+      const { raw, json } = await getRawAndJsonBody(req);
+      const signature = req.headers['x-razorpay-signature'];
+      const data = readDb();
+      const rzp = resolveRazorpayCredentials(data);
+      const webhookSecret = rzp.webhookSecret || rzp.keySecret;
+
+      if (!signature || !webhookSecret) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Missing webhook signature or secret configuration.' }));
+        return;
+      }
+
+      const expectedSig = crypto
+        .createHmac('sha256', webhookSecret)
+        .update(raw)
+        .digest('hex');
+
+      const bufA = Buffer.from(expectedSig, 'utf8');
+      const bufB = Buffer.from(String(signature), 'utf8');
+      if (bufA.length !== bufB.length || !crypto.timingSafeEqual(bufA, bufB)) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Invalid webhook signature' }));
+        return;
+      }
+
+      const event = json.event || '';
+      const paymentEntity = json.payload?.payment?.entity || {};
+      const orderId = paymentEntity.order_id;
+      const paymentId = paymentEntity.id;
+      const notesBookingId = paymentEntity.notes?.bookingId;
+
+      if (!data.bookings) data.bookings = [];
+      const idx = data.bookings.findIndex(
+        b => (notesBookingId && b.id === notesBookingId) || (orderId && b.razorpayOrderId === orderId)
+      );
+
+      if (idx !== -1) {
+        const b = data.bookings[idx];
+        if (event === 'payment.captured' || event === 'order.paid') {
+          if (b.paymentStatus !== 'Paid') {
+            const receivedInr = paymentEntity.amount ? Math.round(paymentEntity.amount / 100) : b.amountPayable;
+            b.paymentStatus = 'Paid';
+            b.status = 'Confirmed';
+            b.amountReceived = receivedInr;
+            b.transactionId = paymentId || b.transactionId;
+            b.paymentMethod = 'Razorpay';
+            b.paidAt = new Date().toISOString();
+            await sendPaymentConfirmationEmail(b);
+          }
+        } else if (event === 'payment.failed') {
+          if (b.paymentStatus !== 'Paid') {
+            b.paymentStatus = 'Failed';
+            b.status = 'Payment Failed';
+            b.transactionId = paymentId || b.transactionId;
+          }
+        } else if (event === 'refund.created') {
+          b.paymentStatus = 'Refund Initiated';
+        } else if (event === 'refund.processed') {
+          b.paymentStatus = 'Refunded';
+        }
+        b.updatedAt = new Date().toISOString();
+        writeDb(data);
+      }
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ status: 'ok', eventProcessed: event }));
     } catch (err) {
       res.writeHead(400, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: err.message }));
@@ -727,16 +1335,170 @@ const requestHandler = async (req, res) => {
     return;
   }
 
-  // Razorpay Payment Verification
-  if (pathname === '/api/razorpay/verify-payment' && req.method === 'POST') {
+  // 4. Direct State Bank of India UPI Submission (POST /api/payments/upi-submit)
+  // IMPORTANT: Never marks direct UPI as Paid automatically! Sets 'Manual Verification Required'
+  if (pathname === '/api/payments/upi-submit' && req.method === 'POST') {
     try {
       const payload = await getJsonBody(req);
+      const data = readDb();
+      if (!data.bookings) data.bookings = [];
+
+      const matchedPkg = (VASTU_DATA.packages || []).find(
+        p => p.id === payload.packageId || p.name === payload.packageName
+      );
+      const defaultInr = matchedPkg ? matchedPkg.rawPrice : 5100;
+      const confirmedInr = parseInrAmount(payload.confirmedAmount, defaultInr);
+      const utrNumber = String(payload.utrNumber || payload.transactionId || '').trim();
+
+      let bookingId = payload.bookingId;
+      let idx = bookingId ? data.bookings.findIndex(b => b.id === bookingId) : -1;
+
+      if (idx !== -1 && data.bookings[idx].paymentStatus === 'Paid') {
+        res.writeHead(409, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          success: false,
+          alreadyPaid: true,
+          error: `Booking ${bookingId} is already verified as Paid.`
+        }));
+        return;
+      }
+
+      const nowIso = new Date().toISOString();
+      const customer = payload.customerData || {};
+
+      if (idx === -1) {
+        bookingId = bookingId || `VS-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+        const upiBooking = {
+          id: bookingId,
+          bookingId,
+          name: customer.name || customer.fullName || payload.customerName || 'Client',
+          fullName: customer.fullName || customer.name || payload.customerName || 'Client',
+          phone: customer.phone || payload.phone || '',
+          whatsapp: customer.whatsapp || customer.phone || payload.phone || '',
+          email: customer.email || payload.email || '',
+          city: customer.city || payload.city || '',
+          propertyType: customer.propertyType || payload.propertyType || 'Residential Property',
+          packageId: payload.packageId || (matchedPkg ? matchedPkg.id : 'pkg-res-basic'),
+          packageName: payload.packageName || (matchedPkg ? matchedPkg.name : 'Vastu Consultation'),
+          consultationMode: customer.consultationMode || payload.consultationMode || 'Online Video Consultation',
+          appointmentDate: customer.appointmentDate || payload.appointmentDate || '',
+          appointmentTime: customer.appointmentTime || payload.appointmentTime || '',
+          message: customer.message || payload.notes || '',
+          amountPayable: confirmedInr,
+          amountReceived: 0,
+          amount: `₹${confirmedInr.toLocaleString('en-IN')}`,
+          currency: 'INR',
+          upiId: PAYMENT_CONFIG.upiId,
+          paymentMethod: `SBI UPI (${PAYMENT_CONFIG.upiId})`,
+          transactionId: utrNumber || 'UTR-AWAITING-VERIFICATION',
+          paymentStatus: 'Manual Verification Required',
+          status: 'Pending Verification',
+          upiSubmittedAt: nowIso,
+          createdAt: nowIso
+        };
+        data.bookings.unshift(upiBooking);
+        idx = 0;
+      } else {
+        const b = data.bookings[idx];
+        b.amountPayable = confirmedInr;
+        b.amount = `₹${confirmedInr.toLocaleString('en-IN')}`;
+        b.upiId = PAYMENT_CONFIG.upiId;
+        b.paymentMethod = `SBI UPI (${PAYMENT_CONFIG.upiId})`;
+        b.transactionId = utrNumber || b.transactionId || 'UTR-AWAITING-VERIFICATION';
+        b.paymentStatus = 'Manual Verification Required';
+        b.status = 'Pending Verification';
+        b.upiSubmittedAt = nowIso;
+        b.updatedAt = nowIso;
+        if (customer.name) b.name = customer.name;
+        if (customer.phone) b.phone = customer.phone;
+        if (customer.email) b.email = customer.email;
+        if (customer.city) b.city = customer.city;
+      }
+
+      writeDb(data);
+
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({
         success: true,
-        verified: true,
-        paymentId: payload.razorpay_payment_id || 'PAY_' + Date.now(),
-        message: 'Payment verification recorded.'
+        verified: false,
+        manualVerificationRequired: true,
+        booking: data.bookings[idx],
+        message: 'Your State Bank of India UPI payment reference has been recorded with status "Manual Verification Required". Booking confirmation will be issued once our administration verifies the transfer in SBI account gauriomji@oksbi.'
+      }));
+    } catch (err) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: false, error: err.message }));
+    }
+    return;
+  }
+
+  // 5. Admin Payment Verification & Status Update (POST /api/payments/admin-update)
+  if (pathname === '/api/payments/admin-update' && req.method === 'POST') {
+    try {
+      const payload = await getJsonBody(req);
+      const { bookingId, paymentStatus, amountPayable, amountReceived, transactionId, paymentMethod, pin } = payload;
+      const data = readDb();
+      const expectedPin = (data.settings && data.settings.ownerPin) || 'vastu2026';
+
+      if (pin && pin !== expectedPin) {
+        res.writeHead(403, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Invalid admin security PIN' }));
+        return;
+      }
+
+      const idx = (data.bookings || []).findIndex(b => b.id === bookingId);
+      if (idx === -1) {
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Booking not found' }));
+        return;
+      }
+
+      const b = data.bookings[idx];
+      const wasPaid = b.paymentStatus === 'Paid';
+
+      if (paymentStatus && PAYMENT_CONFIG.validPaymentStatuses.includes(paymentStatus)) {
+        b.paymentStatus = paymentStatus;
+      }
+      if (amountPayable !== undefined) {
+        b.amountPayable = parseInrAmount(amountPayable, b.amountPayable || 5100);
+        b.amount = `₹${b.amountPayable.toLocaleString('en-IN')}`;
+      }
+      if (amountReceived !== undefined) {
+        b.amountReceived = Math.max(0, Number(amountReceived) || 0);
+      }
+      if (transactionId !== undefined) {
+        b.transactionId = String(transactionId).trim();
+      }
+      if (paymentMethod !== undefined) {
+        b.paymentMethod = String(paymentMethod).trim();
+      }
+
+      // Synchronize booking status with payment status
+      if (b.paymentStatus === 'Paid') {
+        b.status = 'Confirmed';
+        if (!b.amountReceived) {
+          b.amountReceived = b.amountPayable || parseInrAmount(b.amount, 5100);
+        }
+        b.paidAt = b.paidAt || new Date().toISOString();
+        if (!wasPaid) {
+          await sendPaymentConfirmationEmail(b);
+        }
+      } else if (b.paymentStatus === 'Manual Verification Required') {
+        b.status = 'Pending Verification';
+      } else if (b.paymentStatus === 'Failed') {
+        b.status = 'Payment Failed';
+      } else if (b.paymentStatus === 'Refunded' || b.paymentStatus === 'Refund Initiated') {
+        b.status = b.paymentStatus;
+      }
+
+      b.updatedAt = new Date().toISOString();
+      writeDb(data);
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
+        success: true,
+        booking: b,
+        message: `Booking ${b.id} payment status updated to ${b.paymentStatus}.`
       }));
     } catch (err) {
       res.writeHead(400, { 'Content-Type': 'application/json' });

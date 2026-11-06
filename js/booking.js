@@ -34,8 +34,10 @@ class VastuBookingSystem {
       appointmentDate: this.getDefaultDate(),
       appointmentTime: "11:30 AM - 12:30 PM",
       consultationMode: "Online Video Consultation",
-      paymentMethod: "UPI / Razorpay",
-      paymentStatus: "Payment Verified",
+      paymentMethod: "SBI UPI (gauriomji@oksbi)",
+      paymentStatus: "Pending",
+      confirmedAmount: 11000,
+      utrNumber: "",
       bookingId: ""
     };
 
@@ -463,22 +465,28 @@ class VastuBookingSystem {
 
   // STEP 7: Payment
   renderStep7Payment() {
+    const rawNum = parseInt(String(this.formData.confirmedAmount || this.formData.amount || '11000').replace(/[^0-9]/g, ''), 10) || 11000;
+    this.formData.confirmedAmount = rawNum;
+    const refPreview = this.formData.bookingId || (this.formData.bookingId = `VS-2026-${Math.floor(1000 + Math.random() * 9000)}`);
+    const upiUri = `upi://pay?pa=gauriomji@oksbi&pn=${encodeURIComponent('Vastu Sutram')}&am=${encodeURIComponent(rawNum.toFixed(2))}&cu=INR&tn=${encodeURIComponent(refPreview)}`;
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=8&color=12080B&bgcolor=FFFDF8&data=${encodeURIComponent(upiUri)}`;
+
     return `
       <div>
-        <h3 class="font-serif text-lg text-[#F9E29B] font-semibold mb-1">Step 7: Payment & Fee Authorization</h3>
-        <p class="text-xs text-[#DCCBB0] mb-5">Review your booking summary and select your payment preference:</p>
+        <h3 class="font-serif text-lg text-[#F9E29B] font-semibold mb-1">Step 7: Online Payment &amp; Fee Confirmation</h3>
+        <p class="text-xs text-[#DCCBB0] mb-5">Confirm your payable consultation fee and complete payment via State Bank of India UPI (<span class="font-mono text-[#F9E29B]">gauriomji@oksbi</span>) or Razorpay:</p>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          <!-- Summary Box -->
+          <!-- Summary & Confirmed Payable Fee Box -->
           <div class="p-5 rounded-xl bg-[#12080B] border border-[#C6A15B]/30 space-y-3">
             <h4 class="font-serif text-sm font-bold text-[#C6A15B] uppercase tracking-wider border-b border-[#C6A15B]/20 pb-2">Consultation Summary</h4>
             <div class="flex justify-between text-xs">
-              <span class="text-[#DCCBB0]">Selected Package:</span>
-              <span class="font-semibold text-[#F8F3E9]">${this.formData.packageName}</span>
+              <span class="text-[#DCCBB0]">Booking Reference:</span>
+              <span class="font-mono font-bold text-[#F9E29B]">${refPreview}</span>
             </div>
             <div class="flex justify-between text-xs">
-              <span class="text-[#DCCBB0]">Service Category:</span>
-              <span class="font-semibold text-[#F8F3E9]">${this.formData.serviceName}</span>
+              <span class="text-[#DCCBB0]">Selected Package:</span>
+              <span class="font-semibold text-[#F8F3E9]">${this.formData.packageName}</span>
             </div>
             <div class="flex justify-between text-xs">
               <span class="text-[#DCCBB0]">Appointment Schedule:</span>
@@ -489,9 +497,21 @@ class VastuBookingSystem {
               <span class="font-semibold text-[#F8F3E9]">${this.formData.consultationMode}</span>
             </div>
             <div class="w-full h-[1px] bg-[#C6A15B]/20"></div>
-            <div class="flex justify-between text-sm font-serif">
-              <span class="text-[#F9E29B] font-bold">Total Payable:</span>
-              <span class="text-xl font-bold text-[#F9E29B]">${this.formData.amount}</span>
+            <div class="pt-1">
+              <label class="block text-[10px] uppercase tracking-wider text-[#F9E29B] font-bold mb-1">Confirmed Payable Amount (INR ₹)</label>
+              <input type="number" id="modal-confirmed-amount" value="${rawNum}" min="1" class="w-full px-3 py-2 rounded-lg bg-[#1B0D12] border border-[#F9E29B]/50 font-mono text-base font-bold text-[#F9E29B] outline-none" />
+              <span class="text-[10px] text-[#DCCBB0]/75 block mt-1">Starting prices are indicative; confirm exact agreed consultation fee.</span>
+            </div>
+
+            <!-- SBI UPI QR Card -->
+            <div class="p-3.5 rounded-xl bg-[#FFFDF8] text-[#171717] border border-[#C6A15B] flex items-center gap-3.5 mt-2">
+              <img src="${qrUrl}" alt="SBI UPI QR gauriomji@oksbi" class="w-24 h-24 object-contain rounded border border-[#C6A15B]/30 shrink-0" />
+              <div class="text-[11px] space-y-1">
+                <div class="font-bold text-[#481C25] uppercase tracking-wider text-[10px]">State Bank of India UPI</div>
+                <div class="font-mono font-bold text-xs text-[#171717]">gauriomji@oksbi</div>
+                <div class="text-[10px] text-[#171717]/80">Payee: <strong>Vastu Sutram</strong></div>
+                <a href="${upiUri}" class="inline-block mt-1 px-2.5 py-1 rounded bg-[#481C25] text-[#F9E29B] font-serif text-[10px] font-bold uppercase">📱 Open UPI App</a>
+              </div>
             </div>
           </div>
 
@@ -499,9 +519,8 @@ class VastuBookingSystem {
           <div class="space-y-3">
             <h4 class="font-serif text-sm font-bold text-[#C6A15B] uppercase tracking-wider">Select Payment Channel</h4>
             ${[
-              { id: "UPI / Razorpay", title: "UPI (Google Pay, PhonePe, Paytm, BHIM)", icon: "📱", badge: "Instant Confirmation" },
-              { id: "Credit / Debit Card", title: "Credit / Debit Card (Visa, MasterCard, RuPay)", icon: "💳", badge: "Secure 256-Bit SSL" },
-              { id: "Net Banking", title: "Net Banking (All Major Indian & Global Banks)", icon: "🏦", badge: "Direct Transfer" }
+              { id: "SBI UPI (gauriomji@oksbi)", title: "State Bank of India UPI (gauriomji@oksbi)", icon: "📲", badge: "Direct UPI QR / App • Manual Verification" },
+              { id: "Razorpay", title: "Razorpay Checkout (UPI / Cards / NetBanking)", icon: "💳", badge: "Automated Server Signature Verification" }
             ].map(pm => `
               <label class="flex items-center justify-between p-3.5 rounded-xl border cursor-pointer transition-all ${
                 this.formData.paymentMethod === pm.id
@@ -518,8 +537,15 @@ class VastuBookingSystem {
               </label>
             `).join('')}
 
-            <div class="p-3 rounded-lg bg-emerald-950/40 border border-emerald-500/30 text-xs text-emerald-200">
-              🔒 <strong>Sandbox & Production Ready:</strong> In test mode, clicking Authorize will instantly simulate a verified banking transaction and record your appointment in the database.
+            <div class="p-3.5 rounded-xl bg-[#12080B] border border-[#C6A15B]/30 space-y-2">
+              <label class="block text-[11px] font-serif text-[#F9E29B] font-semibold">
+                If paying via SBI UPI (gauriomji@oksbi), enter 12-Digit UTR / UPI Ref No:
+              </label>
+              <input type="text" id="modal-upi-utr" value="${this.formData.utrNumber || ''}" placeholder="e.g. 431098765432" class="w-full px-3 py-2 rounded-lg bg-[#1B0D12] border border-[#C6A15B]/35 text-xs font-mono text-[#F8F3E9] outline-none" />
+            </div>
+
+            <div class="p-3 rounded-lg bg-[#481C25]/40 border border-[#C6A15B]/30 text-[11px] text-[#DCCBB0] leading-relaxed">
+              🔒 <strong>Verification Security:</strong> Direct UPI payments are marked as <em>Manual Verification Required</em> until verified against SBI bank records. Razorpay payments are verified automatically on our server.
             </div>
           </div>
         </div>
@@ -529,15 +555,18 @@ class VastuBookingSystem {
 
   // STEP 8: Confirmation Screen
   renderStep8Confirmation() {
+    const isPaid = this.formData.paymentStatus === 'Paid';
     return `
       <div class="text-center py-6">
-        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-emerald-900/60 border-2 border-emerald-500 flex items-center justify-center text-3xl text-emerald-400">
-          ✓
+        <div class="w-16 h-16 mx-auto mb-4 rounded-full ${isPaid ? 'bg-emerald-900/60 border-2 border-emerald-500 text-emerald-400' : 'bg-[#481C25] border-2 border-[#F9E29B] text-[#F9E29B]'} flex items-center justify-center text-3xl">
+          ${isPaid ? '✓' : '⏳'}
         </div>
 
-        <h3 class="font-serif text-2xl md:text-3xl text-[#F9E29B] font-bold mb-2">Your Vastu Consultation Request Has Been Received!</h3>
+        <h3 class="font-serif text-2xl md:text-3xl text-[#F9E29B] font-bold mb-2">
+          ${isPaid ? 'Payment Successful!' : 'Booking Recorded – Manual Verification Required'}
+        </h3>
         <p class="text-xs md:text-sm text-[#DCCBB0] max-w-lg mx-auto mb-6">
-          Thank you, <strong class="text-[#F8F3E9]">${this.formData.fullName}</strong>. Your consultation docket has been safely registered in our priority appointment ledger.
+          Thank you for choosing Vastu Sutram, <strong class="text-[#F8F3E9]">${this.formData.fullName}</strong>.
         </p>
 
         <!-- Booking Voucher Card -->
@@ -549,7 +578,7 @@ class VastuBookingSystem {
               <span class="text-[10px] text-[#C6A15B] uppercase tracking-widest font-bold">Booking Reference ID</span>
               <div class="font-mono text-xl font-bold text-[#F9E29B] tracking-wider">${this.formData.bookingId}</div>
             </div>
-            <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+            <span class="px-3 py-1 rounded-full text-xs font-bold ${isPaid ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-amber-500/20 text-amber-300 border border-amber-500/40'}">
               ${this.formData.paymentStatus}
             </span>
           </div>
@@ -564,17 +593,21 @@ class VastuBookingSystem {
               <span class="font-semibold text-[#F8F3E9]">${this.formData.appointmentDate} @ ${this.formData.appointmentTime}</span>
             </div>
             <div>
-              <span class="text-[#DCCBB0] block text-[11px]">Mode</span>
-              <span class="font-semibold text-[#F8F3E9]">${this.formData.consultationMode}</span>
+              <span class="text-[#DCCBB0] block text-[11px]">Payment Method &amp; Ref</span>
+              <span class="font-semibold text-[#F8F3E9]">${this.formData.paymentMethod} (${this.formData.transactionId || 'Pending'})</span>
             </div>
             <div>
-              <span class="text-[#DCCBB0] block text-[11px]">Total Fee Paid</span>
+              <span class="text-[#DCCBB0] block text-[11px]">Confirmed Payable Fee</span>
               <span class="font-semibold text-[#F9E29B]">${this.formData.amount}</span>
             </div>
           </div>
 
           <div class="text-[11px] text-[#DCCBB0]/90 p-3 rounded bg-[#481C25]/40 border border-[#C6A15B]/20">
-            <strong>Next Steps:</strong> An automated confirmation docket along with the video meeting link has been prepared. Our senior consulting assistant will connect with you on WhatsApp (<span class="text-[#F8F3E9] font-medium">${this.formData.whatsapp}</span>) 24 hours prior to the session.
+            <strong>Status Notice:</strong> ${
+              isPaid
+                ? 'Your payment has been verified and your consultation is Confirmed.'
+                : 'Your direct UPI payment to gauriomji@oksbi is marked as Manual Verification Required until verified by Vastu Sutram administration.'
+            }
           </div>
         </div>
 
@@ -583,8 +616,8 @@ class VastuBookingSystem {
           <button id="btn-print-receipt" class="px-5 py-2.5 rounded-full border border-[#C6A15B] text-xs font-semibold text-[#C6A15B] hover:bg-[#C6A15B] hover:text-[#171717] transition-all">
             🖨️ Download / Print Receipt
           </button>
-          <a id="btn-whatsapp-confirm" href="https://wa.me/919876543210?text=${encodeURIComponent(`Hello Vastu Sutram, I have confirmed consultation booking ${this.formData.bookingId} for ${this.formData.packageName} on ${this.formData.appointmentDate}.`)}" target="_blank" class="px-5 py-2.5 rounded-full bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-semibold transition-all flex items-center gap-2">
-            <span>💬</span> Send WhatsApp Notification
+          <a id="btn-whatsapp-confirm" href="https://api.whatsapp.com/send?phone=918145715755&text=${encodeURIComponent(`Hello Vastu Sutram, here are my booking & payment details:\nBooking Ref: ${this.formData.bookingId}\nName: ${this.formData.fullName}\nPackage: ${this.formData.packageName}\nConfirmed Amount: ${this.formData.amount}\nTransaction/UTR: ${this.formData.transactionId || 'Submitted'}\nStatus: ${this.formData.paymentStatus}`)}" target="_blank" rel="noopener noreferrer" class="px-5 py-2.5 rounded-full bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-semibold transition-all flex items-center gap-2">
+            <span>💬</span> Send Payment Details on WhatsApp (+91 81457 15755)
           </a>
         </div>
       </div>
@@ -815,31 +848,62 @@ class VastuBookingSystem {
   }
 
   async executeBooking() {
-    // Generate Reference ID: VS-2026-XXXX
-    const refCode = `VS-2026-${Math.floor(1000 + Math.random() * 9000)}`;
-    this.formData.bookingId = refCode;
+    const amtInput = document.getElementById('modal-confirmed-amount');
+    const utrInput = document.getElementById('modal-upi-utr');
+    const confirmedInr = Math.max(1, Math.round(Number((amtInput && amtInput.value) || this.formData.confirmedAmount || 11000)));
+    const utrNumber = (utrInput && utrInput.value.trim()) || '';
+
+    this.formData.confirmedAmount = confirmedInr;
+    this.formData.amountPayable = confirmedInr;
+    this.formData.amount = `₹${confirmedInr.toLocaleString('en-IN')}`;
+    this.formData.bookingId = this.formData.bookingId || `VS-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+    this.formData.id = this.formData.bookingId;
     this.formData.createdAt = new Date().toISOString();
-    this.formData.status = "Confirmed";
+
+    if (this.formData.paymentMethod === 'Razorpay' && window.VastuApp && typeof window.VastuApp.openOnlinePaymentPortal === 'function') {
+      window.VastuApp.closeBookingModal();
+      window.VastuApp.openOnlinePaymentPortal(this.formData, {
+        id: this.formData.packageId,
+        name: this.formData.packageName,
+        price: this.formData.amount,
+        rawPrice: confirmedInr
+      });
+      return;
+    }
+
+    // Direct SBI UPI Submission -> Always sets Manual Verification Required until verified by Admin
+    this.formData.paymentMethod = 'SBI UPI (gauriomji@oksbi)';
+    this.formData.paymentStatus = 'Manual Verification Required';
+    this.formData.status = 'Pending Verification';
+    this.formData.transactionId = utrNumber || 'UTR-AWAITING-VERIFICATION';
 
     try {
-      const res = await fetch('/api/bookings', {
+      const res = await fetch('/api/payments/upi-submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(this.formData)
+        body: JSON.stringify({
+          bookingId: this.formData.bookingId,
+          packageId: this.formData.packageId,
+          packageName: this.formData.packageName,
+          confirmedAmount: confirmedInr,
+          utrNumber: this.formData.transactionId,
+          customerData: this.formData
+        })
       });
       if (res.ok) {
-        console.log('Booking successfully committed to database');
+        const data = await res.json();
+        if (data && data.booking) {
+          this.formData = { ...this.formData, ...data.booking, bookingId: data.booking.id };
+        }
       }
     } catch (err) {
       console.warn('Booking saved locally:', err);
     }
 
-    // Save copy in localStorage for client persistence
     const localBookings = JSON.parse(localStorage.getItem('vastu_bookings') || '[]');
     localBookings.unshift(this.formData);
     localStorage.setItem('vastu_bookings', JSON.stringify(localBookings));
 
-    // Advance to confirmation screen
     this.currentStep = 8;
     this.render();
   }
