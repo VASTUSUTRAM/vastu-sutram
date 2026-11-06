@@ -38,9 +38,6 @@
     }
   </script>
 
-  <!-- Razorpay Checkout SDK -->
-  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-
   <!-- Three.js & GSAP Animation Libraries -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
@@ -775,10 +772,28 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <!-- Consultation Type -->
+              <!-- Consultation Category -->
+              <div>
+                <label for="wa-consultation-category" class="block text-xs font-serif uppercase tracking-[0.14em] text-[#F9E29B] mb-2 font-semibold">
+                  Consultation Category <span class="text-[#C6A15B]">*</span>
+                </label>
+                <div class="vastu-input-icon-wrap">
+                  <span class="vastu-field-icon" aria-hidden="true">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                  </span>
+                  <select id="wa-consultation-category" required class="vastu-input vastu-input-with-icon cursor-pointer">
+                    <option value="Residential Vastu">Residential Vastu</option>
+                    <option value="Commercial Vastu">Commercial Vastu</option>
+                    <option value="Industrial Vastu">Industrial Vastu</option>
+                    <option value="Land & Plot Vastu">Land &amp; Plot Vastu</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Selected Consultation Package -->
               <div>
                 <label for="wa-consultation-type" class="block text-xs font-serif uppercase tracking-[0.14em] text-[#F9E29B] mb-2 font-semibold">
-                  Consultation Type <span class="text-[#C6A15B]">*</span>
+                  Selected Consultation Package <span class="text-[#C6A15B]">*</span>
                 </label>
                 <div class="vastu-input-icon-wrap">
                   <span class="vastu-field-icon" aria-hidden="true">
@@ -786,36 +801,29 @@
                   </span>
                   <select id="wa-consultation-type" required class="vastu-input vastu-input-with-icon cursor-pointer">
                     <optgroup label="Residential Vastu Packages">
-                      <option value="Complete Home Vastu Analysis (Starting from ₹11,000)" data-pkg-id="pkg-res-complete" data-starting-price="11000">Complete Home Vastu Analysis — Starting ₹11,000</option>
-                      <option value="Basic Home Vastu Consultation (Starting from ₹5,100)" data-pkg-id="pkg-res-basic" data-starting-price="5100">Basic Home Vastu Consultation — Starting ₹5,100</option>
-                      <option value="Premium Residential Vastu Consultation (Starting from ₹21,000)" data-pkg-id="pkg-res-premium" data-starting-price="21000">Premium Residential Vastu Consultation — Starting ₹21,000</option>
-                      <option value="Flat and Apartment Consultation (Starting from ₹8,500)" data-pkg-id="pkg-res-apartment" data-starting-price="8500">Flat &amp; Apartment Consultation — Starting ₹8,500</option>
-                      <option value="New Home Construction Consultation (Starting from ₹35,000)" data-pkg-id="pkg-res-construction" data-starting-price="35000">New Home Construction Consultation — Starting ₹35,000</option>
+                      <option value="Complete Home Vastu Analysis (Starting from ₹11,000)" data-pkg-id="pkg-res-complete" data-category="Residential Vastu" data-starting-price="11000">Complete Home Vastu Analysis — Starting ₹11,000</option>
+                      <option value="Basic Home Vastu Consultation (Starting from ₹5,100)" data-pkg-id="pkg-res-basic" data-category="Residential Vastu" data-starting-price="5100">Basic Home Vastu Consultation — Starting ₹5,100</option>
+                      <option value="Premium Residential Vastu Consultation (Starting from ₹21,000)" data-pkg-id="pkg-res-premium" data-category="Residential Vastu" data-starting-price="21000">Premium Residential Vastu Consultation — Starting ₹21,000</option>
+                      <option value="Flat and Apartment Consultation (Starting from ₹8,500)" data-pkg-id="pkg-res-apartment" data-category="Residential Vastu" data-starting-price="8500">Flat &amp; Apartment Consultation — Starting ₹8,500</option>
+                      <option value="New Home Construction Consultation (Starting from ₹35,000)" data-pkg-id="pkg-res-construction" data-category="Residential Vastu" data-starting-price="35000">New Home Construction Consultation — Starting ₹35,000</option>
                     </optgroup>
                     <optgroup label="Commercial Vastu Packages">
-                      <option value="Shop and Showroom Consultation (Starting from ₹14,000)" data-pkg-id="pkg-com-shop" data-starting-price="14000">Shop &amp; Showroom Consultation — Starting ₹14,000</option>
-                      <option value="Office Vastu Consultation (Starting from ₹18,000)" data-pkg-id="pkg-com-office" data-starting-price="18000">Office Vastu Consultation — Starting ₹18,000</option>
-                      <option value="Hotel and Restaurant Consultation (Starting from ₹30,000)" data-pkg-id="pkg-com-hotel" data-starting-price="30000">Hotel &amp; Restaurant Consultation — Starting ₹30,000</option>
-                      <option value="Corporate Building Consultation (Starting from ₹50,000)" data-pkg-id="pkg-com-corporate" data-starting-price="50000">Corporate Building Consultation — Starting ₹50,000</option>
+                      <option value="Shop and Showroom Consultation (Starting from ₹14,000)" data-pkg-id="pkg-com-shop" data-category="Commercial Vastu" data-starting-price="14000">Shop &amp; Showroom Consultation — Starting ₹14,000</option>
+                      <option value="Office Vastu Consultation (Starting from ₹18,000)" data-pkg-id="pkg-com-office" data-category="Commercial Vastu" data-starting-price="18000">Office Vastu Consultation — Starting ₹18,000</option>
+                      <option value="Hotel and Restaurant Consultation (Starting from ₹30,000)" data-pkg-id="pkg-com-hotel" data-category="Commercial Vastu" data-starting-price="30000">Hotel &amp; Restaurant Consultation — Starting ₹30,000</option>
+                      <option value="Corporate Building Consultation (Starting from ₹50,000)" data-pkg-id="pkg-com-corporate" data-category="Commercial Vastu" data-starting-price="50000">Corporate Building Consultation — Starting ₹50,000</option>
                     </optgroup>
                     <optgroup label="Industrial Vastu Packages">
-                      <option value="Warehouse Vastu Consultation (Starting from ₹22,000)" data-pkg-id="pkg-ind-warehouse" data-starting-price="22000">Warehouse Vastu Consultation — Starting ₹22,000</option>
-                      <option value="Factory Vastu Consultation (Starting from ₹28,000)" data-pkg-id="pkg-ind-factory" data-starting-price="28000">Factory Vastu Consultation — Starting ₹28,000</option>
-                      <option value="Manufacturing Unit Analysis (Starting from ₹35,000)" data-pkg-id="pkg-ind-manufacturing" data-starting-price="35000">Manufacturing Unit Analysis — Starting ₹35,000</option>
-                      <option value="Complete Industrial Layout Analysis (Starting from ₹60,000)" data-pkg-id="pkg-ind-layout" data-starting-price="60000">Complete Industrial Layout Analysis — Starting ₹60,000</option>
+                      <option value="Warehouse Vastu Consultation (Starting from ₹22,000)" data-pkg-id="pkg-ind-warehouse" data-category="Industrial Vastu" data-starting-price="22000">Warehouse Vastu Consultation — Starting ₹22,000</option>
+                      <option value="Factory Vastu Consultation (Starting from ₹28,000)" data-pkg-id="pkg-ind-factory" data-category="Industrial Vastu" data-starting-price="28000">Factory Vastu Consultation — Starting ₹28,000</option>
+                      <option value="Manufacturing Unit Analysis (Starting from ₹35,000)" data-pkg-id="pkg-ind-manufacturing" data-category="Industrial Vastu" data-starting-price="35000">Manufacturing Unit Analysis — Starting ₹35,000</option>
+                      <option value="Complete Industrial Layout Analysis (Starting from ₹60,000)" data-pkg-id="pkg-ind-layout" data-category="Industrial Vastu" data-starting-price="60000">Complete Industrial Layout Analysis — Starting ₹60,000</option>
                     </optgroup>
                     <optgroup label="Land &amp; Plot Packages">
-                      <option value="Residential Plot Analysis (Starting from ₹7,500)" data-pkg-id="pkg-land-plot" data-starting-price="7500">Residential Plot Analysis — Starting ₹7,500</option>
-                      <option value="Before-Purchase Land Consultation (Starting from ₹9,500)" data-pkg-id="pkg-land-prepurchase" data-starting-price="9500">Before-Purchase Land Consultation — Starting ₹9,500</option>
-                      <option value="Commercial Land Analysis (Starting from ₹15,000)" data-pkg-id="pkg-land-commercial" data-starting-price="15000">Commercial Land Analysis — Starting ₹15,000</option>
-                      <option value="Industrial Land Analysis (Starting from ₹25,000)" data-pkg-id="pkg-land-industrial" data-starting-price="25000">Industrial Land Analysis — Starting ₹25,000</option>
-                    </optgroup>
-                    <optgroup label="General Categories">
-                      <option value="Residential Vastu" data-starting-price="11000">Residential Vastu</option>
-                      <option value="Commercial Vastu" data-starting-price="18000">Commercial Vastu</option>
-                      <option value="Industrial Vastu" data-starting-price="28000">Industrial Vastu</option>
-                      <option value="Land Vastu" data-starting-price="7500">Land Vastu</option>
-                      <option value="Vastu Mapping & 16-Zone Gridding" data-starting-price="11000">Vastu Mapping &amp; 16-Zone Gridding</option>
+                      <option value="Residential Plot Analysis (Starting from ₹7,500)" data-pkg-id="pkg-land-plot" data-category="Land & Plot Vastu" data-starting-price="7500">Residential Plot Analysis — Starting ₹7,500</option>
+                      <option value="Before-Purchase Land Consultation (Starting from ₹9,500)" data-pkg-id="pkg-land-prepurchase" data-category="Land & Plot Vastu" data-starting-price="9500">Before-Purchase Land Consultation — Starting ₹9,500</option>
+                      <option value="Commercial Land Analysis (Starting from ₹15,000)" data-pkg-id="pkg-land-commercial" data-category="Land & Plot Vastu" data-starting-price="15000">Commercial Land Analysis — Starting ₹15,000</option>
+                      <option value="Industrial Land Analysis (Starting from ₹25,000)" data-pkg-id="pkg-land-industrial" data-category="Land & Plot Vastu" data-starting-price="25000">Industrial Land Analysis — Starting ₹25,000</option>
                     </optgroup>
                   </select>
                 </div>
@@ -831,22 +839,20 @@
                     <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1V9.5z"/></svg>
                   </span>
                   <select id="wa-property-type" required class="vastu-input vastu-input-with-icon cursor-pointer">
-                    <option value="Apartment / Flat">Apartment / Flat</option>
                     <option value="Independent House">Independent House</option>
-                    <option value="Villa / Duplex">Villa / Duplex</option>
-                    <option value="Office">Office</option>
-                    <option value="Retail Shop / Showroom">Retail Shop / Showroom</option>
-                    <option value="Factory / Industrial Unit">Factory / Industrial Unit</option>
-                    <option value="Plot / Open Land">Plot / Open Land</option>
-                    <option value="Under-Construction Site">Under-Construction Site</option>
+                    <option value="Flat/Apartment">Flat/Apartment</option>
+                    <option value="Villa/Duplex">Villa/Duplex</option>
+                    <option value="Commercial Property">Commercial Property</option>
+                    <option value="Factory/Industrial Property">Factory/Industrial Property</option>
+                    <option value="Land/Plot">Land/Plot</option>
                   </select>
                 </div>
               </div>
 
-              <!-- Property Location / City -->
+              <!-- City and Location -->
               <div>
                 <label for="wa-city" class="block text-xs font-serif uppercase tracking-[0.14em] text-[#F9E29B] mb-2 font-semibold">
-                  Property Location / City <span class="text-[#C6A15B]">*</span>
+                  City and Location <span class="text-[#C6A15B]">*</span>
                 </label>
                 <div class="vastu-input-icon-wrap">
                   <span class="vastu-field-icon" aria-hidden="true">
@@ -857,7 +863,7 @@
               </div>
 
               <!-- Approximate Area / Stage -->
-              <div>
+              <div class="md:col-span-2">
                 <label for="wa-property-stage" class="block text-xs font-serif uppercase tracking-[0.14em] text-[#DCCBB0] mb-2 font-semibold">
                   Property Stage &amp; Floor Plan Status
                 </label>
@@ -879,15 +885,15 @@
             <div class="mt-6 p-5 rounded-2xl bg-[#12080B]/85 border border-[#C6A15B]/35">
               <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div class="max-w-xl">
-                  <span class="text-[10px] uppercase tracking-[0.2em] text-[#C6A15B] font-bold block mb-1">CONFIRMED PAYABLE FEE (INR • ₹)</span>
-                  <h4 class="font-serif text-base font-bold text-[#F9E29B]">Confirm Consultation Fee Before Online Payment</h4>
+                  <span class="text-[10px] uppercase tracking-[0.2em] text-[#C6A15B] font-bold block mb-1">CONFIRMED CONSULTATION AMOUNT (INR • ₹)</span>
+                  <h4 class="font-serif text-base font-bold text-[#F9E29B]">Confirm Consultation Fee Before Proceeding to Payment</h4>
                   <p class="text-xs text-[#DCCBB0] mt-1 font-light leading-relaxed">
                     Displayed package rates are starting prices. Enter the exact confirmed consultation fee agreed for your property scope (or keep the package base fee to book the standard tier).
                   </p>
                 </div>
                 <div class="w-full md:w-64 shrink-0">
                   <label for="wa-confirmed-amount" class="block text-[10px] font-serif uppercase tracking-[0.16em] text-[#F9E29B] mb-1.5 font-semibold">
-                    Confirmed Payable Amount (₹) *
+                    Confirmed Consultation Amount (₹) *
                   </label>
                   <div class="relative">
                     <span class="absolute left-4 top-1/2 -translate-y-1/2 font-serif font-bold text-base text-[#F9E29B]">₹</span>
@@ -913,36 +919,36 @@
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-6 mb-7 border-b border-[#C6A15B]/20">
               <div>
                 <span class="text-[10px] uppercase tracking-[0.22em] text-[#C6A15B] font-bold block mb-1">STEP 03 OF 04 • CONSULTATION PREFERENCES</span>
-                <h3 class="font-serif text-2xl md:text-3xl font-bold text-[#F8F3E9]">Schedule &amp; Specific Priorities</h3>
+                <h3 class="font-serif text-2xl md:text-3xl font-bold text-[#F8F3E9]">Schedule &amp; Vastu Requirement</h3>
               </div>
-              <span class="text-xs text-[#DCCBB0]/80 italic font-serif">Flexible Online &amp; On-Site Sessions</span>
+              <span class="text-xs text-[#DCCBB0]/80 italic font-serif">Online &amp; Offline Consultation Options</span>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-              <!-- Preferred Consultation Mode -->
+              <!-- Online or Offline Consultation -->
               <div>
                 <label for="wa-mode" class="block text-xs font-serif uppercase tracking-[0.14em] text-[#F9E29B] mb-2 font-semibold">
-                  Consultation Mode
+                  Online or Offline Consultation <span class="text-[#C6A15B]">*</span>
                 </label>
-                <select id="wa-mode" class="vastu-input cursor-pointer">
-                  <option value="Online Video / Blueprint Review">Online Video / Blueprint Review</option>
-                  <option value="In-Person On-Site Visit">In-Person On-Site Visit</option>
-                  <option value="Hybrid (Blueprint + Site Visit)">Hybrid (Blueprint + Site Visit)</option>
+                <select id="wa-mode" required class="vastu-input cursor-pointer">
+                  <option value="Online Consultation (Video / Blueprint Review)">Online Consultation (Video / Blueprint Review)</option>
+                  <option value="Offline Consultation (In-Person On-Site Visit)">Offline Consultation (In-Person On-Site Visit)</option>
+                  <option value="Hybrid Consultation (Blueprint + On-Site Visit)">Hybrid Consultation (Blueprint + On-Site Visit)</option>
                 </select>
               </div>
 
-              <!-- Preferred Date -->
+              <!-- Preferred Consultation Date -->
               <div>
                 <label for="wa-date" class="block text-xs font-serif uppercase tracking-[0.14em] text-[#F9E29B] mb-2 font-semibold">
-                  Preferred Date <span class="text-[#C6A15B]">*</span>
+                  Preferred Consultation Date <span class="text-[#C6A15B]">*</span>
                 </label>
                 <input type="date" id="wa-date" required class="vastu-input" />
               </div>
 
-              <!-- Preferred Time Slot -->
+              <!-- Preferred Time -->
               <div>
                 <label for="wa-time-slot" class="block text-xs font-serif uppercase tracking-[0.14em] text-[#F9E29B] mb-2 font-semibold">
-                  Preferred Time Slot <span class="text-[#C6A15B]">*</span>
+                  Preferred Time <span class="text-[#C6A15B]">*</span>
                 </label>
                 <select id="wa-time-slot" required class="vastu-input cursor-pointer">
                   <option value="10:00 AM - 11:00 AM">10:00 AM - 11:00 AM</option>
@@ -955,30 +961,31 @@
               </div>
             </div>
 
-            <!-- Message & Specific Requirements -->
+            <!-- Brief Description of the Vastu Requirement -->
             <div>
               <label for="wa-message" class="block text-xs font-serif uppercase tracking-[0.14em] text-[#F9E29B] mb-2 font-semibold">
-                Key Spatial Questions or Specific Concerns
+                Brief Description of the Vastu Requirement <span class="text-[#C6A15B]">*</span>
               </label>
               <textarea
                 id="wa-message"
                 rows="4"
-                placeholder="Share any specific aspects you would like us to focus on (e.g., main entrance direction, kitchen/bedroom placement, new floor plan review, or business energy flow)..."
+                required
+                placeholder="Describe your Vastu requirement (e.g., main entrance direction, kitchen/bedroom placement, new floor plan review, or commercial layout evaluation)..."
                 class="vastu-input"
               ></textarea>
             </div>
           </div>
 
           <!-- ==================================================== -->
-          <!-- STEP 04 – REVIEW & SUBMIT                            -->
+          <!-- STEP 04 – BOOKING SUMMARY                            -->
           <!-- ==================================================== -->
           <div class="booking-wizard-step hidden" data-booking-step-pane="4">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-6 mb-7 border-b border-[#C6A15B]/20">
               <div>
-                <span class="text-[10px] uppercase tracking-[0.22em] text-[#C6A15B] font-bold block mb-1">STEP 04 OF 04 • BOOKING &amp; PAYMENT SUMMARY</span>
-                <h3 class="font-serif text-2xl md:text-3xl font-bold text-[#F8F3E9]">Consultation Payment Summary</h3>
+                <span class="text-[10px] uppercase tracking-[0.22em] text-[#C6A15B] font-bold block mb-1">STEP 04 OF 04 • BOOKING SUMMARY</span>
+                <h3 class="font-serif text-2xl md:text-3xl font-bold text-[#F8F3E9]">Review &amp; Confirm Booking Summary</h3>
               </div>
-              <span class="text-xs text-[#F9E29B] font-serif">Razorpay • UPI (gauriomji@oksbi)</span>
+              <span class="text-xs text-[#F9E29B] font-serif">Vastu Sutram • UPI ID: gauriomji@oksbi</span>
             </div>
 
             <!-- Structured Summary Grid -->
@@ -989,11 +996,19 @@
             <div class="p-4 rounded-2xl bg-[#481C25]/45 border border-[#C6A15B]/35 flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
               <div class="flex items-center gap-3 text-xs text-[#F8F3E9]/90">
                 <span class="w-9 h-9 rounded-xl bg-[#12080B] border border-[#C6A15B]/50 flex items-center justify-center text-[#F9E29B] shrink-0">✦</span>
-                <span>Complete your booking online via <strong class="text-[#F9E29B]">Razorpay Checkout</strong> or <strong class="text-[#F9E29B]">State Bank of India UPI (gauriomji@oksbi)</strong>, or send your consultation dossier to WhatsApp (<strong class="text-[#F9E29B] font-mono">9181457155</strong>).</span>
+                <span>Please review and confirm all booking details above before proceeding to <strong class="text-[#F9E29B]">UPI Payment (gauriomji@oksbi)</strong> or <strong class="text-[#F9E29B]">Razorpay Verified Checkout</strong>.</span>
               </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <button
+                type="button"
+                id="booking-edit-details-btn"
+                class="w-full py-4 px-5 rounded-full border border-[#C6A15B]/60 bg-[#481C25]/70 hover:bg-[#481C25] text-[#F9E29B] text-xs md:text-sm font-serif font-bold uppercase tracking-[0.15em] flex items-center justify-center gap-2.5 transition-all"
+              >
+                <span>✏️ EDIT DETAILS</span>
+              </button>
+
               <button
                 type="button"
                 id="booking-proceed-payment-btn"
@@ -1002,13 +1017,14 @@
                 <span>🔒 PROCEED TO PAYMENT</span>
                 <span>➔</span>
               </button>
+            </div>
 
+            <div class="mt-4 text-center">
               <button
                 type="submit"
-                class="w-full py-4 px-5 rounded-full border border-[#C6A15B]/60 bg-[#481C25]/70 hover:bg-[#481C25] text-[#F9E29B] text-xs md:text-sm font-serif font-bold uppercase tracking-[0.15em] flex items-center justify-center gap-2.5 transition-all"
+                class="text-xs font-serif text-[#DCCBB0] hover:text-[#F9E29B] underline tracking-wider transition-all"
               >
-                <span>💬 Confirm &amp; Send via WhatsApp (9181457155)</span>
-                <span>➔</span>
+                Or send booking enquiry on WhatsApp (+91 81457 15755) prior to payment ➔
               </button>
             </div>
           </div>
@@ -1538,8 +1554,8 @@
         <div class="flex items-center gap-3.5">
           <img src="assets/logo-emblem.png" alt="Vastu Sutram Original Logo" class="h-12 w-auto object-contain original-brand-logo shrink-0" />
           <div>
-            <span class="text-[10px] uppercase tracking-[0.22em] text-[#C6A15B] font-bold block">SECURE CONSULTATION CHECKOUT</span>
-            <h3 class="font-serif text-lg sm:text-xl font-bold text-[#F9E29B]">Vastu Sutram Online Payment Portal</h3>
+            <span class="text-[10px] uppercase tracking-[0.22em] text-[#C6A15B] font-bold block">PAYMENT TO VASTU SUTRAM • CONSULTANT: RAJNI SINGH</span>
+            <h3 class="font-serif text-lg sm:text-xl font-bold text-[#F9E29B]">PAYMENT TO VASTU SUTRAM <span class="text-xs sm:text-sm font-mono text-[#F8F3E9] ml-1">(UPI ID: gauriomji@oksbi)</span></h3>
           </div>
         </div>
         <button id="razorpay-modal-close" class="w-9 h-9 rounded-full bg-[#12080B] border border-[#C6A15B]/45 text-[#F9E29B] hover:bg-[#C6A15B] hover:text-[#12080B] flex items-center justify-center text-base font-bold transition-all" aria-label="Close Payment Portal">✕</button>

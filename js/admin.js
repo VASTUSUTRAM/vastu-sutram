@@ -132,9 +132,22 @@ class VastuAdminDashboard {
 
     const form = document.getElementById('admin-login-form');
     if (form) {
-      form.addEventListener('submit', (e) => {
+      form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const pin = document.getElementById('admin-pin-input').value.trim();
+        try {
+          const res = await fetch('/api/admin/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pin })
+          });
+          if (res.ok) {
+            this.isAuthenticated = true;
+            sessionStorage.setItem('vastu_admin_auth', 'true');
+            this.render();
+            return;
+          }
+        } catch (_) {}
         const expectedPin = (this.settings && this.settings.ownerPin) || 'vastu2026';
         if (pin === expectedPin) {
           this.isAuthenticated = true;
@@ -170,11 +183,48 @@ class VastuAdminDashboard {
 
   getPaymentStatusBadgeClass(status) {
     const s = (status || 'Pending').toLowerCase();
-    if (s === 'paid') return 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
-    if (s.includes('manual verification')) return 'bg-amber-500/20 text-amber-300 border border-amber-500/40';
+    if (s === 'paid' || s === 'payment verified') return 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
+    if (s.includes('manual verification') || s.includes('pending')) return 'bg-amber-500/20 text-amber-300 border border-amber-500/40';
     if (s === 'failed') return 'bg-rose-500/20 text-rose-300 border border-rose-500/40';
     if (s.includes('refund')) return 'bg-purple-500/20 text-purple-300 border border-purple-500/40';
     return 'bg-slate-500/20 text-[#DCCBB0] border border-[#C6A15B]/30';
+  }
+
+  renderKpiSummaryRow() {
+    const totalBookings = this.bookings.length;
+    const successfulPayments = this.bookings.filter(b => b.paymentStatus === 'Paid').length;
+    const pendingPayments = this.bookings.filter(
+      b => !b.paymentStatus || b.paymentStatus === 'Pending' || b.paymentStatus === 'Manual Verification Required'
+    ).length;
+    const failedPayments = this.bookings.filter(b => b.paymentStatus === 'Failed').length;
+    const totalRevenue = this.bookings
+      .filter(b => b.paymentStatus === 'Paid')
+      .reduce((sum, b) => sum + (Number(b.amountReceived || b.amountPayable) || 0), 0);
+
+    return `
+      <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-4 text-xs">
+        <div class="p-3.5 rounded-xl bg-[#12080B] border border-[#C6A15B]/35">
+          <span class="text-[10px] uppercase tracking-wider text-[#C6A15B] block">Total Bookings</span>
+          <strong class="font-serif text-lg text-[#F8F3E9]">${totalBookings}</strong>
+        </div>
+        <div class="p-3.5 rounded-xl bg-[#12080B] border border-emerald-500/35">
+          <span class="text-[10px] uppercase tracking-wider text-emerald-300 block">Successful Payments</span>
+          <strong class="font-serif text-lg text-emerald-300">${successfulPayments}</strong>
+        </div>
+        <div class="p-3.5 rounded-xl bg-[#12080B] border border-amber-500/35">
+          <span class="text-[10px] uppercase tracking-wider text-amber-300 block">Pending Payments</span>
+          <strong class="font-serif text-lg text-amber-300">${pendingPayments}</strong>
+        </div>
+        <div class="p-3.5 rounded-xl bg-[#12080B] border border-rose-500/35">
+          <span class="text-[10px] uppercase tracking-wider text-rose-300 block">Failed Payments</span>
+          <strong class="font-serif text-lg text-rose-300">${failedPayments}</strong>
+        </div>
+        <div class="col-span-2 sm:col-span-1 p-3.5 rounded-xl bg-[#481C25]/55 border border-[#F9E29B]/50">
+          <span class="text-[10px] uppercase tracking-wider text-[#F9E29B] block">Total Revenue</span>
+          <strong class="font-serif text-lg text-[#F9E29B]">₹${totalRevenue.toLocaleString('en-IN')}</strong>
+        </div>
+      </div>
+    `;
   }
 
   // 1A. DEDICATED PAYMENTS & SBI UPI MANAGEMENT TAB
@@ -186,6 +236,14 @@ class VastuAdminDashboard {
       'Refund Initiated',
       'Refunded',
       'Manual Verification Required'
+    ];
+    const validBookingStatuses = [
+      'Payment Pending',
+      'Payment Verified',
+      'Booking Confirmed',
+      'Consultation Completed',
+      'Cancelled',
+      'Refunded'
     ];
 
     let filtered = this.bookings;
@@ -205,34 +263,10 @@ class VastuAdminDashboard {
       );
     }
 
-    const totalReceivable = this.bookings.reduce((sum, b) => sum + (Number(b.amountPayable) || 0), 0);
-    const totalReceived = this.bookings
-      .filter(b => b.paymentStatus === 'Paid')
-      .reduce((sum, b) => sum + (Number(b.amountReceived || b.amountPayable) || 0), 0);
-    const pendingManualCount = this.bookings.filter(
-      b => b.paymentStatus === 'Manual Verification Required'
-    ).length;
-
     return `
       <div class="space-y-4">
-        <!-- Summary Metrics Banner -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-          <div class="p-3.5 rounded-xl bg-[#12080B] border border-[#C6A15B]/30">
-            <span class="text-[10px] uppercase tracking-wider text-[#C6A15B] block">Official SBI UPI Settlement ID</span>
-            <strong class="font-mono text-sm text-[#F9E29B]">gauriomji@oksbi</strong>
-            <span class="text-[10px] text-[#DCCBB0] block mt-0.5">State Bank of India UPI • Vastu Sutram</span>
-          </div>
-          <div class="p-3.5 rounded-xl bg-[#12080B] border border-emerald-500/30">
-            <span class="text-[10px] uppercase tracking-wider text-emerald-300 block">Verified Revenue Received (Paid)</span>
-            <strong class="font-serif text-base text-emerald-300">₹${totalReceived.toLocaleString('en-IN')}</strong>
-            <span class="text-[10px] text-[#DCCBB0] block mt-0.5">Total Booked Pipeline: ₹${totalReceivable.toLocaleString('en-IN')}</span>
-          </div>
-          <div class="p-3.5 rounded-xl bg-[#12080B] border border-amber-500/30">
-            <span class="text-[10px] uppercase tracking-wider text-amber-300 block">Awaiting SBI UPI Manual Verification</span>
-            <strong class="font-serif text-base text-amber-300">${pendingManualCount} Booking(s)</strong>
-            <span class="text-[10px] text-[#DCCBB0] block mt-0.5">Verify against SBI statement before marking Paid</span>
-          </div>
-        </div>
+        <!-- 5 Required Admin KPI Cards -->
+        ${this.renderKpiSummaryRow()}
 
         <!-- Search & Payment Status Filter -->
         <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
@@ -259,22 +293,22 @@ class VastuAdminDashboard {
               <tr>
                 <th class="p-3">Booking Ref &amp; Date</th>
                 <th class="p-3">Customer Details</th>
-                <th class="p-3">Consultation Package</th>
-                <th class="p-3">Amount Payable</th>
-                <th class="p-3">Amount Received</th>
+                <th class="p-3">Package &amp; Consultation Date</th>
+                <th class="p-3">Amount Payable / Paid</th>
                 <th class="p-3">Transaction ID / UTR</th>
-                <th class="p-3">Payment Method</th>
                 <th class="p-3">Payment Status</th>
-                <th class="p-3 text-right">Verification Actions</th>
+                <th class="p-3">Booking Status</th>
+                <th class="p-3 text-right">Manual UPI Verification &amp; Status</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-[#C6A15B]/15">
               ${filtered.length === 0 ? `
-                <tr><td colspan="9" class="p-8 text-center text-[#DCCBB0]/70 italic">No payment records matching the selected filter.</td></tr>
+                <tr><td colspan="8" class="p-8 text-center text-[#DCCBB0]/70 italic">No payment records matching the selected filter.</td></tr>
               ` : filtered.map(b => {
                 const payable = b.amountPayable !== undefined ? Number(b.amountPayable) : parseInt(String(b.amount || '0').replace(/[^0-9]/g, ''), 10) || 0;
                 const received = b.amountReceived !== undefined ? Number(b.amountReceived) : (b.paymentStatus === 'Paid' ? payable : 0);
                 const pStatus = b.paymentStatus || 'Pending';
+                const bStatus = b.status || 'Payment Pending';
                 const bDate = b.createdAt ? b.createdAt.substring(0, 10) : (b.appointmentDate || '—');
                 return `
                   <tr class="hover:bg-[#481C25]/20 transition-all">
@@ -286,29 +320,35 @@ class VastuAdminDashboard {
                       <div class="font-semibold text-[#F8F3E9]">${b.name || b.fullName || 'Client'}</div>
                       <div class="text-[11px] text-[#DCCBB0] font-mono">${b.phone || '—'}</div>
                       <div class="text-[10px] text-[#C6A15B] truncate max-w-[160px]">${b.email || '—'}</div>
-                      <div class="text-[10px] text-[#DCCBB0]/75 truncate max-w-[180px]">${b.propertyType || ''}</div>
+                      <div class="text-[10px] text-[#DCCBB0]/75 truncate max-w-[180px]">${b.propertyType || ''} (${b.city || ''})</div>
                     </td>
                     <td class="p-3">
                       <div class="font-medium text-[#F8F3E9]">${b.packageName || b.serviceName || b.package || 'Vastu Consultation'}</div>
+                      <div class="text-[10px] text-[#F9E29B]">Date: ${b.appointmentDate || 'TBD'}</div>
                       <div class="text-[10px] text-[#DCCBB0]">${b.consultationMode || ''}</div>
-                      ${b.message ? `<div class="text-[10px] text-[#C6A15B]/90 truncate max-w-[200px]" title="${(b.message || '').replace(/"/g, '&quot;')}">${b.message}</div>` : ''}
                     </td>
-                    <td class="p-3 font-mono font-bold text-[#F9E29B] whitespace-nowrap">
-                      ₹${payable.toLocaleString('en-IN')}
-                    </td>
-                    <td class="p-3 font-mono font-bold ${received > 0 ? 'text-emerald-300' : 'text-[#DCCBB0]/60'} whitespace-nowrap">
-                      ₹${received.toLocaleString('en-IN')}
+                    <td class="p-3 font-mono whitespace-nowrap">
+                      <div class="font-bold text-[#F9E29B]">Payable: ₹${payable.toLocaleString('en-IN')}</div>
+                      <div class="text-[11px] ${received > 0 ? 'text-emerald-300 font-bold' : 'text-[#DCCBB0]/60'}">Received: ₹${received.toLocaleString('en-IN')}</div>
                     </td>
                     <td class="p-3 font-mono text-[11px] text-[#F8F3E9]">
-                      ${b.transactionId || '—'}
-                    </td>
-                    <td class="p-3 text-[11px] text-[#DCCBB0]">
-                      ${b.paymentMethod || 'Unselected'}
+                      <div>${b.transactionId || '—'}</div>
+                      <div class="text-[10px] text-[#DCCBB0]">${b.paymentMethod || 'Unselected'}</div>
                     </td>
                     <td class="p-3 whitespace-nowrap">
                       <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${this.getPaymentStatusBadgeClass(pStatus)}">
                         ${pStatus}
                       </span>
+                    </td>
+                    <td class="p-3 whitespace-nowrap">
+                      <select
+                        data-admin-booking-status="${b.id}"
+                        class="px-2 py-1 rounded bg-[#12080B] border border-[#C6A15B]/35 text-[10px] text-[#F9E29B] outline-none"
+                      >
+                        ${validBookingStatuses.map(st => `
+                          <option value="${st}" ${bStatus === st ? 'selected' : ''}>${st}</option>
+                        `).join('')}
+                      </select>
                     </td>
                     <td class="p-3 text-right whitespace-nowrap">
                       <div class="flex items-center justify-end gap-1.5">
@@ -318,9 +358,9 @@ class VastuAdminDashboard {
                             data-verify-upi-paid="${b.id}"
                             data-payable="${payable}"
                             class="px-2.5 py-1 rounded bg-emerald-700 hover:bg-emerald-600 text-white text-[10px] font-semibold shadow"
-                            title="Verify SBI UPI / Bank Receipt & Mark Paid"
+                            title="Verify Direct SBI UPI Receipt & Confirm Booking"
                           >
-                            ✓ Verify &amp; Mark Paid
+                            ✓ Verify Direct UPI &amp; Confirm
                           </button>
                         ` : ''}
                         <select
@@ -345,6 +385,15 @@ class VastuAdminDashboard {
 
   // 1. BOOKINGS TAB
   renderBookingsTab() {
+    const validBookingStatuses = [
+      'Payment Pending',
+      'Payment Verified',
+      'Booking Confirmed',
+      'Consultation Completed',
+      'Cancelled',
+      'Refunded'
+    ];
+
     let filtered = this.bookings;
     if (this.statusFilter !== 'all') {
       filtered = filtered.filter(b => (b.status || '').toLowerCase().includes(this.statusFilter.toLowerCase()));
@@ -355,26 +404,30 @@ class VastuAdminDashboard {
         (b.name || b.fullName || '').toLowerCase().includes(q) ||
         (b.id || '').toLowerCase().includes(q) ||
         (b.email || '').toLowerCase().includes(q) ||
-        (b.city || '').toLowerCase().includes(q)
+        (b.city || '').toLowerCase().includes(q) ||
+        (b.transactionId || '').toLowerCase().includes(q)
       );
     }
 
     return `
       <div>
+        <!-- 5 Required Admin KPI Summary Cards -->
+        ${this.renderKpiSummaryRow()}
+
         <!-- Search & Filter Controls -->
         <div class="flex flex-col sm:flex-row items-center justify-between gap-3 mb-4">
           <div class="relative w-full sm:w-72">
-            <input type="text" id="booking-search" value="${this.searchFilter}" placeholder="Search by name, ID, city..." class="w-full px-3.5 py-2 pl-8 rounded-lg bg-[#12080B] border border-[#C6A15B]/30 text-xs text-[#F8F3E9] outline-none" />
+            <input type="text" id="booking-search" value="${this.searchFilter}" placeholder="Search by name, Booking Ref, UTR, city..." class="w-full px-3.5 py-2 pl-8 rounded-lg bg-[#12080B] border border-[#C6A15B]/30 text-xs text-[#F8F3E9] outline-none" />
             <span class="absolute left-2.5 top-2.5 text-xs text-[#C6A15B]">🔍</span>
           </div>
 
           <div class="flex items-center gap-2 text-xs w-full sm:w-auto">
-            <span class="text-[#DCCBB0]">Filter Status:</span>
+            <span class="text-[#DCCBB0]">Filter Booking Status:</span>
             <select id="booking-status-filter" class="px-3 py-1.5 rounded-lg bg-[#12080B] border border-[#C6A15B]/30 text-xs text-[#F8F3E9] outline-none">
               <option value="all" ${this.statusFilter === 'all' ? 'selected' : ''}>All (${this.bookings.length})</option>
-              <option value="confirmed" ${this.statusFilter === 'confirmed' ? 'selected' : ''}>Confirmed</option>
-              <option value="pending" ${this.statusFilter === 'pending' ? 'selected' : ''}>Pending Review</option>
-              <option value="completed" ${this.statusFilter === 'completed' ? 'selected' : ''}>Completed</option>
+              ${validBookingStatuses.map(st => `
+                <option value="${st}" ${this.statusFilter === st ? 'selected' : ''}>${st}</option>
+              `).join('')}
             </select>
           </div>
         </div>
@@ -384,20 +437,23 @@ class VastuAdminDashboard {
           <table class="w-full text-left text-xs">
             <thead class="bg-[#481C25]/60 text-[#C6A15B] font-serif border-b border-[#C6A15B]/20 uppercase tracking-wider text-[11px]">
               <tr>
-                <th class="p-3">Reference &amp; Date</th>
+                <th class="p-3">Booking Reference</th>
                 <th class="p-3">Customer Details</th>
-                <th class="p-3">Selected Package &amp; Amount</th>
-                <th class="p-3">Schedule &amp; Mode</th>
-                <th class="p-3">Payment &amp; Reference</th>
+                <th class="p-3">Package &amp; Amount</th>
+                <th class="p-3">Consultation Date &amp; Mode</th>
+                <th class="p-3">Payment &amp; Transaction ID</th>
+                <th class="p-3">Booking Status</th>
                 <th class="p-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-[#C6A15B]/10">
               ${filtered.length === 0 ? `
-                <tr><td colspan="6" class="p-8 text-center text-[#DCCBB0]/70 italic">No consultation bookings matching the criteria.</td></tr>
+                <tr><td colspan="7" class="p-8 text-center text-[#DCCBB0]/70 italic">No consultation bookings matching the criteria.</td></tr>
               ` : filtered.map(b => {
                 const pStatus = b.paymentStatus || 'Pending';
+                const bStatus = b.status || 'Payment Pending';
                 const bDate = b.createdAt ? b.createdAt.substring(0, 10) : (b.appointmentDate || '—');
+                const payable = b.amountPayable || parseInt(String(b.amount || '0').replace(/[^0-9]/g, ''), 10) || 5100;
                 return `
                 <tr class="hover:bg-[#481C25]/20 transition-all">
                   <td class="p-3 whitespace-nowrap">
@@ -411,26 +467,35 @@ class VastuAdminDashboard {
                   </td>
                   <td class="p-3">
                     <div class="font-medium text-[#F8F3E9]">${b.packageName || b.package}</div>
-                    <div class="text-[11px] text-[#F9E29B] font-semibold">${b.amount || 'Contact'}</div>
+                    <div class="text-[11px] text-[#F9E29B] font-semibold">${b.amount || `₹${payable.toLocaleString('en-IN')}`}</div>
                     <div class="text-[10px] text-[#DCCBB0]">${b.propertyType || ''}</div>
                   </td>
                   <td class="p-3 whitespace-nowrap">
-                    <div class="font-semibold text-[#F8F3E9]">${b.appointmentDate}</div>
-                    <div class="text-[11px] text-[#DCCBB0] font-mono">${b.appointmentTime}</div>
-                    <div class="text-[10px] text-[#C6A15B]">${b.consultationMode}</div>
+                    <div class="font-semibold text-[#F8F3E9]">${b.appointmentDate || 'TBD'}</div>
+                    <div class="text-[11px] text-[#DCCBB0] font-mono">${(b.appointmentTime || '').split('•')[0].trim()}</div>
+                    <div class="text-[10px] text-[#C6A15B]">${b.consultationMode || ''}</div>
                   </td>
                   <td class="p-3 whitespace-nowrap">
                     <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${this.getPaymentStatusBadgeClass(pStatus)}">${pStatus}</span>
-                    <div class="text-[10px] font-mono text-[#DCCBB0] mt-1">${b.transactionId || b.id}</div>
+                    <div class="text-[10px] font-mono text-[#DCCBB0] mt-1">${b.transactionId || 'Pending'}</div>
+                  </td>
+                  <td class="p-3 whitespace-nowrap">
+                    <select
+                      data-admin-booking-status="${b.id}"
+                      class="px-2 py-1 rounded bg-[#12080B] border border-[#C6A15B]/35 text-[10px] text-[#F9E29B] outline-none"
+                    >
+                      ${validBookingStatuses.map(st => `
+                        <option value="${st}" ${bStatus === st ? 'selected' : ''}>${st}</option>
+                      `).join('')}
+                    </select>
                   </td>
                   <td class="p-3 text-right whitespace-nowrap">
                     <div class="flex items-center justify-end gap-1.5">
-                      <button data-status-change="${b.id}" data-new-status="Confirmed" class="px-2 py-1 rounded bg-emerald-800 hover:bg-emerald-700 text-white text-[10px] font-semibold">
-                        Confirm
-                      </button>
-                      <button data-status-change="${b.id}" data-new-status="Completed" class="px-2 py-1 rounded bg-blue-800 hover:bg-blue-700 text-white text-[10px] font-semibold">
-                        Done
-                      </button>
+                      ${pStatus !== 'Paid' ? `
+                        <button type="button" data-verify-upi-paid="${b.id}" data-payable="${payable}" class="px-2 py-1 rounded bg-emerald-700 hover:bg-emerald-600 text-white text-[10px] font-semibold">
+                          ✓ Verify UPI
+                        </button>
+                      ` : ''}
                       <button data-delete-booking="${b.id}" class="px-2 py-1 rounded bg-red-900/60 hover:bg-red-800 text-red-200 text-[10px]">
                         ✕
                       </button>
@@ -572,7 +637,7 @@ class VastuAdminDashboard {
     return `
       <div>
         <h3 class="font-serif text-base text-[#F9E29B] font-bold mb-2">Owner Credentials & Integration Parameters</h3>
-        <p class="text-xs text-[#DCCBB0] mb-5">Configure contact numbers, office location, Razorpay payment keys, and WhatsApp notification channels:</p>
+        <p class="text-xs text-[#DCCBB0] mb-5">Configure contact numbers, official SBI UPI QR code upload, Razorpay payment keys, and WhatsApp notification channels:</p>
 
         <form id="admin-settings-form" class="space-y-4">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -588,17 +653,17 @@ class VastuAdminDashboard {
 
             <div>
               <label class="block text-xs font-medium text-[#C6A15B] uppercase tracking-wider mb-1">Calling Phone Number</label>
-              <input type="text" id="set-phone" value="${s.phone || '+91 98765 43210'}" class="w-full px-3.5 py-2 rounded-lg bg-[#12080B] border border-[#C6A15B]/30 text-xs text-[#F8F3E9] outline-none" />
+              <input type="text" id="set-phone" value="${s.phone || '+91 81457 15755'}" class="w-full px-3.5 py-2 rounded-lg bg-[#12080B] border border-[#C6A15B]/30 text-xs text-[#F8F3E9] outline-none" />
             </div>
 
             <div>
               <label class="block text-xs font-medium text-[#C6A15B] uppercase tracking-wider mb-1">WhatsApp Business Number</label>
-              <input type="text" id="set-whatsapp" value="${s.whatsapp || '+91 98765 43210'}" class="w-full px-3.5 py-2 rounded-lg bg-[#12080B] border border-[#C6A15B]/30 text-xs text-[#F8F3E9] outline-none" />
+              <input type="text" id="set-whatsapp" value="${s.whatsapp || '+91 81457 15755'}" class="w-full px-3.5 py-2 rounded-lg bg-[#12080B] border border-[#C6A15B]/30 text-xs text-[#F8F3E9] outline-none" />
             </div>
 
             <div>
               <label class="block text-xs font-medium text-[#C6A15B] uppercase tracking-wider mb-1">Official Email Address</label>
-              <input type="email" id="set-email" value="${s.email || 'consultations@vastusutram.com'}" class="w-full px-3.5 py-2 rounded-lg bg-[#12080B] border border-[#C6A15B]/30 text-xs text-[#F8F3E9] outline-none" />
+              <input type="email" id="set-email" value="${s.email || 'vastusutram@gmail.com'}" class="w-full px-3.5 py-2 rounded-lg bg-[#12080B] border border-[#C6A15B]/30 text-xs text-[#F8F3E9] outline-none" />
             </div>
 
             <div>
@@ -612,6 +677,18 @@ class VastuAdminDashboard {
             <input type="text" id="set-coverage" value="${s.consultationCoverage || 'Pan-India On-Site Consultations & Global Remote Video Sessions'}" class="w-full px-3.5 py-2 rounded-lg bg-[#12080B] border border-[#C6A15B]/30 text-xs text-[#F8F3E9] outline-none" />
           </div>
 
+          <!-- Official SBI UPI QR Upload Section -->
+          <div class="p-4 rounded-xl bg-[#12080B] border border-[#C6A15B]/35 space-y-2.5">
+            <h4 class="font-serif text-xs font-bold text-[#F9E29B] uppercase tracking-wider">Official SBI UPI QR Code Image (gauriomji@oksbi)</h4>
+            <p class="text-[11px] text-[#DCCBB0]">
+              Upload your official State Bank of India UPI QR image here to display it alongside the dynamic amount-encoded UPI QR code on the payment page:
+            </p>
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+              <input type="file" id="set-upi-qr-upload" accept="image/*" class="text-xs text-[#DCCBB0] file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#C6A15B] file:text-[#171717]" />
+              ${s.officialUpiQrImage ? `<span class="text-[11px] text-emerald-300 font-mono">✓ Uploaded: ${s.officialUpiQrImage}</span>` : `<span class="text-[11px] text-[#F9E29B]">Using verified dynamic UPI QR for gauriomji@oksbi</span>`}
+            </div>
+          </div>
+
           <div class="p-4 rounded-xl bg-[#481C25]/40 border border-[#C6A15B]/30 space-y-2.5">
             <h4 class="font-serif text-xs font-bold text-[#F9E29B] uppercase tracking-wider">Razorpay &amp; UPI Security Architecture (Server-Side Environment Variables)</h4>
             <p class="text-[11px] text-[#DCCBB0] leading-relaxed">
@@ -623,7 +700,7 @@ class VastuAdminDashboard {
               <div class="p-2 rounded bg-[#12080B] border border-[#C6A15B]/25">RAZORPAY_WEBHOOK_SECRET</div>
             </div>
             <p class="text-[10px] text-[#DCCBB0]/80">
-              Recipient: <strong>Vastu Sutram</strong> • Official UPI ID: <strong class="font-mono text-[#F9E29B]">gauriomji@oksbi</strong> • WhatsApp Notification Number: <strong class="font-mono text-[#F9E29B]">9181457155</strong>
+              Recipient: <strong>Vastu Sutram (Rajni Singh)</strong> • Official UPI ID: <strong class="font-mono text-[#F9E29B]">gauriomji@oksbi</strong> • WhatsApp Notification Number: <strong class="font-mono text-[#F9E29B]">+91 81457 15755</strong> • Business Email: <strong class="font-mono text-[#F9E29B]">vastusutram@gmail.com</strong>
             </p>
           </div>
 
@@ -673,7 +750,7 @@ class VastuAdminDashboard {
       });
     });
 
-    // Booking Status Change
+    // Booking Status Change (Buttons)
     document.querySelectorAll('[data-status-change]').forEach(btn => {
       btn.addEventListener('click', async (e) => {
         const id = e.currentTarget.getAttribute('data-status-change');
@@ -687,6 +764,34 @@ class VastuAdminDashboard {
           const b = this.bookings.find(x => x.id === id);
           if (b) b.status = newStatus;
           this.render();
+        } catch (err) {
+          console.error(err);
+        }
+      });
+    });
+
+    // Admin Booking Status Dropdown (Payment Pending | Payment Verified | Booking Confirmed | Consultation Completed | Cancelled | Refunded)
+    document.querySelectorAll('[data-admin-booking-status]').forEach(sel => {
+      sel.addEventListener('change', async (e) => {
+        const bookingId = e.currentTarget.getAttribute('data-admin-booking-status');
+        const nextBookingStatus = e.currentTarget.value;
+        try {
+          const res = await fetch('/api/payments/admin-update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              bookingId,
+              bookingStatus: nextBookingStatus
+            })
+          });
+          if (res.ok) {
+            const data = await res.json();
+            const idx = this.bookings.findIndex(b => b.id === bookingId);
+            if (idx !== -1 && data.booking) {
+              this.bookings[idx] = data.booking;
+            }
+            this.render();
+          }
         } catch (err) {
           console.error(err);
         }
@@ -753,6 +858,7 @@ class VastuAdminDashboard {
             body: JSON.stringify({
               bookingId,
               paymentStatus: 'Paid',
+              bookingStatus: 'Booking Confirmed',
               amountReceived: payable
             })
           });
@@ -830,6 +936,41 @@ class VastuAdminDashboard {
           await this.saveSlots();
           this.render();
         }
+      });
+    }
+
+    // Official SBI UPI QR Upload Input
+    const qrUploadInput = document.getElementById('set-upi-qr-upload');
+    if (qrUploadInput) {
+      qrUploadInput.addEventListener('change', async (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = async () => {
+          try {
+            const upRes = await fetch('/api/upload', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ fileName: file.name, fileData: reader.result })
+            });
+            const upData = await upRes.json();
+            if (upData.success && upData.filePath) {
+              await fetch('/api/settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ officialUpiQrImage: upData.filePath })
+              });
+              this.settings.officialUpiQrImage = upData.filePath;
+              if (window.VastuApp && window.VastuApp.db && window.VastuApp.db.settings) {
+                window.VastuApp.db.settings.officialUpiQrImage = upData.filePath;
+              }
+              this.render();
+            }
+          } catch (err) {
+            console.error(err);
+          }
+        };
+        reader.readAsDataURL(file);
       });
     }
 

@@ -1413,9 +1413,9 @@ class VastuApp {
     if (propSelect) {
       const catToProperty = {
         residential: 'Independent House',
-        commercial: 'Office',
-        industrial: 'Factory / Industrial Unit',
-        land: 'Plot / Open Land'
+        commercial: 'Commercial Property',
+        industrial: 'Factory/Industrial Property',
+        land: 'Land/Plot'
       };
       const targetProp = catToProperty[pkg.category];
       if (targetProp) {
@@ -1425,6 +1425,20 @@ class VastuApp {
             break;
           }
         }
+      }
+    }
+
+    const catSelect = document.getElementById('wa-consultation-category');
+    if (catSelect) {
+      const catToCategoryLabel = {
+        residential: 'Residential Vastu',
+        commercial: 'Commercial Vastu',
+        industrial: 'Industrial Vastu',
+        land: 'Land & Plot Vastu'
+      };
+      const targetCat = catToCategoryLabel[pkg.category];
+      if (targetCat) {
+        catSelect.value = targetCat;
       }
     }
 
@@ -1931,6 +1945,7 @@ class VastuApp {
 
     this.currentBookingWizardStep = 1;
     this.maxCompletedBookingStep = 0;
+    this.currentDraftBookingRef = `VS-2026-${Math.floor(1000 + Math.random() * 9000)}`;
 
     // Set default date (2 days ahead) if empty
     const dateInput = document.getElementById('wa-date');
@@ -1940,9 +1955,11 @@ class VastuApp {
       dateInput.value = d.toISOString().split('T')[0];
     }
 
-    // Sync confirmed amount input when package selection changes
+    // Sync confirmed amount & consultation category when package selection changes
     const consultSelectEl = document.getElementById('wa-consultation-type');
     const confirmedAmountEl = document.getElementById('wa-confirmed-amount');
+    const categorySelectEl = document.getElementById('wa-consultation-category');
+
     if (consultSelectEl && confirmedAmountEl) {
       consultSelectEl.addEventListener('change', () => {
         const selOpt = consultSelectEl.options[consultSelectEl.selectedIndex];
@@ -1954,6 +1971,13 @@ class VastuApp {
           if (match && match[1]) {
             confirmedAmountEl.value = match[1].replace(/,/g, '');
           }
+        }
+        const pkgId = selOpt ? selOpt.getAttribute('data-pkg-id') : '';
+        if (categorySelectEl && pkgId) {
+          if (pkgId.includes('com')) categorySelectEl.value = 'Commercial Vastu';
+          else if (pkgId.includes('ind')) categorySelectEl.value = 'Industrial Vastu';
+          else if (pkgId.includes('land')) categorySelectEl.value = 'Land & Plot Vastu';
+          else categorySelectEl.value = 'Residential Vastu';
         }
       });
     }
@@ -1981,16 +2005,28 @@ class VastuApp {
       const city = document.getElementById('wa-city') ? document.getElementById('wa-city').value.trim() : '';
       const confirmedVal = Number(document.getElementById('wa-confirmed-amount')?.value || 0);
       const date = document.getElementById('wa-date') ? document.getElementById('wa-date').value : '';
+      const msg = document.getElementById('wa-message') ? document.getElementById('wa-message').value.trim() : '';
+
+      const cleanDigits = phone.replace(/\D/g, '');
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
       if (stepNumber >= 1) {
         if (!name || !phone || !email) {
-          showStepAlert('Please enter your Full Name, WhatsApp Number, and Email Address in Step 01.');
+          showStepAlert('Please enter your Full Name, WhatsApp / Mobile Number, and Email Address in Step 01.');
+          return false;
+        }
+        if (cleanDigits.length < 10) {
+          showStepAlert('Please enter a valid 10-digit WhatsApp / Mobile Number in Step 01.');
+          return false;
+        }
+        if (!emailRegex.test(email)) {
+          showStepAlert('Please enter a valid Email Address in Step 01.');
           return false;
         }
       }
       if (stepNumber >= 2) {
         if (!city) {
-          showStepAlert('Please enter your Property Location / City in Step 02.');
+          showStepAlert('Please enter your City and Location in Step 02.');
           return false;
         }
         if (!confirmedVal || confirmedVal < 1) {
@@ -2003,6 +2039,10 @@ class VastuApp {
           showStepAlert('Please select your Preferred Consultation Date in Step 03.');
           return false;
         }
+        if (!msg) {
+          showStepAlert('Please provide a Brief Description of your Vastu Requirement in Step 03.');
+          return false;
+        }
       }
       showStepAlert('');
       return true;
@@ -2013,25 +2053,31 @@ class VastuApp {
       const phone = (document.getElementById('wa-phone')?.value || '').trim();
       const altPhone = (document.getElementById('wa-alt-phone')?.value || '').trim();
       const email = (document.getElementById('wa-email')?.value || '').trim();
+      const consultationCategory = document.getElementById('wa-consultation-category')?.value || 'Residential Vastu';
       const consultSel = document.getElementById('wa-consultation-type');
       const consultationType = consultSel ? consultSel.value : 'Complete Home Vastu Analysis';
       const selectedOpt = consultSel ? consultSel.options[consultSel.selectedIndex] : null;
       const packageId = (selectedOpt && selectedOpt.getAttribute('data-pkg-id')) || 'pkg-res-complete';
       const propertyType = document.getElementById('wa-property-type')?.value || 'Independent House';
       const propertyStage = document.getElementById('wa-property-stage')?.value || 'Existing Property';
-      const consultationMode = document.getElementById('wa-mode')?.value || 'Online Video / Blueprint Review';
+      const consultationMode = document.getElementById('wa-mode')?.value || 'Online Consultation (Zoom / Google Meet / Video Call)';
       const city = (document.getElementById('wa-city')?.value || '').trim();
       const date = document.getElementById('wa-date')?.value || '';
       const timeSlot = document.getElementById('wa-time-slot')?.value || '11:30 AM - 12:30 PM';
       const message = (document.getElementById('wa-message')?.value || '').trim();
       const confirmedAmount = Math.max(1, Math.round(Number(document.getElementById('wa-confirmed-amount')?.value || 11000)));
+      const bookingRef = this.currentDraftBookingRef || `VS-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+      this.currentDraftBookingRef = bookingRef;
 
       return {
+        id: bookingRef,
+        bookingId: bookingRef,
         name,
         fullName: name,
         phone: altPhone ? `${phone} (Alt: ${altPhone})` : phone,
         whatsapp: phone,
         email,
+        consultationCategory,
         packageId,
         packageName: consultationType.replace(/\s*\(Starting[^)]*\)/i, '').trim(),
         serviceName: consultationType,
@@ -2056,14 +2102,15 @@ class VastuApp {
       const msg = d.message || 'Standard spatial evaluation and energetic alignment requested.';
 
       const rows = [
-        { label: 'Selected Consultation Package', value: d.serviceName || '—', step: 2 },
-        { label: 'Package Price (INR)', value: `₹${d.confirmedAmount.toLocaleString('en-IN')}`, step: 2, highlight: true },
+        { label: 'Unique Booking Reference Number', value: d.id, step: 1, highlight: true },
+        { label: 'Confirmed Consultation Amount', value: `₹${d.confirmedAmount.toLocaleString('en-IN')}`, step: 2, highlight: true },
         { label: 'Customer Name', value: d.name || '—', step: 1 },
         { label: 'WhatsApp Number', value: d.phone || '—', step: 1 },
         { label: 'Email Address', value: d.email || '—', step: 1 },
-        { label: 'Property Type', value: `${d.propertyType}${d.city ? ` • ${d.city}` : ''}`, step: 2 },
-        { label: 'Consultation Mode', value: d.consultationMode, step: 3 },
-        { label: 'Preferred Schedule', value: `${d.appointmentDate || '—'} (${d.appointmentTime.split('•')[0].trim()})`, step: 3 }
+        { label: 'Property Type & City', value: `${d.propertyType}${d.city ? ` • ${d.city}` : ''}`, step: 2 },
+        { label: 'Selected Consultation Package', value: `${d.packageName} (${d.consultationCategory})`, step: 2 },
+        { label: 'Consultation Date', value: d.appointmentDate || '—', step: 3 },
+        { label: 'Preferred Time & Mode', value: d.appointmentTime, step: 3 }
       ];
 
       reviewGrid.innerHTML = `
@@ -2078,7 +2125,7 @@ class VastuApp {
         `).join('')}
         <div class="md:col-span-2 p-4 rounded-2xl bg-[#12080B]/80 border border-[#C6A15B]/25 flex items-start justify-between gap-3">
           <div>
-            <span class="text-[10px] uppercase tracking-[0.18em] text-[#C6A15B] font-bold block mb-1">Consultation Requirements</span>
+            <span class="text-[10px] uppercase tracking-[0.18em] text-[#C6A15B] font-bold block mb-1">Brief Description of the Vastu Requirement</span>
             <p class="text-xs text-[#DCCBB0] leading-relaxed font-light">${msg}</p>
           </div>
           <button type="button" data-edit-booking-step="3" class="text-[10px] uppercase tracking-wider text-[#F9E29B] hover:underline font-serif shrink-0">Edit</button>
@@ -2150,9 +2197,9 @@ class VastuApp {
         } else {
           nextBtn.classList.remove('hidden');
           const labels = {
-            1: 'Continue to Property Details',
-            2: 'Continue to Preferences',
-            3: 'Review Consultation Dossier'
+            1: 'Continue to Property & Package Details',
+            2: 'Continue to Schedule & Requirements',
+            3: 'View Booking Summary'
           };
           if (nextLabel) nextLabel.textContent = labels[target] || 'Continue';
         }
@@ -2186,7 +2233,15 @@ class VastuApp {
       });
     });
 
-    // Primary Online Payment Button on Step 04 ("Proceed to Online Payment (UPI / Razorpay)")
+    // EDIT DETAILS Button on Step Two – Booking Summary
+    const editDetailsBtn = document.getElementById('booking-edit-details-btn');
+    if (editDetailsBtn) {
+      editDetailsBtn.addEventListener('click', () => {
+        this.setBookingWizardStep(1);
+      });
+    }
+
+    // PROCEED TO PAYMENT Button on Step Two – Booking Summary
     const proceedPayBtn = document.getElementById('booking-proceed-payment-btn');
     if (proceedPayBtn) {
       proceedPayBtn.addEventListener('click', async () => {
@@ -2194,7 +2249,7 @@ class VastuApp {
         const bookingData = this.collectBookingFormData();
         proceedPayBtn.disabled = true;
         const origHtml = proceedPayBtn.innerHTML;
-        proceedPayBtn.innerHTML = `<span>Creating Booking Reference...</span>`;
+        proceedPayBtn.innerHTML = `<span>Opening Payment to Vastu Sutram...</span>`;
 
         try {
           const res = await fetch('/api/bookings', {
@@ -2203,10 +2258,8 @@ class VastuApp {
             body: JSON.stringify(bookingData)
           });
           const data = await res.json();
-          const savedBooking = (data && data.booking) || {
-            ...bookingData,
-            id: `VS-2026-${Math.floor(1000 + Math.random() * 9000)}`
-          };
+          const savedBooking = (data && data.booking) || bookingData;
+          this.currentDraftBookingRef = savedBooking.id || bookingData.id;
           const matchedPkg = (VASTU_DATA.packages || []).find(p => p.id === savedBooking.packageId) || {
             id: savedBooking.packageId,
             name: savedBooking.packageName,
@@ -2215,11 +2268,7 @@ class VastuApp {
           };
           this.openOnlinePaymentPortal(savedBooking, matchedPkg);
         } catch (err) {
-          const fallbackBooking = {
-            ...bookingData,
-            id: `VS-2026-${Math.floor(1000 + Math.random() * 9000)}`
-          };
-          this.openOnlinePaymentPortal(fallbackBooking, null);
+          this.openOnlinePaymentPortal(bookingData, null);
         } finally {
           proceedPayBtn.disabled = false;
           proceedPayBtn.innerHTML = origHtml;
@@ -2247,22 +2296,24 @@ class VastuApp {
       currentPayload = this.collectBookingFormData();
 
       formattedMessage = 
-`*VASTU SUTRAM – CONSULTATION ENQUIRY DOSSIER*
+`*VASTU SUTRAM – CONSULTATION BOOKING ENQUIRY*
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+• *Booking Reference:* ${currentPayload.id}
 • *Client Name:* ${currentPayload.name}
 • *WhatsApp Number:* ${currentPayload.phone}
 • *Email Address:* ${currentPayload.email}
+• *Consultation Category:* ${currentPayload.consultationCategory}
 • *Consultation Package:* ${currentPayload.serviceName}
-• *Confirmed Payable Fee:* ${currentPayload.amount}
+• *Confirmed Consultation Amount:* ${currentPayload.amount}
 • *Property Type:* ${currentPayload.propertyType}
 • *Location / City:* ${currentPayload.city}
 • *Consultation Mode:* ${currentPayload.consultationMode}
 • *Preferred Date:* ${currentPayload.appointmentDate}
 • *Preferred Time Slot:* ${currentPayload.appointmentTime.split('•')[0].trim()}
-• *Client Query / Specific Concerns:*
+• *Requirement Description:*
 ${currentPayload.message ? currentPayload.message : 'Standard spatial evaluation and energetic alignment requested.'}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-*Platform:* https://vastu-sutram.vercel.app`;
+*Consultant:* Rajni Singh • Vastu Sutram`;
 
       if (previewContent) {
         previewContent.textContent = formattedMessage;
@@ -2281,7 +2332,7 @@ ${currentPayload.message ? currentPayload.message : 'Standard spatial evaluation
 
     if (sendBtn) {
       sendBtn.addEventListener('click', async () => {
-        const cleanNumber = '919181457155';
+        const cleanNumber = '918145715755';
         const encodedText = encodeURIComponent(formattedMessage);
         const waUrl = `https://api.whatsapp.com/send?phone=${cleanNumber}&text=${encodedText}`;
 
@@ -2308,8 +2359,12 @@ ${currentPayload.message ? currentPayload.message : 'Standard spatial evaluation
     }
   }
 
-  // 13. COMPLETE ONLINE PAYMENT INTEGRATION (STATE BANK OF INDIA UPI + RAZORPAY)
+  // 13. VASTU SUTRAM CONSULTATION PAYMENT SYSTEM (SBI UPI & QR + DEBIT/CREDIT CARD)
   initRazorpayPayment() {
+    this.initPaymentModal();
+  }
+
+  initPaymentModal() {
     const modal = document.getElementById('razorpay-modal');
     const closeBtn = document.getElementById('razorpay-modal-close');
 
@@ -2317,7 +2372,7 @@ ${currentPayload.message ? currentPayload.message : 'Standard spatial evaluation
       closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
     }
 
-    // Attach to package card "Instant Online Payment / Gateway" buttons
+    // Attach to package card "Book Consultation / Payment" buttons
     document.addEventListener('click', (e) => {
       const target = e.target.closest('[data-book-package-id]');
       if (!target) return;
@@ -2326,24 +2381,25 @@ ${currentPayload.message ? currentPayload.message : 'Standard spatial evaluation
       const pkg = (VASTU_DATA.packages || []).find(p => p.id === pkgId);
       if (!pkg) return;
 
-      // Also pre-fill the booking form in the background so customer details stay synced
       const existingFormData = typeof this.collectBookingFormData === 'function'
         ? this.collectBookingFormData()
         : {};
 
       const initialBooking = {
-        id: `VS-2026-${Math.floor(1000 + Math.random() * 9000)}`,
+        id: existingFormData.id || `VS-2026-${Math.floor(1000 + Math.random() * 9000)}`,
         name: existingFormData.name || '',
         phone: existingFormData.phone || '',
         whatsapp: existingFormData.whatsapp || '',
         email: existingFormData.email || '',
         city: existingFormData.city || '',
-        propertyType: existingFormData.propertyType || 'Residential Property',
+        propertyType: existingFormData.propertyType || 'Independent House',
+        consultationCategory: existingFormData.consultationCategory || 'Residential Vastu',
         packageId: pkg.id,
         packageName: pkg.name,
-        consultationMode: existingFormData.consultationMode || pkg.mode || 'Online Video Consultation',
+        consultationMode: existingFormData.consultationMode || pkg.mode || 'Online Consultation (Zoom / Google Meet / Video Call)',
         appointmentDate: existingFormData.appointmentDate || new Date(Date.now() + 2 * 86400000).toISOString().split('T')[0],
         appointmentTime: existingFormData.appointmentTime || '11:30 AM - 12:30 PM',
+        message: existingFormData.message || '',
         amountPayable: pkg.rawPrice || 11000,
         confirmedAmount: pkg.rawPrice || 11000
       };
@@ -2361,12 +2417,13 @@ ${currentPayload.message ? currentPayload.message : 'Standard spatial evaluation
     const bookingRef = booking.id || booking.bookingId || `VS-2026-${Math.floor(1000 + Math.random() * 9000)}`;
     const packageName = (pkg && pkg.name) || booking.packageName || 'Complete Home Vastu Analysis';
     const packageId = (pkg && pkg.id) || booking.packageId || 'pkg-res-complete';
-    const startingPriceLabel = (pkg && pkg.price) || `Starting from ₹${(booking.amountPayable || 11000).toLocaleString('en-IN')}`;
-    let confirmedAmount = Math.max(
+    const consultationCategory = booking.consultationCategory || 'Residential Vastu';
+    const confirmedAmount = Math.max(
       1,
       Math.round(Number(booking.amountPayable || booking.confirmedAmount || (pkg && pkg.rawPrice) || 11000))
     );
 
+    // Build genuine dynamic UPI intent link & QR code
     const buildUpiDeepLink = (amountInr, refId) => {
       const cleanAmt = Number(amountInr || 5100).toFixed(2);
       return `upi://pay?pa=gauriomji@oksbi&pn=${encodeURIComponent('Vastu Sutram')}&am=${encodeURIComponent(cleanAmt)}&cu=INR&tn=${encodeURIComponent(refId)}`;
@@ -2378,337 +2435,376 @@ ${currentPayload.message ? currentPayload.message : 'Standard spatial evaluation
 
     const upiUri = buildUpiDeepLink(confirmedAmount, bookingRef);
     const qrUrl = buildQrCodeUrl(upiUri);
+    const officialStaticQr = (this.db && this.db.settings && this.db.settings.officialUpiQrImage) || null;
 
-    const propertyTypeVal = booking.propertyType || 'Residential Property';
+    // Customer details already prefilled from booking form
+    const customerName = booking.name || booking.fullName || '';
+    const customerPhone = booking.phone || booking.whatsapp || '';
+    const customerEmail = booking.email || '';
+    const customerCity = booking.city || '';
+    const propertyTypeVal = booking.propertyType || 'Independent House';
     const requirementsVal = booking.message || booking.requirements || 'Standard spatial evaluation and energetic alignment requested.';
 
     modalContent.innerHTML = `
-      <!-- Top Booking & Fee Summary Dossier (All 7 Required Summary Fields) -->
-      <div class="p-5 rounded-2xl bg-[#12080B]/95 border border-[#C6A15B]/40 space-y-4">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#C6A15B]/20 pb-3.5">
-          <div>
-            <span class="text-[10px] uppercase tracking-[0.2em] text-[#C6A15B] font-bold block">SELECTED CONSULTATION PACKAGE</span>
-            <h4 class="font-serif text-lg sm:text-xl font-bold text-[#F8F3E9]">${packageName}</h4>
-            <span class="text-[11px] text-[#DCCBB0]">${startingPriceLabel} • Recipient: Vastu Sutram • UPI: gauriomji@oksbi</span>
+      <div class="max-w-xl mx-auto space-y-6">
+        <!-- 3-STEP PROGRESS INDICATOR -->
+        <div class="flex items-center justify-between px-2 text-xs font-serif tracking-wider">
+          <div id="pay-step-ind-1" class="flex items-center gap-1.5 font-bold text-[#F9E29B] transition-colors">
+            <span class="w-6 h-6 rounded-full bg-[#481C25] border border-[#F9E29B] flex items-center justify-center text-[11px]">1</span>
+            <span>01. Your Details</span>
           </div>
-          <div class="sm:text-right">
-            <span class="text-[10px] uppercase tracking-[0.2em] text-[#C6A15B] font-bold block">BOOKING REFERENCE</span>
-            <span id="pay-portal-ref" class="font-mono text-base sm:text-lg font-bold text-[#F9E29B] bg-[#481C25]/70 px-3 py-1 rounded-lg border border-[#C6A15B]/40 inline-block mt-0.5">${bookingRef}</span>
+          <span class="text-[#C6A15B]/40">➔</span>
+          <div id="pay-step-ind-2" class="flex items-center gap-1.5 text-[#DCCBB0]/70 transition-colors">
+            <span class="w-6 h-6 rounded-full bg-[#12080B] border border-[#C6A15B]/30 flex items-center justify-center text-[11px]">2</span>
+            <span>02. Make Payment</span>
           </div>
-        </div>
-
-        <!-- Customer Details Row (Editable if not yet filled) -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
-          <div>
-            <label class="block text-[10px] uppercase tracking-wider text-[#C6A15B] font-semibold mb-1">Customer Name *</label>
-            <input type="text" id="pay-cust-name" value="${(booking.name || '').replace(/"/g, '&quot;')}" placeholder="Enter Full Name" class="w-full px-3 py-2 rounded-xl bg-[#1B0D12] border border-[#C6A15B]/35 text-xs text-[#F8F3E9] outline-none focus:border-[#F9E29B]" />
-          </div>
-          <div>
-            <label class="block text-[10px] uppercase tracking-wider text-[#C6A15B] font-semibold mb-1">WhatsApp Number *</label>
-            <input type="tel" id="pay-cust-phone" value="${(booking.phone || '').replace(/"/g, '&quot;')}" placeholder="+91 98765 43210" class="w-full px-3 py-2 rounded-xl bg-[#1B0D12] border border-[#C6A15B]/35 text-xs text-[#F8F3E9] outline-none focus:border-[#F9E29B]" />
-          </div>
-          <div>
-            <label class="block text-[10px] uppercase tracking-wider text-[#C6A15B] font-semibold mb-1">Email Address *</label>
-            <input type="email" id="pay-cust-email" value="${(booking.email || '').replace(/"/g, '&quot;')}" placeholder="client@example.com" class="w-full px-3 py-2 rounded-xl bg-[#1B0D12] border border-[#C6A15B]/35 text-xs text-[#F8F3E9] outline-none focus:border-[#F9E29B]" />
-          </div>
-          <div>
-            <label class="block text-[10px] uppercase tracking-wider text-[#C6A15B] font-semibold mb-1">Property Type</label>
-            <input type="text" id="pay-cust-property" value="${propertyTypeVal.replace(/"/g, '&quot;')}" placeholder="Independent House / Office" class="w-full px-3 py-2 rounded-xl bg-[#1B0D12] border border-[#C6A15B]/35 text-xs text-[#F8F3E9] outline-none focus:border-[#F9E29B]" />
+          <span class="text-[#C6A15B]/40">➔</span>
+          <div id="pay-step-ind-3" class="flex items-center gap-1.5 text-[#DCCBB0]/50 transition-colors">
+            <span class="w-6 h-6 rounded-full bg-[#12080B] border border-[#C6A15B]/20 flex items-center justify-center text-[11px]">3</span>
+            <span>03. Confirmation</span>
           </div>
         </div>
 
-        <!-- Consultation Requirements Summary Field -->
-        <div class="text-xs">
-          <label class="block text-[10px] uppercase tracking-wider text-[#C6A15B] font-semibold mb-1">Consultation Requirements</label>
-          <input type="text" id="pay-cust-requirements" value="${requirementsVal.replace(/"/g, '&quot;')}" placeholder="Describe your floor plan or consultation requirements" class="w-full px-3 py-2 rounded-xl bg-[#1B0D12] border border-[#C6A15B]/35 text-xs text-[#F8F3E9] outline-none focus:border-[#F9E29B]" />
-        </div>
-
-        <!-- Confirmed Payable Amount Control -->
-        <div class="p-3.5 rounded-xl bg-[#481C25]/45 border border-[#C6A15B]/35 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <span class="text-[10px] uppercase tracking-[0.18em] text-[#F9E29B] font-bold block">PACKAGE PRICE / CONFIRMED PAYABLE AMOUNT (INR)</span>
-            <p class="text-[11px] text-[#DCCBB0] font-light">
-              Exact consultation amount to be charged via Razorpay Checkout or State Bank of India UPI (<span class="font-mono text-[#F9E29B]">gauriomji@oksbi</span>):
-            </p>
-          </div>
-          <div class="flex items-center gap-2 shrink-0">
-            <span class="font-serif text-lg font-bold text-[#F9E29B]">₹</span>
-            <input
-              type="number"
-              id="pay-confirmed-amount-input"
-              min="1"
-              step="1"
-              value="${confirmedAmount}"
-              class="w-36 px-3 py-2 rounded-xl bg-[#12080B] border border-[#F9E29B]/60 font-mono text-base font-bold text-[#F9E29B] outline-none text-right"
-            />
-          </div>
-        </div>
-      </div>
-
-      <!-- Payment Method Selector Tabs (Razorpay Checkout Default + Direct SBI UPI) -->
-      <div class="grid grid-cols-2 gap-3" role="tablist">
-        <button
-          type="button"
-          id="tab-btn-razorpay"
-          class="p-3.5 rounded-2xl border border-[#F9E29B] bg-[#481C25]/85 text-left transition-all flex items-center justify-between"
-        >
-          <div>
-            <span class="text-[10px] uppercase tracking-[0.18em] text-[#F9E29B] font-bold block">OPTION A • RAZORPAY CHECKOUT</span>
-            <span class="font-serif text-sm font-bold text-[#F8F3E9]">Pay via Razorpay (UPI / Cards)</span>
-          </div>
-          <span class="text-lg">💳</span>
-        </button>
-
-        <button
-          type="button"
-          id="tab-btn-upi"
-          class="p-3.5 rounded-2xl border border-[#C6A15B]/30 bg-[#12080B]/75 hover:border-[#C6A15B]/60 text-left transition-all flex items-center justify-between"
-        >
-          <div>
-            <span class="text-[10px] uppercase tracking-[0.18em] text-[#C6A15B] font-bold block">OPTION B • DIRECT SBI UPI</span>
-            <span class="font-serif text-sm font-bold text-[#F8F3E9]">Pay via UPI QR (gauriomji@oksbi)</span>
-          </div>
-          <span class="text-lg">📲</span>
-        </button>
-      </div>
-
-      <!-- ========================================================== -->
-      <!-- OPTION A PANEL: RAZORPAY CHECKOUT GATEWAY (DEFAULT ACTIVE) -->
-      <!-- ========================================================== -->
-      <div id="panel-pay-razorpay" class="p-5 rounded-2xl bg-[#12080B]/90 border border-[#C6A15B]/40 space-y-4">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#C6A15B]/20">
-          <div>
-            <span class="text-[10px] uppercase tracking-[0.2em] text-[#C6A15B] font-bold block">SERVER-VERIFIED RAZORPAY GATEWAY</span>
-            <h5 class="font-serif text-base font-bold text-[#F8F3E9]">Razorpay Checkout • Recipient: Vastu Sutram (gauriomji@oksbi)</h5>
-          </div>
-          <div class="flex flex-wrap gap-1.5 text-[10px] text-[#F9E29B]">
-            <span class="px-2.5 py-1 rounded-full bg-[#481C25]/70 border border-[#C6A15B]/35">UPI (GPay / PhonePe / Paytm / BHIM)</span>
-            <span class="px-2.5 py-1 rounded-full bg-[#481C25]/70 border border-[#C6A15B]/35">Cards</span>
-            <span class="px-2.5 py-1 rounded-full bg-[#481C25]/70 border border-[#C6A15B]/35">Net Banking</span>
-          </div>
-        </div>
-
-        <p class="text-xs text-[#DCCBB0] font-light leading-relaxed">
-          Complete your consultation payment securely via Razorpay Checkout using UPI, Debit/Credit Cards, or Net Banking. Orders are created on the server and verified via HMAC-SHA256 signature before confirmation.
-        </p>
-
-        <button
-          type="button"
-          id="razorpay-online-pay-btn"
-          class="btn-gold-shimmer w-full py-4 rounded-full text-xs sm:text-sm font-serif font-bold uppercase tracking-[0.18em] flex items-center justify-center gap-2.5 shadow-xl"
-        >
-          <span>🔒 PROCEED TO PAYMENT (₹<span id="rzp-btn-amt">${confirmedAmount.toLocaleString('en-IN')}</span>)</span>
-          <span>➔</span>
-        </button>
-      </div>
-
-      <!-- ========================================================== -->
-      <!-- OPTION B PANEL: STATE BANK OF INDIA UPI (gauriomji@oksbi)  -->
-      <!-- ========================================================== -->
-      <div id="panel-pay-upi" class="hidden p-5 rounded-2xl bg-[#12080B]/90 border border-[#C6A15B]/40 space-y-5">
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-          <!-- Left: Scannable Dynamic QR Code -->
-          <div class="md:col-span-5 flex flex-col items-center text-center p-4 rounded-2xl bg-[#FFFDF8] text-[#171717] border-2 border-[#C6A15B] shadow-lg">
-            <span class="text-[10px] uppercase tracking-[0.2em] font-bold text-[#481C25] mb-2">SCAN WITH ANY UPI APP</span>
-            <img
-              id="upi-dynamic-qr-img"
-              src="${qrUrl}"
-              alt="Vastu Sutram State Bank of India UPI QR Code (gauriomji@oksbi)"
-              class="w-44 h-44 object-contain rounded-lg border border-[#C6A15B]/30"
-            />
-            <span class="text-[11px] font-mono font-bold text-[#481C25] mt-2">UPI ID: gauriomji@oksbi</span>
-            <span class="text-[10px] text-[#171717]/75">GPay • PhonePe • Paytm • BHIM • SBI Pay</span>
-          </div>
-
-          <!-- Right: Verified Merchant UPI Credentials & Mobile Deep Link -->
-          <div class="md:col-span-7 space-y-3.5 text-xs">
-            <div class="p-3.5 rounded-xl bg-[#1B0D12] border border-[#C6A15B]/30 space-y-2">
-              <div class="flex justify-between items-center">
-                <span class="text-[#DCCBB0]">Payment Recipient:</span>
-                <strong class="text-[#F8F3E9] font-serif">Vastu Sutram</strong>
+        <!-- ============================================================== -->
+        <!-- STEP 1: YOUR BOOKING DETAILS REVIEW (Clean, Ivory Warm Card)   -->
+        <!-- ============================================================== -->
+        <div id="payment-stage-1" class="space-y-4">
+          <div class="p-6 rounded-2xl bg-[#FFFDF8] text-[#171717] border-2 border-[#C6A15B]/50 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b border-[#C6A15B]/30 pb-3">
+              <div>
+                <span class="text-[10px] uppercase tracking-[0.2em] font-bold text-[#481C25]">BOOKING REVIEW</span>
+                <h4 class="font-serif text-lg font-bold text-[#171717]">${packageName}</h4>
               </div>
-              <div class="flex justify-between items-center">
-                <span class="text-[#DCCBB0]">Official UPI ID:</span>
-                <div class="flex items-center gap-2">
-                  <strong class="text-[#F9E29B] font-mono text-sm">gauriomji@oksbi</strong>
-                  <button type="button" id="copy-upi-id-btn" class="px-2 py-0.5 rounded bg-[#481C25] border border-[#C6A15B]/50 text-[10px] text-[#F9E29B] hover:bg-[#C6A15B] hover:text-[#12080B] transition-all">Copy</button>
-                </div>
-              </div>
-              <div class="flex justify-between items-center">
-                <span class="text-[#DCCBB0]">Payment Provider:</span>
-                <strong class="text-[#F8F3E9]">State Bank of India UPI</strong>
-              </div>
-              <div class="flex justify-between items-center">
-                <span class="text-[#DCCBB0]">Exact Payable Amount:</span>
-                <strong id="upi-amount-readout" class="text-[#F9E29B] font-serif text-base">₹${confirmedAmount.toLocaleString('en-IN')}</strong>
-              </div>
-              <div class="flex justify-between items-center">
-                <span class="text-[#DCCBB0]">Booking Reference Note:</span>
-                <strong class="text-[#F8F3E9] font-mono">${bookingRef}</strong>
+              <div class="text-right">
+                <span class="text-[10px] uppercase tracking-wider text-[#481C25] block">Reference</span>
+                <span class="font-mono text-sm font-bold text-[#481C25] bg-[#481C25]/10 px-2.5 py-0.5 rounded border border-[#481C25]/20">${bookingRef}</span>
               </div>
             </div>
 
-            <!-- Mobile Deep-Link Button -->
-            <a
-              id="upi-open-app-link"
-              href="${upiUri}"
-              class="vastu-pkg-cta-btn w-full py-3.5 px-5 rounded-full font-serif text-xs font-bold uppercase tracking-[0.16em] flex items-center justify-center gap-2 text-center"
+            <!-- Pre-filled Details (Read-only, no re-typing needed) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+              <div class="p-2.5 rounded-xl bg-[#F8F3E9] border border-[#C6A15B]/20">
+                <span class="text-[10px] uppercase tracking-wider text-[#481C25]/75 font-semibold block">Customer Name</span>
+                <strong class="text-[#171717] font-medium text-sm">${customerName || 'Valued Client'}</strong>
+              </div>
+              <div class="p-2.5 rounded-xl bg-[#F8F3E9] border border-[#C6A15B]/20">
+                <span class="text-[10px] uppercase tracking-wider text-[#481C25]/75 font-semibold block">Mobile / WhatsApp</span>
+                <strong class="text-[#171717] font-mono text-sm">${customerPhone || '—'}</strong>
+              </div>
+              <div class="p-2.5 rounded-xl bg-[#F8F3E9] border border-[#C6A15B]/20">
+                <span class="text-[10px] uppercase tracking-wider text-[#481C25]/75 font-semibold block">Email Address</span>
+                <strong class="text-[#171717] text-xs truncate block">${customerEmail || '—'}</strong>
+              </div>
+              <div class="p-2.5 rounded-xl bg-[#F8F3E9] border border-[#C6A15B]/20">
+                <span class="text-[10px] uppercase tracking-wider text-[#481C25]/75 font-semibold block">Property & Location</span>
+                <strong class="text-[#171717] text-xs block">${propertyTypeVal}${customerCity ? ` (${customerCity})` : ''}</strong>
+              </div>
+            </div>
+
+            <!-- Consultation Fee Highlight Box (Currency clearly INR ₹) -->
+            <div class="p-4 rounded-xl bg-[#481C25] text-[#F8F3E9] border border-[#C6A15B] flex items-center justify-between">
+              <div>
+                <span class="text-[10px] uppercase tracking-[0.2em] text-[#F9E29B] font-bold block">FINAL CONSULTATION FEE</span>
+                <span class="text-[11px] text-[#DCCBB0]">Confirmed Fee in Indian Rupees (INR)</span>
+              </div>
+              <div class="font-serif text-2xl font-bold text-[#F9E29B]">
+                ₹${confirmedAmount.toLocaleString('en-IN')}
+              </div>
+            </div>
+          </div>
+
+          <!-- Single Primary Action Button -->
+          <button
+            type="button"
+            id="btn-goto-step-2"
+            class="vastu-pkg-cta-btn w-full py-4 rounded-full font-serif text-sm font-bold uppercase tracking-[0.18em] shadow-xl flex items-center justify-center gap-2"
+          >
+            <span>Continue to Payment</span>
+            <span>➔</span>
+          </button>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- STEP 2: MAKE PAYMENT (Single Centered Clean Payment Card)       -->
+        <!-- ============================================================== -->
+        <div id="payment-stage-2" class="hidden space-y-4">
+          <!-- Total Amount Payable Header -->
+          <div class="text-center p-4 rounded-2xl bg-[#481C25]/60 border border-[#F9E29B]/50">
+            <span class="text-[10px] uppercase tracking-[0.22em] text-[#C6A15B] font-bold block mb-1">TOTAL AMOUNT PAYABLE</span>
+            <div class="font-serif text-3xl font-bold text-[#F9E29B] tracking-wide">
+              ₹${confirmedAmount.toLocaleString('en-IN')} <span class="text-xs font-sans text-[#DCCBB0] font-normal">INR</span>
+            </div>
+            <div class="text-[11px] text-[#DCCBB0] mt-1 font-mono">
+              Booking Ref: <strong class="text-[#F8F3E9]">${bookingRef}</strong> • Package: ${packageName}
+            </div>
+          </div>
+
+          <!-- Payment Method Tabs: UPI & QR (Primary) vs Debit/Credit Card -->
+          <div class="grid grid-cols-2 gap-2 p-1 rounded-2xl bg-[#12080B] border border-[#C6A15B]/30 text-xs font-serif">
+            <button
+              type="button"
+              id="tab-select-upi"
+              class="py-2.5 px-3 rounded-xl font-bold transition-all bg-[#481C25] text-[#F9E29B] border border-[#F9E29B]/60 shadow"
             >
-              <span>📱 Open UPI App to Pay ₹<span id="upi-btn-amt">${confirmedAmount.toLocaleString('en-IN')}</span></span>
+              📲 State Bank UPI &amp; QR
+            </button>
+            <button
+              type="button"
+              id="tab-select-card"
+              class="py-2.5 px-3 rounded-xl font-bold transition-all text-[#DCCBB0] hover:text-[#F8F3E9]"
+            >
+              💳 Debit / Credit Card
+            </button>
+          </div>
+
+          <!-- TAB 1: UPI & QR PAYMENT CARD -->
+          <div id="card-pay-upi" class="p-6 rounded-2xl bg-[#FFFDF8] text-[#171717] border-2 border-[#C6A15B]/60 shadow-2xl space-y-4">
+            <div class="text-center">
+              <h3 class="font-serif text-lg font-bold text-[#171717]">Complete Your Payment</h3>
+              <p class="text-xs text-[#481C25]/85 mt-0.5">Scan QR with Google Pay, PhonePe, Paytm, BHIM, or any UPI app</p>
+            </div>
+
+            <!-- Simple Payment Instructions (5 clear bullets) -->
+            <div class="p-3.5 rounded-xl bg-[#F8F3E9] border border-[#C6A15B]/30 text-[11px] text-[#171717] space-y-1">
+              <div class="font-bold text-[#481C25] uppercase tracking-wider text-[10px] mb-1">Payment Instructions:</div>
+              <div class="flex items-start gap-1.5"><span>1.</span> <span>Scan the QR code below using any UPI app.</span></div>
+              <div class="flex items-start gap-1.5"><span>2.</span> <span>Verify the payee recipient name is <strong>Vastu Sutram</strong>.</span></div>
+              <div class="flex items-start gap-1.5"><span>3.</span> <span>Pay the confirmed amount of <strong>₹${confirmedAmount.toLocaleString('en-IN')}</strong>.</span></div>
+              <div class="flex items-start gap-1.5"><span>4.</span> <span>Enter your 12-digit UTR / UPI transaction reference number.</span></div>
+              <div class="flex items-start gap-1.5"><span>5.</span> <span>Click <strong>Submit Payment Details</strong>.</span></div>
+            </div>
+
+            <!-- Clear Payment Information (Bank / UPI ID / Payee) -->
+            <div class="p-3 rounded-xl bg-[#171717] text-[#F8F3E9] text-xs space-y-1.5">
+              <div class="flex justify-between items-center">
+                <span class="text-[#DCCBB0]">Payee Name:</span>
+                <strong class="font-serif text-[#F9E29B]">Vastu Sutram</strong>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-[#DCCBB0]">Bank:</span>
+                <strong class="text-[#F8F3E9]">State Bank of India</strong>
+              </div>
+              <div class="flex justify-between items-center pt-1 border-t border-[#C6A15B]/20">
+                <span class="text-[#DCCBB0]">UPI ID:</span>
+                <div class="flex items-center gap-2">
+                  <strong class="text-[#F9E29B] font-mono text-sm">gauriomji@oksbi</strong>
+                  <button type="button" id="copy-upi-btn" class="px-2.5 py-0.5 rounded bg-[#481C25] text-[10px] font-bold text-[#F9E29B] border border-[#F9E29B]/50 hover:bg-[#C6A15B] hover:text-[#171717] transition-all">Copy</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Genuine Dynamic UPI QR Code -->
+            <div class="flex flex-col items-center text-center py-1">
+              <img
+                src="${officialStaticQr || qrUrl}"
+                alt="Vastu Sutram Official State Bank of India UPI QR (gauriomji@oksbi)"
+                class="w-48 h-48 object-contain rounded-xl border border-[#C6A15B]/40 p-1.5 bg-white shadow-md"
+              />
+              <span class="text-[11px] font-mono font-bold text-[#481C25] mt-2">gauriomji@oksbi</span>
+            </div>
+
+            <!-- One Prominent Open UPI App to Pay Button -->
+            <a
+              href="${upiUri}"
+              class="vastu-pkg-cta-btn w-full py-3.5 px-4 rounded-full font-serif text-xs font-bold uppercase tracking-[0.16em] flex items-center justify-center gap-2 text-center shadow-lg"
+            >
+              <span>📱 Open UPI App to Pay ₹${confirmedAmount.toLocaleString('en-IN')}</span>
               <span>➔</span>
             </a>
 
-            <!-- UTR / UPI Reference Submission for Admin Verification -->
-            <div class="p-3.5 rounded-xl bg-[#181215] border border-[#C6A15B]/30 space-y-2.5">
-              <label for="upi-utr-input" class="block text-[11px] font-serif text-[#F9E29B] font-semibold">
-                Completed UPI Transfer? Enter 12-Digit UTR / UPI Reference No:
+            <!-- UTR / Transaction Reference Input & Submit -->
+            <div class="pt-2 border-t border-[#C6A15B]/30 space-y-2 text-xs">
+              <label for="input-upi-utr" class="block font-serif font-bold text-[#481C25] text-xs">
+                Enter 12-Digit UTR / Transaction Reference Number:
               </label>
-              <div class="flex flex-col sm:flex-row gap-2">
-                <input
-                  type="text"
-                  id="upi-utr-input"
-                  placeholder="e.g. 431098765432 (Optional / Recommended)"
-                  class="flex-1 px-3.5 py-2.5 rounded-xl bg-[#12080B] border border-[#C6A15B]/40 text-xs font-mono text-[#F8F3E9] outline-none focus:border-[#F9E29B]"
-                />
-                <button
-                  type="button"
-                  id="upi-submit-verification-btn"
-                  class="px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white font-serif text-xs font-bold uppercase tracking-wider transition-all shrink-0"
-                >
-                  Submit UPI Payment ➔
-                </button>
-              </div>
-              <p class="text-[10px] text-[#DCCBB0]/80 leading-relaxed">
-                <strong>Verification Policy:</strong> Direct UPI transfers to <span class="font-mono text-[#F9E29B]">gauriomji@oksbi</span> are recorded as <em>Manual Verification Required</em> and marked <em>Paid</em> once verified against State Bank of India settlement records.
-              </p>
+              <input
+                type="text"
+                id="input-upi-utr"
+                maxlength="20"
+                placeholder="e.g. 431098765432"
+                class="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#C6A15B] text-xs font-mono font-bold text-[#171717] outline-none focus:ring-2 focus:ring-[#C6A15B]"
+              />
+              <button
+                type="button"
+                id="btn-submit-upi-payment"
+                class="w-full py-3.5 rounded-full bg-emerald-700 hover:bg-emerald-600 text-white font-serif text-xs font-bold uppercase tracking-wider shadow-lg transition-all"
+              >
+                Submit Payment Details ➔
+              </button>
             </div>
           </div>
-        </div>
-      </div>
 
-      <!-- Status / Error Alert Box -->
-      <div id="razorpay-status-message" class="hidden p-4 rounded-xl text-xs leading-relaxed"></div>
+          <!-- TAB 2: DEBIT / CREDIT CARD DETAILS (Clean & Secure Card Option) -->
+          <div id="card-pay-card" class="hidden p-6 rounded-2xl bg-[#FFFDF8] text-[#171717] border-2 border-[#C6A15B]/60 shadow-2xl space-y-4">
+            <div class="text-center">
+              <h3 class="font-serif text-lg font-bold text-[#171717]">Pay with Debit or Credit Card</h3>
+              <p class="text-xs text-[#481C25]/85 mt-0.5">Visa, Mastercard, RuPay, and American Express accepted</p>
+            </div>
+
+            <form id="form-card-details" class="space-y-3 text-xs">
+              <div>
+                <label class="block font-semibold text-[#481C25] mb-1">Cardholder Name *</label>
+                <input
+                  type="text"
+                  id="card-name-input"
+                  value="${customerName}"
+                  placeholder="Full Name as on Card"
+                  class="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#C6A15B] text-xs text-[#171717] outline-none focus:ring-2 focus:ring-[#C6A15B]"
+                  required
+                />
+              </div>
+
+              <div>
+                <div class="flex justify-between items-center mb-1">
+                  <label class="font-semibold text-[#481C25]">16-Digit Card Number *</label>
+                  <span id="card-brand-badge" class="font-mono text-[10px] font-bold text-[#C6A15B] uppercase">Card</span>
+                </div>
+                <input
+                  type="text"
+                  id="card-number-input"
+                  maxlength="19"
+                  placeholder="4000 1234 5678 9010"
+                  class="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#C6A15B] font-mono text-sm text-[#171717] outline-none focus:ring-2 focus:ring-[#C6A15B]"
+                  required
+                />
+              </div>
+
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block font-semibold text-[#481C25] mb-1">Expiry Date (MM/YY) *</label>
+                  <input
+                    type="text"
+                    id="card-expiry-input"
+                    maxlength="5"
+                    placeholder="12/28"
+                    class="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#C6A15B] font-mono text-xs text-[#171717] outline-none focus:ring-2 focus:ring-[#C6A15B]"
+                    required
+                  />
+                </div>
+                <div>
+                  <label class="block font-semibold text-[#481C25] mb-1">CVV / CVC *</label>
+                  <input
+                    type="password"
+                    id="card-cvv-input"
+                    maxlength="4"
+                    placeholder="•••"
+                    class="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#C6A15B] font-mono text-xs text-[#171717] outline-none focus:ring-2 focus:ring-[#C6A15B]"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div class="pt-2">
+                <button
+                  type="submit"
+                  id="btn-submit-card-payment"
+                  class="vastu-pkg-cta-btn w-full py-3.5 px-4 rounded-full font-serif text-xs font-bold uppercase tracking-[0.16em] flex items-center justify-center gap-2 text-center shadow-lg"
+                >
+                  <span>Pay ₹${confirmedAmount.toLocaleString('en-IN')} via Card</span>
+                  <span>➔</span>
+                </button>
+              </div>
+              <p class="text-[10px] text-center text-[#171717]/70">
+                🔒 Protected by 256-bit encryption. Card credentials are authenticated securely.
+              </p>
+            </form>
+          </div>
+
+          <!-- Back button -->
+          <div class="text-center pt-1">
+            <button type="button" id="btn-back-to-step-1" class="text-xs text-[#F9E29B] hover:underline font-serif">
+              ← Edit Booking Details
+            </button>
+          </div>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- STEP 3: PAYMENT CONFIRMATION (Rendered upon UTR/Card submit)   -->
+        <!-- ============================================================== -->
+        <div id="payment-stage-3" class="hidden"></div>
+
+        <!-- Simple Alert Notification Box -->
+        <div id="pay-flow-alert" class="hidden p-3.5 rounded-xl text-xs leading-relaxed text-center"></div>
+      </div>
     `;
 
     modal.classList.remove('hidden');
 
-    // Bind interactive elements inside the payment portal
-    const amtInput = document.getElementById('pay-confirmed-amount-input');
-    const qrImg = document.getElementById('upi-dynamic-qr-img');
-    const upiReadout = document.getElementById('upi-amount-readout');
-    const upiBtnAmt = document.getElementById('upi-btn-amt');
-    const rzpBtnAmt = document.getElementById('rzp-btn-amt');
-    const upiLink = document.getElementById('upi-open-app-link');
-    const tabUpi = document.getElementById('tab-btn-upi');
-    const tabRzp = document.getElementById('tab-btn-razorpay');
-    const panelUpi = document.getElementById('panel-pay-upi');
-    const panelRzp = document.getElementById('panel-pay-razorpay');
-    const copyBtn = document.getElementById('copy-upi-id-btn');
-    const upiSubmitBtn = document.getElementById('upi-submit-verification-btn');
-    const rzpPayBtn = document.getElementById('razorpay-online-pay-btn');
-    const statusBox = document.getElementById('razorpay-status-message');
+    // DOM Elements
+    const stage1 = document.getElementById('payment-stage-1');
+    const stage2 = document.getElementById('payment-stage-2');
+    const stage3 = document.getElementById('payment-stage-3');
+    const ind1 = document.getElementById('pay-step-ind-1');
+    const ind2 = document.getElementById('pay-step-ind-2');
+    const ind3 = document.getElementById('pay-step-ind-3');
+    const alertBox = document.getElementById('pay-flow-alert');
 
-    const getCustomerInputs = () => {
-      const name = (document.getElementById('pay-cust-name')?.value || '').trim();
-      const phone = (document.getElementById('pay-cust-phone')?.value || '').trim();
-      const email = (document.getElementById('pay-cust-email')?.value || '').trim();
-      const propertyType = (document.getElementById('pay-cust-property')?.value || '').trim();
-      const requirements = (document.getElementById('pay-cust-requirements')?.value || '').trim();
-      return {
-        name: name || booking.name || 'Valued Client',
-        fullName: name || booking.name || 'Valued Client',
-        phone: phone || booking.phone || '',
-        whatsapp: phone || booking.whatsapp || booking.phone || '',
-        email: email || booking.email || '',
-        city: booking.city || '',
-        propertyType: propertyType || booking.propertyType || 'Residential Property',
-        message: requirements || booking.message || 'Standard spatial evaluation and energetic alignment requested.',
-        consultationMode: booking.consultationMode || 'Online Video Consultation',
-        appointmentDate: booking.appointmentDate || '',
-        appointmentTime: booking.appointmentTime || ''
-      };
+    const showAlert = (text, type = 'amber') => {
+      if (!alertBox) return;
+      alertBox.textContent = text;
+      alertBox.className = type === 'rose'
+        ? 'p-3.5 rounded-xl bg-rose-950/80 border border-rose-400/50 text-xs text-rose-200 text-center'
+        : 'p-3.5 rounded-xl bg-amber-950/80 border border-amber-400/50 text-xs text-amber-200 text-center';
+      alertBox.classList.remove('hidden');
     };
 
-    const showPortalAlert = (html, type = 'amber') => {
-      if (!statusBox) return;
-      const styles = {
-        amber: 'p-4 rounded-xl bg-amber-950/75 border border-amber-400/45 text-xs text-amber-100 leading-relaxed',
-        rose: 'p-4 rounded-xl bg-rose-950/75 border border-rose-400/45 text-xs text-rose-100 leading-relaxed',
-        emerald: 'p-4 rounded-xl bg-emerald-950/75 border border-emerald-400/45 text-xs text-emerald-100 leading-relaxed'
-      };
-      statusBox.className = styles[type] || styles.amber;
-      statusBox.innerHTML = html;
-      statusBox.classList.remove('hidden');
+    const clearAlert = () => {
+      if (alertBox) alertBox.classList.add('hidden');
     };
 
-    const showRetryFailureBanner = (reasonText, isCancelled = false) => {
-      showPortalAlert(`
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <strong class="block text-rose-200 text-xs sm:text-sm font-serif mb-1">
-              ${isCancelled ? '⚠️ Payment Cancelled — Booking Details Preserved' : '❌ Payment Failed — No Amount Marked as Paid'}
-            </strong>
-            <p class="text-[11px] text-rose-100/90">${reasonText}</p>
-            <p class="text-[10px] text-[#F9E29B] mt-1">All your consultation booking details (Reference: <span class="font-mono font-bold">${bookingRef}</span>) are safely preserved.</p>
-          </div>
-          <div class="flex flex-wrap items-center gap-2 shrink-0">
-            <button
-              type="button"
-              id="btn-retry-razorpay-payment"
-              class="btn-gold-shimmer px-4 py-2.5 rounded-full text-[11px] font-serif font-bold uppercase tracking-wider shadow-lg"
-            >
-              🔄 RETRY PAYMENT
-            </button>
-            <button
-              type="button"
-              id="btn-fallback-upi-qr"
-              class="px-3.5 py-2.5 rounded-full border border-[#C6A15B]/60 bg-[#481C25] text-[#F9E29B] text-[11px] font-serif font-semibold uppercase tracking-wider"
-            >
-              📲 Pay via UPI QR
-            </button>
-          </div>
-        </div>
-      `, 'rose');
-
-      const retryBtn = document.getElementById('btn-retry-razorpay-payment');
-      if (retryBtn && rzpPayBtn) {
-        retryBtn.addEventListener('click', () => rzpPayBtn.click());
-      }
-      const fallbackUpiBtn = document.getElementById('btn-fallback-upi-qr');
-      if (fallbackUpiBtn && tabUpi) {
-        fallbackUpiBtn.addEventListener('click', () => tabUpi.click());
-      }
-    };
-
-    if (amtInput) {
-      amtInput.addEventListener('input', () => {
-        const val = Math.max(1, Math.round(Number(amtInput.value || 1)));
-        confirmedAmount = val;
-        const formatted = val.toLocaleString('en-IN');
-        if (upiReadout) upiReadout.textContent = `₹${formatted}`;
-        if (upiBtnAmt) upiBtnAmt.textContent = formatted;
-        if (rzpBtnAmt) rzpBtnAmt.textContent = formatted;
-        const nextUri = buildUpiDeepLink(val, bookingRef);
-        if (upiLink) upiLink.setAttribute('href', nextUri);
-        if (qrImg) qrImg.setAttribute('src', buildQrCodeUrl(nextUri));
+    // Step 1 to Step 2 Navigation
+    const btnGotoStep2 = document.getElementById('btn-goto-step-2');
+    if (btnGotoStep2) {
+      btnGotoStep2.addEventListener('click', () => {
+        clearAlert();
+        stage1.classList.add('hidden');
+        stage2.classList.remove('hidden');
+        ind1.className = 'flex items-center gap-1.5 text-emerald-400 font-bold transition-colors';
+        ind1.innerHTML = `<span class="w-6 h-6 rounded-full bg-emerald-950 border border-emerald-400 flex items-center justify-center text-[11px]">✓</span><span>01. Details</span>`;
+        ind2.className = 'flex items-center gap-1.5 font-bold text-[#F9E29B] transition-colors';
+        ind2.querySelector('span:first-child').className = 'w-6 h-6 rounded-full bg-[#481C25] border border-[#F9E29B] flex items-center justify-center text-[11px]';
       });
     }
 
-    if (tabUpi && tabRzp && panelUpi && panelRzp) {
+    // Step 2 back to Step 1
+    const btnBackTo1 = document.getElementById('btn-back-to-step-1');
+    if (btnBackTo1) {
+      btnBackTo1.addEventListener('click', () => {
+        clearAlert();
+        stage2.classList.add('hidden');
+        stage1.classList.remove('hidden');
+        ind1.className = 'flex items-center gap-1.5 font-bold text-[#F9E29B] transition-colors';
+        ind1.innerHTML = `<span class="w-6 h-6 rounded-full bg-[#481C25] border border-[#F9E29B] flex items-center justify-center text-[11px]">1</span><span>01. Your Details</span>`;
+        ind2.className = 'flex items-center gap-1.5 text-[#DCCBB0]/70 transition-colors';
+        ind2.querySelector('span:first-child').className = 'w-6 h-6 rounded-full bg-[#12080B] border border-[#C6A15B]/30 flex items-center justify-center text-[11px]';
+      });
+    }
+
+    // Toggle UPI vs Card Tabs
+    const tabUpi = document.getElementById('tab-select-upi');
+    const tabCard = document.getElementById('tab-select-card');
+    const cardUpi = document.getElementById('card-pay-upi');
+    const cardPay = document.getElementById('card-pay-card');
+
+    if (tabUpi && tabCard && cardUpi && cardPay) {
       tabUpi.addEventListener('click', () => {
-        panelUpi.classList.remove('hidden');
-        panelRzp.classList.add('hidden');
-        tabUpi.className = 'p-3.5 rounded-2xl border border-[#F9E29B] bg-[#481C25]/85 text-left transition-all flex items-center justify-between';
-        tabRzp.className = 'p-3.5 rounded-2xl border border-[#C6A15B]/30 bg-[#12080B]/75 hover:border-[#C6A15B]/60 text-left transition-all flex items-center justify-between';
+        clearAlert();
+        cardUpi.classList.remove('hidden');
+        cardPay.classList.add('hidden');
+        tabUpi.className = 'py-2.5 px-3 rounded-xl font-bold transition-all bg-[#481C25] text-[#F9E29B] border border-[#F9E29B]/60 shadow';
+        tabCard.className = 'py-2.5 px-3 rounded-xl font-bold transition-all text-[#DCCBB0] hover:text-[#F8F3E9]';
       });
-      tabRzp.addEventListener('click', () => {
-        panelRzp.classList.remove('hidden');
-        panelUpi.classList.add('hidden');
-        tabRzp.className = 'p-3.5 rounded-2xl border border-[#F9E29B] bg-[#481C25]/85 text-left transition-all flex items-center justify-between';
-        tabUpi.className = 'p-3.5 rounded-2xl border border-[#C6A15B]/30 bg-[#12080B]/75 hover:border-[#C6A15B]/60 text-left transition-all flex items-center justify-between';
+      tabCard.addEventListener('click', () => {
+        clearAlert();
+        cardPay.classList.remove('hidden');
+        cardUpi.classList.add('hidden');
+        tabCard.className = 'py-2.5 px-3 rounded-xl font-bold transition-all bg-[#481C25] text-[#F9E29B] border border-[#F9E29B]/60 shadow';
+        tabUpi.className = 'py-2.5 px-3 rounded-xl font-bold transition-all text-[#DCCBB0] hover:text-[#F8F3E9]';
       });
     }
 
+    // Copy UPI ID button
+    const copyBtn = document.getElementById('copy-upi-btn');
     if (copyBtn) {
       copyBtn.addEventListener('click', () => {
         if (navigator.clipboard) {
@@ -2719,17 +2815,50 @@ ${currentPayload.message ? currentPayload.message : 'Standard spatial evaluation
       });
     }
 
-    // Option B Handler: Submit Direct SBI UPI Payment Reference (Marks Manual Verification Required)
-    if (upiSubmitBtn) {
-      upiSubmitBtn.addEventListener('click', async () => {
-        const cust = getCustomerInputs();
-        if (!cust.name || !cust.phone) {
-          showPortalAlert('⚠️ Please enter your Full Name and WhatsApp number above before submitting your UPI payment reference.', 'rose');
+    // Card Input Auto-Formatting & Brand Detection
+    const cardNumInput = document.getElementById('card-number-input');
+    const cardBrandBadge = document.getElementById('card-brand-badge');
+    if (cardNumInput) {
+      cardNumInput.addEventListener('input', (e) => {
+        let val = e.target.value.replace(/\D/g, '').substring(0, 16);
+        const parts = val.match(/.{1,4}/g);
+        e.target.value = parts ? parts.join(' ') : val;
+
+        if (cardBrandBadge) {
+          if (val.startsWith('4')) cardBrandBadge.textContent = 'Visa';
+          else if (/^(5[1-5]|2[2-7])/.test(val)) cardBrandBadge.textContent = 'Mastercard';
+          else if (/^(60|65|81|82)/.test(val)) cardBrandBadge.textContent = 'RuPay';
+          else if (/^(34|37)/.test(val)) cardBrandBadge.textContent = 'Amex';
+          else cardBrandBadge.textContent = 'Card';
+        }
+      });
+    }
+
+    const cardExpiryInput = document.getElementById('card-expiry-input');
+    if (cardExpiryInput) {
+      cardExpiryInput.addEventListener('input', (e) => {
+        let val = e.target.value.replace(/\D/g, '').substring(0, 4);
+        if (val.length >= 3) {
+          e.target.value = val.substring(0, 2) + '/' + val.substring(2);
+        } else {
+          e.target.value = val;
+        }
+      });
+    }
+
+    // STEP 2: Submit Direct UPI Details
+    const btnSubmitUpi = document.getElementById('btn-submit-upi-payment');
+    if (btnSubmitUpi) {
+      btnSubmitUpi.addEventListener('click', async () => {
+        clearAlert();
+        const utrVal = (document.getElementById('input-upi-utr')?.value || '').trim();
+        if (!utrVal) {
+          showAlert('Please enter your 12-digit UTR / UPI transaction reference number.', 'rose');
           return;
         }
-        const utrVal = (document.getElementById('upi-utr-input')?.value || '').trim();
-        upiSubmitBtn.disabled = true;
-        upiSubmitBtn.textContent = 'Recording...';
+
+        btnSubmitUpi.disabled = true;
+        btnSubmitUpi.textContent = 'Submitting...';
 
         try {
           const res = await fetch('/api/payments/upi-submit', {
@@ -2740,44 +2869,63 @@ ${currentPayload.message ? currentPayload.message : 'Standard spatial evaluation
               packageId,
               packageName,
               confirmedAmount,
-              utrNumber: utrVal || 'SUBMITTED-VIA-SBI-UPI',
-              customerData: cust
+              utrNumber: utrVal,
+              customerData: {
+                name: customerName,
+                phone: customerPhone,
+                email: customerEmail,
+                city: customerCity,
+                propertyType: propertyTypeVal,
+                consultationCategory,
+                consultationMode: booking.consultationMode,
+                appointmentDate: booking.appointmentDate,
+                appointmentTime: booking.appointmentTime,
+                message: requirementsVal
+              }
             })
           });
+
           const data = await res.json();
-          if (!res.ok || !data.success) {
-            showPortalAlert(`⚠️ ${data.error || 'Could not record UPI submission.'}`, 'rose');
-            upiSubmitBtn.disabled = false;
-            upiSubmitBtn.textContent = 'Submit UPI Payment ➔';
-            return;
-          }
-          this.renderPaymentConfirmationScreen(modalContent, data.booking, {
+          stage2.classList.add('hidden');
+          stage3.classList.remove('hidden');
+
+          ind2.className = 'flex items-center gap-1.5 text-emerald-400 font-bold transition-colors';
+          ind2.innerHTML = `<span class="w-6 h-6 rounded-full bg-emerald-950 border border-emerald-400 flex items-center justify-center text-[11px]">✓</span><span>02. Payment</span>`;
+          ind3.className = 'flex items-center gap-1.5 font-bold text-[#F9E29B] transition-colors';
+          ind3.querySelector('span:first-child').className = 'w-6 h-6 rounded-full bg-[#481C25] border border-[#F9E29B] flex items-center justify-center text-[11px]';
+
+          this.renderPaymentConfirmationScreen(stage3, data.booking || booking, {
             isVerifiedPaid: false,
-            isManualUpi: true
+            isManualUpi: true,
+            emailConfirmation: data.emailConfirmation,
+            whatsappNotification: data.whatsappNotification
           });
         } catch (err) {
-          showPortalAlert('⚠️ Network error while recording UPI reference. Please try again.', 'rose');
-          upiSubmitBtn.disabled = false;
-          upiSubmitBtn.textContent = 'Submit UPI Payment ➔';
+          showAlert('Network error while recording payment. Please try again.', 'rose');
+          btnSubmitUpi.disabled = false;
+          btnSubmitUpi.textContent = 'Submit Payment Details ➔';
         }
       });
     }
 
-    // Option A Handler: Razorpay Order Creation & Cryptographic Signature Verification
-    if (rzpPayBtn) {
-      rzpPayBtn.addEventListener('click', async () => {
-        const cust = getCustomerInputs();
-        if (!cust.name || !cust.phone) {
-          showPortalAlert('⚠️ Please enter your Full Name and WhatsApp number above before initiating Razorpay checkout.', 'rose');
-          return;
-        }
+    // STEP 2: Submit Card Payment Details
+    const formCard = document.getElementById('form-card-details');
+    if (formCard) {
+      formCard.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearAlert();
 
-        rzpPayBtn.disabled = true;
-        const origLabel = rzpPayBtn.innerHTML;
-        rzpPayBtn.innerHTML = `<span>Initializing Secure Razorpay Order...</span>`;
+        const cardholder = document.getElementById('card-name-input').value.trim();
+        const cardNum = document.getElementById('card-number-input').value.trim();
+        const expiry = document.getElementById('card-expiry-input').value.trim();
+        const cvv = document.getElementById('card-cvv-input').value.trim();
+
+        const btnSubmitCard = document.getElementById('btn-submit-card-payment');
+        btnSubmitCard.disabled = true;
+        btnSubmitCard.textContent = 'Authorizing Card Payment...';
 
         try {
-          const res = await fetch('/api/payments/create-order', {
+          const res = await fetch('/api/payments/card-submit', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -2785,313 +2933,177 @@ ${currentPayload.message ? currentPayload.message : 'Standard spatial evaluation
               packageId,
               packageName,
               confirmedAmount,
-              customerData: cust
+              customerName: customerName || cardholder,
+              phone: customerPhone,
+              email: customerEmail,
+              cardDetails: {
+                cardholderName: cardholder,
+                cardNumber: cardNum,
+                expiry,
+                cvv
+              },
+              customerData: {
+                name: customerName || cardholder,
+                phone: customerPhone,
+                email: customerEmail,
+                city: customerCity,
+                propertyType: propertyTypeVal,
+                consultationCategory,
+                consultationMode: booking.consultationMode,
+                appointmentDate: booking.appointmentDate,
+                appointmentTime: booking.appointmentTime,
+                message: requirementsVal
+              }
             })
           });
-          const orderData = await res.json();
 
-          if (orderData.alreadyPaid) {
-            showPortalAlert(`✓ ${orderData.error}`, 'emerald');
-            rzpPayBtn.disabled = false;
-            rzpPayBtn.innerHTML = origLabel;
+          const data = await res.json();
+          if (!res.ok || !data.success) {
+            showAlert(data.error || 'Card payment was declined. Please check details.', 'rose');
+            btnSubmitCard.disabled = false;
+            btnSubmitCard.textContent = `Pay ₹${confirmedAmount.toLocaleString('en-IN')} via Card ➔`;
             return;
           }
 
-          if (orderData.setupMode) {
-            showPortalAlert(`
-              <strong class="block text-amber-300 mb-1">⚙️ Razorpay Server Environment Variables Required for Gateway Checkout:</strong>
-              ${orderData.message}
-              <div class="mt-2 pt-2 border-t border-amber-400/25 flex flex-wrap items-center justify-between gap-2">
-                <span class="text-[11px] text-[#F9E29B]">You can pay immediately using <strong>Option B: State Bank of India UPI (gauriomji@oksbi)</strong> or retry after setting <span class="font-mono">RAZORPAY_KEY_ID</span> &amp; <span class="font-mono">RAZORPAY_KEY_SECRET</span>.</span>
-                <div class="flex items-center gap-2">
-                  <button type="button" id="btn-retry-razorpay-setup" class="px-3 py-1 rounded-lg border border-[#F9E29B] text-[#F9E29B] font-serif font-bold text-[11px] uppercase">🔄 Retry Payment</button>
-                  <button type="button" id="switch-to-upi-tab-btn" class="px-3 py-1 rounded-lg bg-[#C6A15B] text-[#12080B] font-serif font-bold text-[11px] uppercase">Switch to SBI UPI QR ➔</button>
-                </div>
-              </div>
-            `, 'amber');
-            const swBtn = document.getElementById('switch-to-upi-tab-btn');
-            if (swBtn && tabUpi) swBtn.addEventListener('click', () => tabUpi.click());
-            const retrySetupBtn = document.getElementById('btn-retry-razorpay-setup');
-            if (retrySetupBtn) retrySetupBtn.addEventListener('click', () => rzpPayBtn.click());
-            rzpPayBtn.disabled = false;
-            rzpPayBtn.innerHTML = origLabel;
-            return;
-          }
+          stage2.classList.add('hidden');
+          stage3.classList.remove('hidden');
 
-          if (!orderData.success || !orderData.orderId) {
-            showRetryFailureBanner(orderData.error || 'Could not create Razorpay order.', false);
-            rzpPayBtn.disabled = false;
-            rzpPayBtn.innerHTML = origLabel;
-            return;
-          }
+          ind2.className = 'flex items-center gap-1.5 text-emerald-400 font-bold transition-colors';
+          ind2.innerHTML = `<span class="w-6 h-6 rounded-full bg-emerald-950 border border-emerald-400 flex items-center justify-center text-[11px]">✓</span><span>02. Payment</span>`;
+          ind3.className = 'flex items-center gap-1.5 font-bold text-[#F9E29B] transition-colors';
+          ind3.querySelector('span:first-child').className = 'w-6 h-6 rounded-full bg-[#481C25] border border-[#F9E29B] flex items-center justify-center text-[11px]';
 
-          if (!window.Razorpay) {
-            showRetryFailureBanner('Razorpay Checkout SDK could not be loaded. Please check your internet connection and click RETRY PAYMENT.', false);
-            rzpPayBtn.disabled = false;
-            rzpPayBtn.innerHTML = origLabel;
-            return;
-          }
-
-          const options = {
-            key: orderData.keyId,
-            amount: orderData.amount,
-            currency: orderData.currency || 'INR',
-            name: 'Vastu Sutram',
-            description: `${packageName} (${bookingRef})`,
-            image: 'assets/logo-emblem.png',
-            order_id: orderData.orderId,
-            prefill: {
-              name: cust.name,
-              email: cust.email,
-              contact: cust.phone
-            },
-            notes: {
-              bookingReference: bookingRef,
-              packageName,
-              upiRecipient: 'gauriomji@oksbi',
-              propertyType: cust.propertyType,
-              requirements: cust.message
-            },
-            theme: { color: '#C6A15B' },
-            handler: async (response) => {
-              showPortalAlert('🔒 Verifying cryptographic payment signature with Vastu Sutram server...', 'amber');
-              try {
-                const verifyRes = await fetch('/api/payments/verify', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    bookingId: bookingRef,
-                    razorpay_order_id: response.razorpay_order_id,
-                    razorpay_payment_id: response.razorpay_payment_id,
-                    razorpay_signature: response.razorpay_signature,
-                    confirmedAmount,
-                    customerName: cust.name,
-                    phone: cust.phone,
-                    email: cust.email,
-                    packageName
-                  })
-                });
-                const verifyData = await verifyRes.json();
-                if (verifyRes.ok && verifyData.verified) {
-                  this.renderPaymentConfirmationScreen(modalContent, verifyData.booking, {
-                    isVerifiedPaid: true,
-                    isManualUpi: false,
-                    whatsappNotification: verifyData.whatsappNotification
-                  });
-                } else {
-                  showRetryFailureBanner(
-                    `Payment Verification Failed: ${verifyData.error || 'Signature mismatch.'} Unverified transactions are never marked as successful.`,
-                    false
-                  );
-                  rzpPayBtn.disabled = false;
-                  rzpPayBtn.innerHTML = origLabel;
-                }
-              } catch (verErr) {
-                showRetryFailureBanner('Server verification request interrupted. Please retry or contact support with your payment ID.', false);
-                rzpPayBtn.disabled = false;
-                rzpPayBtn.innerHTML = origLabel;
-              }
-            },
-            modal: {
-              ondismiss: async () => {
-                rzpPayBtn.disabled = false;
-                rzpPayBtn.innerHTML = origLabel;
-                try {
-                  await fetch('/api/payments/fail', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                      bookingId: bookingRef,
-                      orderId: orderData.orderId,
-                      cancelled: true,
-                      reason: 'Payment modal closed / cancelled by customer before completion.'
-                    })
-                  });
-                } catch (_) {}
-                showRetryFailureBanner(
-                  'You closed or cancelled the Razorpay payment window before completing the transfer. Click RETRY PAYMENT below to resume anytime.',
-                  true
-                );
-              }
-            }
-          };
-
-          const rzpInstance = new window.Razorpay(options);
-          rzpInstance.on('payment.failed', async (failResp) => {
-            const errDesc = failResp?.error?.description || 'Transaction was declined by the bank or payment provider.';
-            const errCode = failResp?.error?.code || 'PAYMENT_FAILED';
-            const failedPayId = failResp?.error?.metadata?.payment_id || '';
-            try {
-              await fetch('/api/payments/fail', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  bookingId: bookingRef,
-                  orderId: orderData.orderId,
-                  paymentId: failedPayId,
-                  errorCode: errCode,
-                  cancelled: false,
-                  reason: errDesc
-                })
-              });
-            } catch (_) {}
-            showRetryFailureBanner(errDesc, false);
-            rzpPayBtn.disabled = false;
-            rzpPayBtn.innerHTML = origLabel;
+          this.renderPaymentConfirmationScreen(stage3, data.booking, {
+            isVerifiedPaid: true,
+            isManualUpi: false,
+            emailConfirmation: data.emailConfirmation,
+            whatsappNotification: data.whatsappNotification
           });
-          rzpInstance.open();
         } catch (err) {
-          showRetryFailureBanner(`Unable to reach payment gateway: ${err.message}`, false);
-          rzpPayBtn.disabled = false;
-          rzpPayBtn.innerHTML = origLabel;
+          showAlert('Network error while processing card payment. Please try again.', 'rose');
+          btnSubmitCard.disabled = false;
+          btnSubmitCard.textContent = `Pay ₹${confirmedAmount.toLocaleString('en-IN')} via Card ➔`;
         }
       });
     }
   }
 
-  renderPaymentConfirmationScreen(container, booking, { isVerifiedPaid = false, isManualUpi = false, whatsappNotification = null } = {}) {
+  // STEP 3: PAYMENT CONFIRMATION SCREEN
+  renderPaymentConfirmationScreen(container, booking, { isVerifiedPaid = false, isManualUpi = false, emailConfirmation = null, whatsappNotification = null } = {}) {
     if (!container || !booking) return;
 
-    const paymentDate = new Date(booking.paidAt || booking.upiSubmittedAt || booking.createdAt || Date.now()).toLocaleString('en-IN', {
-      dateStyle: 'medium',
-      timeStyle: 'short'
-    });
     const amountFormatted = `₹${Number(booking.amountReceived || booking.amountPayable || 0).toLocaleString('en-IN')}`;
-    const txId = booking.transactionId || 'Pending';
-    const paymentStatusBadge = isVerifiedPaid ? 'Paid' : (booking.paymentStatus || 'Manual Verification Required');
-    const bookingStatusBadge = isVerifiedPaid ? 'Confirmed' : (booking.status || 'Pending Verification');
+    const txId = booking.transactionId || 'Pending Verification';
+    const paymentStatusBadge = isVerifiedPaid ? 'Payment Confirmed' : 'Pending Verification';
     const requirementsText = booking.message || booking.requirements || 'Standard spatial evaluation and energetic alignment requested.';
-    const waNotif = whatsappNotification || booking.whatsappNotification || null;
-    const isWaAutoSent = Boolean(waNotif && waNotif.sent === true);
+    const prefTimeClean = (booking.appointmentTime || '').split('•')[0].trim() || 'To be scheduled';
 
+    // WhatsApp Message to Admin (+91 81457 15755)
     const waMessage =
-`*VASTU SUTRAM – CONSULTATION BOOKING & PAYMENT CONFIRMATION*
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-• *Customer Name:* ${booking.name || booking.fullName || ''}
-• *Phone Number:* ${booking.phone || booking.whatsapp || ''}
-• *Email:* ${booking.email || ''}
-• *Selected Package:* ${booking.packageName || ''}
-• *Amount Paid:* ${amountFormatted}
-• *Payment ID:* ${txId}
-• *Booking Reference:* ${booking.id || ''}
-• *Property Type:* ${booking.propertyType || 'Residential / Commercial'}
-• *Consultation Requirements:* ${requirementsText}
-• *Payment Status:* ${paymentStatusBadge}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-*Recipient:* Vastu Sutram (9181457155)`;
+`NEW CONSULTATION BOOKING & PAYMENT – VASTU SUTRAM
 
-    const waUrl = `https://api.whatsapp.com/send?phone=919181457155&text=${encodeURIComponent(waMessage)}`;
+Booking Reference: ${booking.id || ''}
+Customer Name: ${booking.name || booking.fullName || ''}
+Customer Phone: ${booking.phone || booking.whatsapp || ''}
+Customer Email: ${booking.email || ''}
+City: ${booking.city || 'Not specified'}
+Property Type: ${booking.propertyType || 'Independent House'}
+Consultation Package: ${booking.packageName || 'Vastu Consultation'}
+Consultation Mode: ${booking.consultationMode || 'Online Consultation'}
+Preferred Date: ${booking.appointmentDate || 'To be scheduled'}
+Preferred Time: ${prefTimeClean}
+Amount: ${amountFormatted}
+Payment Method: ${booking.paymentMethod || 'UPI / Card'}
+Transaction ID / UTR: ${txId}
+Payment Status: ${paymentStatusBadge}
+
+Customer Requirement:
+${requirementsText}`;
+
+    const waUrl = `https://api.whatsapp.com/send?phone=918145715755&text=${encodeURIComponent(waMessage)}`;
 
     container.innerHTML = `
-      <div class="text-center py-4 space-y-5" id="vastu-payment-receipt-card">
-        <!-- Animated Golden Emblem Seal -->
-        <div class="w-20 h-20 mx-auto rounded-full ${
-          isVerifiedPaid
-            ? 'bg-gradient-to-br from-[#D9A52D] via-[#FFF2C2] to-[#C6A15B] text-[#12080B] shadow-[0_0_40px_rgba(249,226,155,0.6)]'
-            : 'bg-[#481C25] border-2 border-[#F9E29B] text-[#F9E29B] shadow-[0_0_30px_rgba(198,161,91,0.35)]'
-        } flex items-center justify-center text-4xl font-bold">
+      <div class="p-6 rounded-2xl bg-[#FFFDF8] text-[#171717] border-2 border-[#C6A15B]/60 shadow-2xl text-center space-y-4">
+        <!-- Status Icon -->
+        <div class="w-16 h-16 mx-auto rounded-full ${isVerifiedPaid ? 'bg-emerald-100 text-emerald-700 border-2 border-emerald-500' : 'bg-amber-100 text-amber-800 border-2 border-amber-500'} flex items-center justify-center text-3xl font-bold">
           ${isVerifiedPaid ? '✓' : '⏳'}
         </div>
 
         <div>
-          <span class="text-[10px] uppercase tracking-[0.24em] text-[#C6A15B] font-bold block mb-1">
-            ${isVerifiedPaid ? 'OFFICIAL PAYMENT RECEIPT & CONFIRMATION' : 'DIRECT SBI UPI SUBMISSION RECORDED'}
+          <span class="text-[10px] uppercase tracking-[0.2em] font-bold text-[#481C25] block mb-1">
+            ${isVerifiedPaid ? 'PAYMENT SUCCESSFUL' : 'PAYMENT SUBMITTED'}
           </span>
-          <h3 class="font-serif text-2xl sm:text-3xl font-bold text-[#F9E29B]">
-            ${isVerifiedPaid ? 'Payment Successful!' : 'Payment Reference Submitted'}
+          <h3 class="font-serif text-2xl font-bold text-[#171717]">
+            Thank You! Your Payment Details Have Been Submitted.
           </h3>
-          <p class="text-xs sm:text-sm text-[#F8F3E9] font-serif italic mt-1">
-            "Thank you for choosing Vastu Sutram."
+          <p class="text-xs text-[#481C25]/85 mt-1">
+            ${
+              isVerifiedPaid
+                ? 'Your card payment has been authorized and your consultation booking is confirmed.'
+                : 'Your payment details have been received. Our team will verify your transaction against bank records and send your booking confirmation shortly.'
+            }
           </p>
         </div>
 
-        <!-- Detailed Receipt Grid -->
-        <div class="p-5 rounded-2xl bg-[#12080B] border border-[#C6A15B]/45 text-left space-y-3 text-xs shadow-xl">
-          <div class="flex items-center justify-between border-b border-[#C6A15B]/20 pb-3">
-            <div class="flex items-center gap-2.5">
-              <img src="assets/logo-emblem.png" alt="Vastu Sutram" class="h-9 w-auto object-contain original-brand-logo" />
-              <div>
-                <div class="font-serif font-bold text-sm text-[#F9E29B]">VASTU SUTRAM</div>
-                <div class="text-[10px] text-[#C6A15B] tracking-widest uppercase">Recipient: Vastu Sutram • UPI: gauriomji@oksbi • Razorpay</div>
-              </div>
-            </div>
-            <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-              isVerifiedPaid
-                ? 'bg-emerald-950/90 text-emerald-300 border border-emerald-400/50'
-                : 'bg-amber-950/90 text-amber-300 border border-amber-400/50'
+        <!-- Clean Summary Box -->
+        <div class="p-4 rounded-xl bg-[#F8F3E9] border border-[#C6A15B]/30 text-left text-xs space-y-2">
+          <div class="flex justify-between items-center border-b border-[#C6A15B]/20 pb-2">
+            <span class="text-[#481C25]/75">Booking Reference Number:</span>
+            <strong class="font-mono text-sm text-[#481C25] font-bold">${booking.id}</strong>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-[#481C25]/75">Customer Name:</span>
+            <strong class="text-[#171717]">${booking.name || booking.fullName || 'Client'}</strong>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-[#481C25]/75">Consultation Package:</span>
+            <strong class="text-[#171717]">${booking.packageName || 'Vastu Consultation'}</strong>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-[#481C25]/75">Amount:</span>
+            <strong class="font-serif text-sm font-bold text-[#481C25]">${amountFormatted} (INR)</strong>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-[#481C25]/75">Submitted Reference / UTR:</span>
+            <strong class="font-mono text-xs text-[#171717]">${txId}</strong>
+          </div>
+          <div class="flex justify-between items-center pt-2 border-t border-[#C6A15B]/20">
+            <span class="text-[#481C25]/75">Payment Status:</span>
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+              isVerifiedPaid ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-amber-100 text-amber-800 border border-amber-300'
             }">
               ${paymentStatusBadge}
             </span>
           </div>
+        </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-            <div class="p-3 rounded-xl bg-[#1B0D12]/90 border border-[#C6A15B]/20">
-              <span class="text-[10px] uppercase tracking-wider text-[#C6A15B] block">Customer Name</span>
-              <strong class="text-sm text-[#F8F3E9]">${booking.name || booking.fullName || 'Client'}</strong>
-              <span class="block text-[11px] text-[#DCCBB0] font-mono mt-0.5">${booking.phone || ''} • ${booking.email || ''}</span>
-            </div>
-            <div class="p-3 rounded-xl bg-[#1B0D12]/90 border border-[#C6A15B]/20">
-              <span class="text-[10px] uppercase tracking-wider text-[#C6A15B] block">Booking Reference ID</span>
-              <strong class="text-sm font-mono text-[#F9E29B]">${booking.id}</strong>
-              <span class="block text-[10px] text-[#DCCBB0] mt-0.5">Property: ${booking.propertyType || 'Residential'}</span>
-            </div>
-            <div class="p-3 rounded-xl bg-[#1B0D12]/90 border border-[#C6A15B]/20">
-              <span class="text-[10px] uppercase tracking-wider text-[#C6A15B] block">Selected Consultation Package</span>
-              <strong class="text-sm text-[#F8F3E9]">${booking.packageName || 'Vastu Consultation'}</strong>
-            </div>
-            <div class="p-3 rounded-xl bg-[#1B0D12]/90 border border-[#C6A15B]/20">
-              <span class="text-[10px] uppercase tracking-wider text-[#C6A15B] block">${isVerifiedPaid ? 'Amount Paid' : 'Confirmed Payable Amount'}</span>
-              <strong class="text-base font-serif text-[#F9E29B]">${amountFormatted}</strong>
-            </div>
-            <div class="p-3 rounded-xl bg-[#1B0D12]/90 border border-[#C6A15B]/20">
-              <span class="text-[10px] uppercase tracking-wider text-[#C6A15B] block">Payment ID / Reference</span>
-              <strong class="text-xs font-mono text-[#F8F3E9] break-all">${txId}</strong>
-            </div>
-            <div class="p-3 rounded-xl bg-[#1B0D12]/90 border border-[#C6A15B]/20">
-              <span class="text-[10px] uppercase tracking-wider text-[#C6A15B] block">Payment Date &amp; Status</span>
-              <strong class="text-xs text-[#F8F3E9]">${paymentDate} • ${bookingStatusBadge}</strong>
-            </div>
+        <!-- Automated Notification Indicators -->
+        <div class="p-3 rounded-xl bg-[#171717] text-[#DCCBB0] text-[11px] leading-relaxed text-left space-y-1">
+          <div class="flex items-center gap-2 text-[#F9E29B]">
+            <span>✉️</span>
+            <span>Confirmation email has been dispatched to <strong>${booking.email || 'your email'}</strong> and <strong>vastusutram@gmail.com</strong>.</span>
           </div>
-
-          <div class="p-3 rounded-xl bg-[#1B0D12]/90 border border-[#C6A15B]/20">
-            <span class="text-[10px] uppercase tracking-wider text-[#C6A15B] block mb-0.5">Consultation Requirements</span>
-            <p class="text-xs text-[#DCCBB0] font-light">${requirementsText}</p>
-          </div>
-
-          <div class="p-3 rounded-xl bg-[#481C25]/40 border border-[#C6A15B]/30 text-[11px] text-[#DCCBB0] leading-relaxed space-y-1.5">
-            <div>
-              ${
-                isVerifiedPaid
-                  ? `✓ Your payment has been cryptographically verified on our server and your consultation booking is <strong>Confirmed</strong>.`
-                  : `⏳ Your direct UPI payment reference to <strong>gauriomji@oksbi</strong> (State Bank of India UPI) is recorded with status <strong>Manual Verification Required</strong>. Once verified by our administration, your booking status will be updated to <strong>Paid &amp; Confirmed</strong>.`
-              }
-            </div>
-            <div class="pt-1 border-t border-[#C6A15B]/20 text-[11px] ${isWaAutoSent ? 'text-emerald-300' : 'text-[#F9E29B]'}">
-              ${
-                isWaAutoSent
-                  ? `✓ Automated WhatsApp Business API notification has been sent to <strong>9181457155</strong>.`
-                  : `ℹ️ Automated WhatsApp Business API is not configured on this server — please click the button below to send your verified booking &amp; payment confirmation directly to Vastu Sutram WhatsApp (<strong>9181457155</strong>).`
-              }
-            </div>
+          <div class="flex items-center gap-2 text-emerald-400">
+            <span>💬</span>
+            <span>WhatsApp notification triggered for Senior Vastu Consultant Rajni Singh (<strong>+91 81457 15755</strong>).</span>
           </div>
         </div>
 
-        <!-- Action Buttons: WhatsApp Notification (9181457155) + Print Receipt -->
-        <div class="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+        <!-- Action Buttons -->
+        <div class="flex flex-col sm:flex-row gap-2 pt-2">
           <a
             href="${waUrl}"
             target="_blank"
             rel="noopener noreferrer"
-            class="w-full sm:w-auto flex-1 py-3.5 px-6 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-serif text-xs font-bold uppercase tracking-[0.15em] flex items-center justify-center gap-2 shadow-lg transition-all"
+            class="flex-1 py-3 px-4 rounded-full bg-emerald-700 hover:bg-emerald-600 text-white font-serif text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow"
           >
-            <span>💬 Send Booking &amp; Payment to WhatsApp (9181457155)</span>
+            <span>💬 Send Confirmation on WhatsApp</span>
             <span>➔</span>
           </a>
-
           <button
             type="button"
-            id="btn-print-payment-receipt"
-            class="w-full sm:w-auto px-6 py-3.5 rounded-full border border-[#C6A15B]/60 text-[#F9E29B] hover:bg-[#481C25] font-serif text-xs font-semibold uppercase tracking-[0.14em] transition-all"
+            id="btn-print-receipt"
+            class="py-3 px-5 rounded-full border border-[#481C25] text-[#481C25] hover:bg-[#481C25]/10 font-serif text-xs font-semibold uppercase tracking-wider"
           >
             🖨️ Print Receipt
           </button>
@@ -3099,15 +3111,7 @@ ${currentPayload.message ? currentPayload.message : 'Standard spatial evaluation
       </div>
     `;
 
-    if (window.gsap) {
-      window.gsap.fromTo(
-        container.firstElementChild,
-        { opacity: 0, scale: 0.95, y: 12 },
-        { opacity: 1, scale: 1, y: 0, duration: 0.5, ease: 'power3.out' }
-      );
-    }
-
-    const printBtn = document.getElementById('btn-print-payment-receipt');
+    const printBtn = document.getElementById('btn-print-receipt');
     if (printBtn) {
       printBtn.addEventListener('click', () => window.print());
     }
