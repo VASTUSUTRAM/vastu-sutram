@@ -1322,3 +1322,20 @@ html, body {
 @media (max-width: 360px) {
   #intro-brand-name { letter-spacing: 0.08em !important; }
 }
+
+
+/* ==============================================================
+   MOBILE NAVIGATION DRAWER – SOLID LUXURY BACKGROUND
+   ============================================================== */
+#mobile-drawer {
+  background: linear-gradient(180deg, #16090D 0%, #1E0C12 55%, #12080B 100%) !important;
+  border-bottom: 1px solid rgba(198, 161, 91, 0.5) !important;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.95) !important;
+  max-height: calc(100dvh - 68px);
+  overflow-y: auto;
+}
+
+#main-navbar.mobile-menu-open {
+  background-color: #16090D !important;
+  border-bottom: 1px solid rgba(198, 161, 91, 0.35) !important;
+}

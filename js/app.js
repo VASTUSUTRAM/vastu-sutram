@@ -154,11 +154,15 @@ class VastuApp {
     const mobileMenu = document.getElementById('mobile-drawer');
     if (mobileMenuBtn && mobileMenu) {
       mobileMenuBtn.addEventListener('click', () => {
-        mobileMenu.classList.toggle('hidden');
+        const isHidden = mobileMenu.classList.toggle('hidden');
+        if (navbar) navbar.classList.toggle('mobile-menu-open', !isHidden);
       });
       // Close on link click
       mobileMenu.querySelectorAll('a').forEach(link => {
-        link.addEventListener('click', () => mobileMenu.classList.add('hidden'));
+        link.addEventListener('click', () => {
+          mobileMenu.classList.add('hidden');
+          if (navbar) navbar.classList.remove('mobile-menu-open');
+        });
       });
     }
 
