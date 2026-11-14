@@ -1064,3 +1064,261 @@ h1, h2, h3, h4, h5, .font-serif {
     border: 2px solid #C6A15B !important;
   }
 }
+
+
+/* ==============================================================
+   SMARTPHONE VIEW – keep every hero / mandala animation fully
+   visible inside the phone screen (no cropping, no side-scroll)
+   ============================================================== */
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+@media (max-width: 640px) {
+  /* Hero fits exactly one phone screen (handles mobile browser bars) */
+  #home {
+    min-height: 100vh;
+    min-height: 100svh;
+    padding-top: 5.5rem !important;
+    padding-bottom: 2.5rem !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  /* Rotating sacred-geometry mandala: sized to the screen so the whole
+     circle stays visible while it spins */
+  #hero-sacred-geometry svg {
+    width: min(94vw, 80svh) !important;
+    height: min(94vw, 80svh) !important;
+    opacity: 0.08 !important;
+  }
+
+  /* Ambient glow scaled to the phone */
+  #hero-ambient-glow > div:first-child {
+    width: 85vw !important;
+    height: 85vw !important;
+  }
+  #hero-ambient-glow > div:last-child {
+    width: 60vw !important;
+    height: 60vw !important;
+    right: 0 !important;
+    bottom: 0 !important;
+  }
+
+  /* Logo reveal + float + light-sweep fully in view */
+  #hero-logo-wrap {
+    margin-bottom: 0.55rem !important;
+  }
+  #hero-logo-wrap img {
+    width: min(38vw, 8.5rem) !important;
+    max-height: 18svh !important;
+    height: auto !important;
+  }
+  .logo-float-luxury {
+    padding: 0.25rem 0.5rem !important;
+  }
+
+  /* Brand name never overflows the screen */
+  #hero-brand-name {
+    font-size: clamp(1.3rem, 6.6vw, 2.05rem) !important;
+    letter-spacing: 0.1em !important;
+    padding-left: 0.1em !important;
+    margin-bottom: 0.45rem !important;
+    max-width: 100%;
+    white-space: nowrap;
+  }
+
+  #hero-tagline {
+    font-size: clamp(0.9rem, 4.1vw, 1.15rem) !important;
+    line-height: 1.4 !important;
+    margin-bottom: 0.75rem !important;
+    padding: 0 0.25rem;
+  }
+
+  /* "THE PRINCIPLES OF VASTU" + golden underline fully visible */
+  #hero-principles-block {
+    margin-bottom: 1.1rem !important;
+  }
+  #hero-principles-text {
+    font-size: clamp(0.55rem, 2.65vw, 0.76rem) !important;
+    letter-spacing: 0.14em !important;
+    padding-left: 0.14em !important;
+    max-width: 100%;
+  }
+  #hero-principles-line {
+    max-width: 68vw;
+  }
+
+  #hero-cta-group {
+    gap: 0.6rem !important;
+    margin-bottom: 1.75rem !important;
+    padding: 0 !important;
+    width: 100%;
+    max-width: 19rem;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  #hero-cta-group a {
+    padding: 0.75rem 1.25rem !important;
+    font-size: 0.68rem !important;
+    letter-spacing: 0.14em !important;
+    width: 100%;
+  }
+
+  #hero-subtitle {
+    margin-bottom: 1.75rem !important;
+  }
+
+  /* Section mandala watermarks (packages / booking) shrink to the screen */
+  .packages-bg-mandala {
+    width: 96vw !important;
+    height: 96vw !important;
+  }
+
+  /* Large decorative blurs never cause sideways scrolling */
+  section {
+    overflow-x: hidden;
+  }
+}
+
+/* Very small phones (≤ 360px) */
+@media (max-width: 360px) {
+  #hero-brand-name {
+    letter-spacing: 0.08em !important;
+  }
+  #hero-logo-wrap img {
+    width: min(36vw, 7.5rem) !important;
+  }
+}
+
+/* Landscape phones: keep the full animation within the short height */
+@media (max-height: 500px) and (orientation: landscape) {
+  #home {
+    padding-top: 4.5rem !important;
+  }
+  #hero-sacred-geometry svg {
+    width: 85svh !important;
+    height: 85svh !important;
+  }
+  #hero-logo-wrap img {
+    width: 7rem !important;
+  }
+}
+
+
+/* ==============================================================
+   3D CINEMATIC INTRO – smartphone fit
+   ============================================================== */
+#cinematic-intro-wrapper {
+  width: 100vw;
+  max-width: 100%;
+  height: 100vh;
+  height: 100dvh;
+}
+#intro-stage {
+  width: 100vw;
+  max-width: 100%;
+  height: 100vh;
+  height: 100dvh;
+}
+#intro-3d-webgl-container canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+@media (max-width: 640px) {
+  #intro-sacred-geometry svg {
+    width: min(94vw, 80svh) !important;
+    height: min(94vw, 80svh) !important;
+  }
+  #intro-ambient-glow > div:first-child {
+    width: 85vw !important;
+    height: 85vw !important;
+  }
+  #intro-ambient-glow > div:last-child {
+    width: 70vw !important;
+    height: 45vw !important;
+  }
+
+  #intro-brand-stage {
+    padding: 0.75rem 1rem !important;
+    max-height: 100dvh;
+    box-sizing: border-box;
+  }
+  #intro-logo-wrap {
+    margin-bottom: 0.55rem !important;
+  }
+  #intro-logo-wrap img {
+    width: min(38vw, 8.5rem) !important;
+    max-height: 18svh !important;
+    height: auto !important;
+  }
+  #intro-brand-name {
+    font-size: clamp(1.3rem, 6.6vw, 2.05rem) !important;
+    letter-spacing: 0.1em !important;
+    padding-left: 0.1em !important;
+    white-space: nowrap;
+    max-width: 100%;
+    margin-bottom: 0.45rem !important;
+  }
+  #intro-tagline {
+    font-size: clamp(0.9rem, 4.1vw, 1.15rem) !important;
+    line-height: 1.4 !important;
+    margin-bottom: 0.75rem !important;
+    padding: 0 0.25rem;
+  }
+  #intro-principles-block {
+    margin-bottom: 1.1rem !important;
+  }
+  #intro-principles-text {
+    font-size: clamp(0.55rem, 2.65vw, 0.76rem) !important;
+    letter-spacing: 0.14em !important;
+    padding-left: 0.14em !important;
+    max-width: 100%;
+  }
+  #intro-principles-line {
+    max-width: 68vw;
+  }
+  #intro-cta-buttons {
+    gap: 0.6rem !important;
+    padding: 0 !important;
+    width: 100%;
+    max-width: 19rem;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  #intro-cta-buttons a,
+  #intro-cta-buttons button {
+    padding: 0.75rem 1.25rem !important;
+    font-size: 0.68rem !important;
+    letter-spacing: 0.14em !important;
+    width: 100%;
+  }
+  #intro-story-caption-wrap {
+    bottom: max(1.25rem, env(safe-area-inset-bottom)) !important;
+    padding: 0 0.75rem !important;
+  }
+  #intro-story-caption-wrap > div {
+    padding: 0.5rem 0.9rem !important;
+    border-radius: 16px !important;
+    max-width: 92vw;
+  }
+  #intro-story-caption {
+    font-size: clamp(0.58rem, 2.5vw, 0.72rem) !important;
+    letter-spacing: 0.1em !important;
+    line-height: 1.45 !important;
+  }
+  #intro-story-caption-wrap > span {
+    font-size: 0.55rem !important;
+    letter-spacing: 0.08em !important;
+    max-width: 90vw;
+    line-height: 1.35;
+    margin-top: 0.35rem !important;
+  }
+}
+
+@media (max-width: 360px) {
+  #intro-brand-name { letter-spacing: 0.08em !important; }
+}

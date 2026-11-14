@@ -474,7 +474,7 @@ class VastuBookingSystem {
     return `
       <div>
         <h3 class="font-serif text-lg text-[#F9E29B] font-semibold mb-1">Step 7: Online Payment &amp; Fee Confirmation</h3>
-        <p class="text-xs text-[#DCCBB0] mb-5">Confirm your payable consultation fee and complete payment via State Bank of India UPI (<span class="font-mono text-[#F9E29B]">gauriomji@oksbi</span>) or Razorpay:</p>
+        <p class="text-xs text-[#DCCBB0] mb-5">Confirm your payable consultation fee and complete payment via State Bank of India UPI (<span class="font-mono text-[#F9E29B]">gauriomji@oksbi</span>).</p>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <!-- Summary & Confirmed Payable Fee Box -->
@@ -519,8 +519,7 @@ class VastuBookingSystem {
           <div class="space-y-3">
             <h4 class="font-serif text-sm font-bold text-[#C6A15B] uppercase tracking-wider">Select Payment Channel</h4>
             ${[
-              { id: "SBI UPI (gauriomji@oksbi)", title: "State Bank of India UPI (gauriomji@oksbi)", icon: "📲", badge: "Direct UPI QR / App • Manual Verification" },
-              { id: "Razorpay", title: "Razorpay Checkout (UPI / Cards / NetBanking)", icon: "💳", badge: "Automated Server Signature Verification" }
+              { id: "SBI UPI (gauriomji@oksbi)", title: "State Bank of India UPI (gauriomji@oksbi)", icon: "📲", badge: "Direct UPI QR / App • Manual Verification" }
             ].map(pm => `
               <label class="flex items-center justify-between p-3.5 rounded-xl border cursor-pointer transition-all ${
                 this.formData.paymentMethod === pm.id
@@ -545,7 +544,7 @@ class VastuBookingSystem {
             </div>
 
             <div class="p-3 rounded-lg bg-[#481C25]/40 border border-[#C6A15B]/30 text-[11px] text-[#DCCBB0] leading-relaxed">
-              🔒 <strong>Verification Security:</strong> Direct UPI payments are marked as <em>Manual Verification Required</em> until verified against SBI bank records. Razorpay payments are verified automatically on our server.
+              🔒 <strong>Verification Security:</strong> Direct UPI payments are marked as <em>Manual Verification Required</em> until verified against SBI bank records.
             </div>
           </div>
         </div>

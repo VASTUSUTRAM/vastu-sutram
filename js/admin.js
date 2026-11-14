@@ -637,7 +637,7 @@ class VastuAdminDashboard {
     return `
       <div>
         <h3 class="font-serif text-base text-[#F9E29B] font-bold mb-2">Owner Credentials & Integration Parameters</h3>
-        <p class="text-xs text-[#DCCBB0] mb-5">Configure contact numbers, official SBI UPI QR code upload, Razorpay payment keys, and WhatsApp notification channels:</p>
+        <p class="text-xs text-[#DCCBB0] mb-5">Configure contact numbers, official SBI UPI QR code upload, and WhatsApp notification channels:</p>
 
         <form id="admin-settings-form" class="space-y-4">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -690,15 +690,7 @@ class VastuAdminDashboard {
           </div>
 
           <div class="p-4 rounded-xl bg-[#481C25]/40 border border-[#C6A15B]/30 space-y-2.5">
-            <h4 class="font-serif text-xs font-bold text-[#F9E29B] uppercase tracking-wider">Razorpay &amp; UPI Security Architecture (Server-Side Environment Variables)</h4>
-            <p class="text-[11px] text-[#DCCBB0] leading-relaxed">
-              For security compliance, Razorpay secret keys are <strong>never</strong> stored or exposed in frontend code or <span class="font-mono text-[#F9E29B]">data/db.json</span>. All cryptographic order creation and HMAC-SHA256 signature verification run on the server using:
-            </p>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px] font-mono text-[#F9E29B]">
-              <div class="p-2 rounded bg-[#12080B] border border-[#C6A15B]/25">RAZORPAY_KEY_ID</div>
-              <div class="p-2 rounded bg-[#12080B] border border-[#C6A15B]/25">RAZORPAY_KEY_SECRET</div>
-              <div class="p-2 rounded bg-[#12080B] border border-[#C6A15B]/25">RAZORPAY_WEBHOOK_SECRET</div>
-            </div>
+            <h4 class="font-serif text-xs font-bold text-[#F9E29B] uppercase tracking-wider">Payment &amp; Notification Details</h4>
             <p class="text-[10px] text-[#DCCBB0]/80">
               Recipient: <strong>Vastu Sutram (Rajni Singh)</strong> • Official UPI ID: <strong class="font-mono text-[#F9E29B]">gauriomji@oksbi</strong> • WhatsApp Notification Number: <strong class="font-mono text-[#F9E29B]">+91 81457 15755</strong> • Business Email: <strong class="font-mono text-[#F9E29B]">vastusutram@gmail.com</strong>
             </p>

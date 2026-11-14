@@ -235,13 +235,34 @@ class VastuCinematicIntro {
     `;
   }
 
+  // Keep the whole 3D story (chakra, house, energy dome) inside the screen on
+  // any shape of display. The scene was composed for widescreen; on tall phone
+  // screens we widen the field of view and pull the camera back proportionally.
+  fitCameraToViewport(w, h) {
+    if (!this.camera) return;
+    this.isMobile = (w || window.innerWidth) < 768;
+    const aspect = Math.max(0.3, (w || 1) / (h || 1));
+    const baseHalf = Math.tan((42 / 2) * Math.PI / 180);
+    const targetHalfW = aspect < 1.35 ? baseHalf * 1.92 : baseHalf * 1.35;
+    let halfV = Math.max(baseHalf, targetHalfW / aspect);
+    const maxHalfV = Math.tan((50 / 2) * Math.PI / 180); // cap FOV to avoid distortion
+    this.cameraDistanceScale = halfV > maxHalfV ? halfV / maxHalfV : 1;
+    halfV = Math.min(halfV, maxHalfV);
+    this.camera.fov = (2 * Math.atan(halfV) * 180) / Math.PI;
+    this.camera.aspect = aspect;
+    this.camera.updateProjectionMatrix();
+    if (this.scene && this.scene.fog) {
+      this.scene.fog.density = 0.017 / Math.pow(this.cameraDistanceScale || 1, 0.75);
+    }
+  }
+
   initThreeScene() {
     const webglContainer = document.getElementById('intro-3d-webgl-container');
     if (!webglContainer || !window.THREE) return;
 
     try {
-      const width = window.innerWidth || 1280;
-      const height = window.innerHeight || 720;
+      const width = webglContainer.clientWidth || window.innerWidth || 1280;
+      const height = webglContainer.clientHeight || window.innerHeight || 720;
 
       // 1. Scene & Deep Maroon Atmospheric Fog
       this.scene = new THREE.Scene();
@@ -266,6 +287,7 @@ class VastuCinematicIntro {
 
       webglContainer.innerHTML = '';
       webglContainer.appendChild(this.renderer.domElement);
+      this.fitCameraToViewport(width, height);
 
       // 4. Warm Temple & Antique Bronze Lighting (Avoiding harsh white specular blowout)
       const ambientLight = new THREE.AmbientLight(0xE8C89B, 0.52);
@@ -296,11 +318,10 @@ class VastuCinematicIntro {
       // 6. Resize listener
       this.resizeHandler = () => {
         if (!this.renderer || !this.camera) return;
-        const w = window.innerWidth;
-        const h = window.innerHeight;
-        this.camera.aspect = w / h;
-        this.camera.updateProjectionMatrix();
+        const w = webglContainer.clientWidth || window.innerWidth;
+        const h = webglContainer.clientHeight || window.innerHeight;
         this.renderer.setSize(w, h);
+        this.fitCameraToViewport(w, h);
       };
       window.addEventListener('resize', this.resizeHandler);
 
@@ -1112,14 +1133,15 @@ class VastuCinematicIntro {
     // =========================================================================
     // SCENE 2 (2.2s – 5.6s): THE ANCIENT 3D VASTU CHAKRA APPEARS
     // =========================================================================
+    const s2Scale = this.isMobile ? 0.92 : 1.12;
     tl.to(
       this.chakraGroup.scale,
-      { x: 1.12, y: 1.12, z: 1.12, duration: 3.0, ease: 'power2.out' },
+      { x: s2Scale, y: s2Scale, z: s2Scale, duration: 3.0, ease: 'power2.out' },
       2.1
     );
     tl.to(
       this.chakraGroup.position,
-      { x: 0, y: 2.6, z: 8.2, duration: 3.3, ease: 'power2.inOut' },
+      { x: 0, y: this.isMobile ? 1.65 : 2.6, z: this.isMobile ? 5.2 : 8.2, duration: 3.3, ease: 'power2.inOut' },
       2.1
     );
     tl.to(
@@ -1165,26 +1187,27 @@ class VastuCinematicIntro {
     tl.to(
       this.animState,
       {
-        camX: 9.2,
-        camY: 8.6,
-        camZ: 17.5,
+        camX: this.isMobile ? 5.4 : 9.2,
+        camY: this.isMobile ? 9.2 : 8.6,
+        camZ: this.isMobile ? 18.8 : 17.5,
         lookX: 0,
-        lookY: -0.2,
-        lookZ: 0.5,
+        lookY: this.isMobile ? -0.35 : -0.2,
+        lookZ: this.isMobile ? 0.8 : 0.5,
         duration: 3.2,
         ease: 'power2.inOut'
       },
       5.5
     );
 
+    const s3Scale = this.isMobile ? 0.54 : 0.62;
     tl.to(
       this.chakraGroup.position,
-      { x: 0, y: 0.4, z: 7.4, duration: 2.8, ease: 'power2.inOut' },
+      { x: 0, y: 0.4, z: this.isMobile ? 5.2 : 7.4, duration: 2.8, ease: 'power2.inOut' },
       5.7
     );
     tl.to(
       this.chakraGroup.scale,
-      { x: 0.62, y: 0.62, z: 0.62, duration: 2.8, ease: 'power2.inOut' },
+      { x: s3Scale, y: s3Scale, z: s3Scale, duration: 2.8, ease: 'power2.inOut' },
       5.7
     );
     tl.to(
@@ -1226,10 +1249,10 @@ class VastuCinematicIntro {
       this.animState,
       {
         camX: 0,
-        camY: 9.8,
-        camZ: 14.2,
+        camY: this.isMobile ? 10.6 : 9.8,
+        camZ: this.isMobile ? 16.2 : 14.2,
         lookX: 0,
-        lookY: -0.9,
+        lookY: this.isMobile ? -1.05 : -0.9,
         lookZ: 0,
         duration: 3.0,
         ease: 'power2.inOut'
@@ -1248,9 +1271,10 @@ class VastuCinematicIntro {
       9.1
     );
 
+    const s4Scale = this.isMobile ? 1.08 : 1.18;
     tl.to(
       this.chakraGroup.scale,
-      { x: 1.18, y: 1.18, z: 1.18, duration: 1.5, ease: 'back.out(1.2)' },
+      { x: s4Scale, y: s4Scale, z: s4Scale, duration: 1.5, ease: 'back.out(1.2)' },
       11.3
     );
 
@@ -1352,10 +1376,10 @@ class VastuCinematicIntro {
     tl.to(
       this.animState,
       {
-        camX: -5.5,
-        camY: 6.2,
-        camZ: 18.5,
-        lookY: -0.3,
+        camX: this.isMobile ? -2.6 : -5.5,
+        camY: this.isMobile ? 7.0 : 6.2,
+        camZ: this.isMobile ? 19.5 : 18.5,
+        lookY: this.isMobile ? -1.05 : -0.3,
         duration: 2.6,
         ease: 'sine.inOut'
       },
@@ -1499,10 +1523,11 @@ class VastuCinematicIntro {
 
     const elapsed = this.clock ? this.clock.getElapsedTime() : Date.now() * 0.001;
 
+    const k = this.cameraDistanceScale || 1;
     this.camera.position.set(
-      this.animState.camX,
-      this.animState.camY,
-      this.animState.camZ
+      this.animState.lookX + (this.animState.camX - this.animState.lookX) * k,
+      this.animState.lookY + (this.animState.camY - this.animState.lookY) * k,
+      this.animState.lookZ + (this.animState.camZ - this.animState.lookZ) * k
     );
     this.camera.lookAt(
       this.animState.lookX,

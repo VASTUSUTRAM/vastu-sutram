@@ -17,7 +17,7 @@ const PAYMENT_CONFIG = {
   consultantName: 'Rajni Singh',
   upiId: 'gauriomji@oksbi',
   paymentProvider: 'State Bank of India UPI',
-  paymentGateway: 'Razorpay',
+  paymentGateway: 'SBI UPI',
   currency: 'INR',
   currencySymbol: '₹',
   officialEmail: 'vastusutram@gmail.com',
@@ -189,7 +189,7 @@ async function sendPaymentConfirmationEmail(booking) {
     `Amount Received: ₹${amountNum}`,
     `Booking Reference: ${bookingId}`,
     `Payment ID: ${paymentId}`,
-    `Payment Method: ${booking.paymentMethod || 'UPI/Razorpay'}`,
+    `Payment Method: ${booking.paymentMethod || 'SBI UPI'}`,
     `Consultation Date: ${consultDate}`,
     `Preferred Time: ${preferredTime}`,
     `Customer Requirements: ${booking.requirements || booking.message || ''}`,
@@ -288,7 +288,7 @@ async function sendWhatsAppBusinessNotification(booking) {
     `Amount Received: ₹${amountNum}`,
     `Booking Reference: ${booking.id || ''}`,
     `Payment ID: ${paymentId}`,
-    `Payment Method: ${booking.paymentMethod || 'UPI/Razorpay'}`,
+    `Payment Method: ${booking.paymentMethod || 'SBI UPI'}`,
     `Consultation Date: ${consultDate}`,
     `Preferred Time: ${preferredTime}`,
     `Customer Requirements: ${requirementsText}`,
@@ -882,32 +882,6 @@ async function getJsonBody(req) {
   return json;
 }
 
-function resolveRazorpayCredentials() {
-  const rawKeyId = (process.env.RAZORPAY_KEY_ID || '').trim();
-  const rawKeySecret = (process.env.RAZORPAY_KEY_SECRET || '').trim();
-  const webhookSecret = (process.env.RAZORPAY_WEBHOOK_SECRET || '').trim();
-
-  const isPlaceholder =
-    !rawKeyId ||
-    !rawKeySecret ||
-    rawKeyId.includes('placeholder') ||
-    rawKeySecret.includes('placeholder');
-
-  const mode = isPlaceholder
-    ? 'setup_required'
-    : rawKeyId.startsWith('rzp_live_')
-    ? 'live'
-    : 'test';
-
-  return {
-    configured: !isPlaceholder,
-    mode,
-    keyId: isPlaceholder ? '' : rawKeyId,
-    keySecret: isPlaceholder ? '' : rawKeySecret,
-    webhookSecret
-  };
-}
-
 // Request Handler
 const requestHandler = async (req, res) => {
   const parsedUrl = url.parse(req.url, true);
@@ -938,7 +912,6 @@ const requestHandler = async (req, res) => {
   // Public Payment & UPI Configuration Endpoint
   if (pathname === '/api/payments/config' && req.method === 'GET') {
     const data = readDb();
-    const rzp = resolveRazorpayCredentials(data);
     const whatsappApiConfigured = Boolean(
       (process.env.WHATSAPP_CLOUD_API_TOKEN && process.env.WHATSAPP_PHONE_NUMBER_ID) ||
         process.env.WHATSAPP_WEBHOOK_URL
@@ -961,12 +934,8 @@ const requestHandler = async (req, res) => {
       whatsappSecondary: PAYMENT_CONFIG.whatsappSecondary,
       whatsappApiConfigured,
       officialUpiQrImage: (data.settings && data.settings.officialUpiQrImage) || null,
-      razorpayConfigured: rzp.configured,
-      razorpayMode: rzp.mode,
-      razorpayKeyId: rzp.keyId,
       validPaymentStatuses: PAYMENT_CONFIG.validPaymentStatuses,
-      validBookingStatuses: PAYMENT_CONFIG.validBookingStatuses,
-      requiredEnvVars: ['RAZORPAY_KEY_ID', 'RAZORPAY_KEY_SECRET', 'RAZORPAY_WEBHOOK_SECRET']
+      validBookingStatuses: PAYMENT_CONFIG.validBookingStatuses
     }));
     return;
   }
@@ -1339,320 +1308,8 @@ const requestHandler = async (req, res) => {
   }
 
   // -------------------------------------------------------------
-  // ONLINE PAYMENT & VERIFICATION ENGINE (SBI UPI + RAZORPAY)
+  // ONLINE PAYMENT & VERIFICATION ENGINE (SBI UPI)
   // -------------------------------------------------------------
-
-  // 1. Create Razorpay Order (POST /api/payments/create-order or /api/razorpay/create-order)
-  if ((pathname === '/api/payments/create-order' || pathname === '/api/razorpay/create-order') && req.method === 'POST') {
-    try {
-      const payload = await getJsonBody(req);
-      const data = readDb();
-      if (!data.bookings) data.bookings = [];
-
-      const matchedPkg = (VASTU_DATA.packages || []).find(
-        p => p.id === payload.packageId || p.name === payload.packageName
-      );
-      const defaultInr = matchedPkg ? matchedPkg.rawPrice : 5100;
-
-      // IMPORTANT: Use confirmedAmount (INR) explicitly confirmed by the customer/admin
-      const confirmedInr = parseInrAmount(
-        payload.confirmedAmount !== undefined ? payload.confirmedAmount : payload.amountInr,
-        payload.amount && payload.amount >= 100000 ? Math.round(payload.amount / 100) : parseInrAmount(payload.amount, defaultInr)
-      );
-
-      if (!confirmedInr || confirmedInr < 1) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Confirmed payable amount (INR) must be greater than 0.' }));
-        return;
-      }
-
-      // Ensure a persistent booking record exists for this order
-      let bookingId = payload.bookingId;
-      let bookingIdx = bookingId ? data.bookings.findIndex(b => b.id === bookingId) : -1;
-
-      if (bookingIdx !== -1 && data.bookings[bookingIdx].paymentStatus === 'Paid') {
-        res.writeHead(409, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({
-          success: false,
-          alreadyPaid: true,
-          error: `Duplicate payment prevented: Booking ${bookingId} is already Paid (Transaction ID: ${data.bookings[bookingIdx].transactionId || 'Verified'}).`
-        }));
-        return;
-      }
-
-      if (bookingIdx === -1) {
-        bookingId = bookingId || `VS-2026-${Math.floor(1000 + Math.random() * 9000)}`;
-        const customer = payload.customerData || {};
-        const createdBooking = {
-          id: bookingId,
-          bookingId,
-          name: customer.name || customer.fullName || payload.customerName || 'Client',
-          fullName: customer.fullName || customer.name || payload.customerName || 'Client',
-          phone: customer.phone || payload.phone || '',
-          whatsapp: customer.whatsapp || customer.phone || payload.phone || '',
-          email: customer.email || payload.email || '',
-          city: customer.city || payload.city || '',
-          propertyType: customer.propertyType || payload.propertyType || 'Residential Property',
-          packageId: payload.packageId || (matchedPkg ? matchedPkg.id : 'pkg-res-basic'),
-          packageName: payload.packageName || (matchedPkg ? matchedPkg.name : 'Vastu Consultation'),
-          consultationMode: customer.consultationMode || payload.consultationMode || 'Online Video Consultation',
-          appointmentDate: customer.appointmentDate || payload.appointmentDate || '',
-          appointmentTime: customer.appointmentTime || payload.appointmentTime || '',
-          message: customer.message || payload.notes || '',
-          amountPayable: confirmedInr,
-          amountReceived: 0,
-          amount: `₹${confirmedInr.toLocaleString('en-IN')}`,
-          currency: 'INR',
-          paymentMethod: 'Razorpay',
-          transactionId: '',
-          paymentStatus: 'Pending',
-          status: 'Pending Payment',
-          createdAt: new Date().toISOString()
-        };
-        data.bookings.unshift(createdBooking);
-        bookingIdx = 0;
-      } else {
-        data.bookings[bookingIdx].amountPayable = confirmedInr;
-        data.bookings[bookingIdx].amount = `₹${confirmedInr.toLocaleString('en-IN')}`;
-        data.bookings[bookingIdx].paymentMethod = 'Razorpay';
-        data.bookings[bookingIdx].updatedAt = new Date().toISOString();
-      }
-
-      const rzp = resolveRazorpayCredentials(data);
-      const amountInPaise = Math.round(confirmedInr * 100);
-
-      if (!rzp.configured) {
-        writeDb(data);
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({
-          success: false,
-          setupMode: true,
-          bookingId,
-          confirmedAmount: confirmedInr,
-          upiId: PAYMENT_CONFIG.upiId,
-          message: 'Razorpay API credentials (RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET) are not configured yet. Please use Option A: State Bank of India UPI (gauriomji@oksbi) or configure your Razorpay credentials in Vercel Environment Variables / Admin Settings.'
-        }));
-        return;
-      }
-
-      let orderId = '';
-      // If using local sandbox test key prefix (rzp_test_local_) for deterministic verification testing, generate order ID locally; otherwise call official Razorpay Orders API
-      if (rzp.keyId.startsWith('rzp_test_local_') || process.env.RAZORPAY_LOCAL_TEST === 'true') {
-        orderId = `order_${Date.now()}${Math.floor(100 + Math.random() * 899)}`;
-      } else {
-        const authHeader = 'Basic ' + Buffer.from(`${rzp.keyId}:${rzp.keySecret}`).toString('base64');
-        const rzpOrder = await postJsonHttps(
-          'https://api.razorpay.com/v1/orders',
-          { Authorization: authHeader },
-          {
-            amount: amountInPaise,
-            currency: 'INR',
-            receipt: bookingId,
-            notes: {
-              bookingId,
-              customerName: data.bookings[bookingIdx].name || '',
-              packageName: data.bookings[bookingIdx].packageName || ''
-            }
-          }
-        );
-        orderId = rzpOrder.id;
-      }
-
-      data.bookings[bookingIdx].razorpayOrderId = orderId;
-      writeDb(data);
-
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({
-        success: true,
-        bookingId,
-        orderId,
-        amount: amountInPaise,
-        confirmedAmountInr: confirmedInr,
-        currency: 'INR',
-        keyId: rzp.keyId,
-        mode: rzp.mode
-      }));
-    } catch (err) {
-      res.writeHead(400, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({
-        success: false,
-        error: `Unable to initialize Razorpay order: ${err.message}`
-      }));
-    }
-    return;
-  }
-
-  // 2. Cryptographic Razorpay Payment Verification (POST /api/payments/verify or /api/razorpay/verify-payment)
-  if ((pathname === '/api/payments/verify' || pathname === '/api/razorpay/verify-payment') && req.method === 'POST') {
-    try {
-      const payload = await getJsonBody(req);
-      const {
-        bookingId,
-        razorpay_order_id,
-        razorpay_payment_id,
-        razorpay_signature
-      } = payload;
-
-      if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({
-          success: false,
-          verified: false,
-          error: 'Missing required verification fields (razorpay_order_id, razorpay_payment_id, razorpay_signature).'
-        }));
-        return;
-      }
-
-      const data = readDb();
-      if (!data.bookings) data.bookings = [];
-      const rzp = resolveRazorpayCredentials(data);
-
-      if (!rzp.configured || !rzp.keySecret) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({
-          success: false,
-          verified: false,
-          error: 'Razorpay secret key is not configured on the server; cannot verify payment signature.'
-        }));
-        return;
-      }
-
-      // Duplicate Transaction ID Prevention
-      const duplicateTxBooking = data.bookings.find(
-        b => b.transactionId === razorpay_payment_id && b.paymentStatus === 'Paid'
-      );
-      if (duplicateTxBooking) {
-        if (bookingId && duplicateTxBooking.id !== bookingId) {
-          res.writeHead(409, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({
-            success: false,
-            verified: false,
-            error: 'Duplicate transaction ID detected for another booking.'
-          }));
-          return;
-        }
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({
-          success: true,
-          verified: true,
-          idempotent: true,
-          paymentId: razorpay_payment_id,
-          booking: duplicateTxBooking,
-          message: 'Payment already verified.'
-        }));
-        return;
-      }
-
-      // Compute HMAC-SHA256 Signature: hmac_sha256(order_id + "|" + razorpay_payment_id, secret)
-      const expectedSignature = crypto
-        .createHmac('sha256', rzp.keySecret)
-        .update(`${razorpay_order_id}|${razorpay_payment_id}`)
-        .digest('hex');
-
-      const sigBufA = Buffer.from(expectedSignature, 'utf8');
-      const sigBufB = Buffer.from(String(razorpay_signature), 'utf8');
-      const isSignatureValid =
-        sigBufA.length === sigBufB.length && crypto.timingSafeEqual(sigBufA, sigBufB);
-
-      const bookingIdx = data.bookings.findIndex(
-        b => (bookingId && b.id === bookingId) || b.razorpayOrderId === razorpay_order_id
-      );
-
-      if (!isSignatureValid) {
-        if (bookingIdx !== -1 && data.bookings[bookingIdx].paymentStatus !== 'Paid') {
-          data.bookings[bookingIdx].paymentStatus = 'Failed';
-          data.bookings[bookingIdx].status = 'Payment Pending';
-          data.bookings[bookingIdx].updatedAt = new Date().toISOString();
-          data.bookings[bookingIdx] = normalizeBookingRecord(data.bookings[bookingIdx]);
-          writeDb(data);
-        }
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({
-          success: false,
-          verified: false,
-          error: 'Payment signature verification failed. Booking has not been marked as Paid.'
-        }));
-        return;
-      }
-
-      // Valid cryptographic signature -> update booking to Paid & Booking Confirmed
-      const nowIso = new Date().toISOString();
-      let verifiedBooking = null;
-
-      if (bookingIdx !== -1) {
-        const b = data.bookings[bookingIdx];
-        const payable = b.amountPayable || parseInrAmount(b.amount, 5100);
-        b.amountPayable = payable;
-        b.amountReceived = payable;
-        b.amount = `₹${payable.toLocaleString('en-IN')}`;
-        b.razorpayOrderId = razorpay_order_id;
-        b.transactionId = razorpay_payment_id;
-        b.paymentMethod = 'Razorpay (UPI / Online Gateway)';
-        b.paymentStatus = 'Paid';
-        b.status = 'Booking Confirmed';
-        b.paidAt = nowIso;
-        b.updatedAt = nowIso;
-        verifiedBooking = b;
-      } else {
-        const newId = bookingId || `VS-2026-${Math.floor(1000 + Math.random() * 9000)}`;
-        const payable = parseInrAmount(payload.confirmedAmount, 5100);
-        verifiedBooking = {
-          id: newId,
-          bookingId: newId,
-          name: payload.customerName || 'Client',
-          fullName: payload.customerName || 'Client',
-          phone: payload.phone || '',
-          email: payload.email || '',
-          packageName: payload.packageName || 'Vastu Consultation',
-          amountPayable: payable,
-          amountReceived: payable,
-          amount: `₹${payable.toLocaleString('en-IN')}`,
-          razorpayOrderId: razorpay_order_id,
-          transactionId: razorpay_payment_id,
-          paymentMethod: 'Razorpay (UPI / Online Gateway)',
-          paymentStatus: 'Paid',
-          status: 'Booking Confirmed',
-          createdAt: nowIso,
-          paidAt: nowIso
-        };
-        data.bookings.unshift(verifiedBooking);
-      }
-
-      // Prevent duplicate payment notifications
-      let emailResult = verifiedBooking.emailConfirmation;
-      let whatsappResult = verifiedBooking.whatsappNotification;
-      if (!verifiedBooking.notificationsDispatched) {
-        verifiedBooking.notificationsDispatched = true;
-        emailResult = await sendPaymentConfirmationEmail(verifiedBooking);
-        whatsappResult = await sendWhatsAppBusinessNotification(verifiedBooking);
-        verifiedBooking.emailConfirmation = emailResult;
-        verifiedBooking.whatsappNotification = whatsappResult;
-      }
-
-      const finalIdx = data.bookings.findIndex(b => b.id === verifiedBooking.id);
-      if (finalIdx !== -1) {
-        data.bookings[finalIdx] = normalizeBookingRecord(verifiedBooking);
-        verifiedBooking = data.bookings[finalIdx];
-      }
-      writeDb(data);
-
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({
-        success: true,
-        verified: true,
-        paymentId: razorpay_payment_id,
-        orderId: razorpay_order_id,
-        booking: verifiedBooking,
-        emailConfirmation: emailResult,
-        whatsappNotification: whatsappResult,
-        message: 'Payment cryptographically verified and booking confirmed.'
-      }));
-    } catch (err) {
-      res.writeHead(400, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ success: false, verified: false, error: err.message }));
-    }
-    return;
-  }
 
   // 2B. Record Failed or Cancelled Payment Attempt (POST /api/payments/fail)
   // Preserves all customer booking details, never marks an unverified transaction as successful
@@ -1697,88 +1354,6 @@ const requestHandler = async (req, res) => {
     } catch (err) {
       res.writeHead(400, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ success: false, error: err.message }));
-    }
-    return;
-  }
-
-  // 3. Razorpay Webhook Endpoint (POST /api/payments/webhook)
-  if (pathname === '/api/payments/webhook' && req.method === 'POST') {
-    try {
-      const { raw, json } = await getRawAndJsonBody(req);
-      const signature = req.headers['x-razorpay-signature'];
-      const data = readDb();
-      const rzp = resolveRazorpayCredentials(data);
-      const webhookSecret = rzp.webhookSecret || rzp.keySecret;
-
-      if (!signature || !webhookSecret) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Missing webhook signature or secret configuration.' }));
-        return;
-      }
-
-      const expectedSig = crypto
-        .createHmac('sha256', webhookSecret)
-        .update(raw)
-        .digest('hex');
-
-      const bufA = Buffer.from(expectedSig, 'utf8');
-      const bufB = Buffer.from(String(signature), 'utf8');
-      if (bufA.length !== bufB.length || !crypto.timingSafeEqual(bufA, bufB)) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Invalid webhook signature' }));
-        return;
-      }
-
-      const event = json.event || '';
-      const paymentEntity = json.payload?.payment?.entity || {};
-      const orderId = paymentEntity.order_id;
-      const paymentId = paymentEntity.id;
-      const notesBookingId = paymentEntity.notes?.bookingId;
-
-      if (!data.bookings) data.bookings = [];
-      const idx = data.bookings.findIndex(
-        b => (notesBookingId && b.id === notesBookingId) || (orderId && b.razorpayOrderId === orderId)
-      );
-
-      if (idx !== -1) {
-        const b = data.bookings[idx];
-        if (event === 'payment.captured' || event === 'order.paid') {
-          if (b.paymentStatus !== 'Paid') {
-            const receivedInr = paymentEntity.amount ? Math.round(paymentEntity.amount / 100) : b.amountPayable;
-            b.paymentStatus = 'Paid';
-            b.status = 'Booking Confirmed';
-            b.amountReceived = receivedInr;
-            b.transactionId = paymentId || b.transactionId;
-            b.paymentMethod = 'Razorpay (UPI / Online Gateway)';
-            b.paidAt = new Date().toISOString();
-            if (!b.notificationsDispatched) {
-              b.notificationsDispatched = true;
-              b.emailConfirmation = await sendPaymentConfirmationEmail(b);
-              b.whatsappNotification = await sendWhatsAppBusinessNotification(b);
-            }
-          }
-        } else if (event === 'payment.failed') {
-          if (b.paymentStatus !== 'Paid') {
-            b.paymentStatus = 'Failed';
-            b.status = 'Payment Pending';
-            b.transactionId = paymentId || b.transactionId;
-          }
-        } else if (event === 'refund.created') {
-          b.paymentStatus = 'Refund Initiated';
-        } else if (event === 'refund.processed') {
-          b.paymentStatus = 'Refunded';
-          b.status = 'Refunded';
-        }
-        b.updatedAt = new Date().toISOString();
-        data.bookings[idx] = normalizeBookingRecord(b);
-        writeDb(data);
-      }
-
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ status: 'ok', eventProcessed: event }));
-    } catch (err) {
-      res.writeHead(400, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: err.message }));
     }
     return;
   }
@@ -1889,137 +1464,6 @@ const requestHandler = async (req, res) => {
         emailConfirmation: emailResult,
         whatsappNotification: whatsappResult,
         message: 'Your State Bank of India UPI payment reference has been recorded with status "Pending Verification". Booking confirmation will be issued once our administration verifies the transfer in SBI account gauriomji@oksbi.'
-      }));
-    } catch (err) {
-      res.writeHead(400, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ success: false, error: err.message }));
-    }
-    return;
-  }
-
-  // 4B. Secure Debit / Credit Card Payment Submission (POST /api/payments/card-submit)
-  if (pathname === '/api/payments/card-submit' && req.method === 'POST') {
-    try {
-      const payload = await getJsonBody(req);
-      const data = readDb();
-      if (!data.bookings) data.bookings = [];
-
-      const matchedPkg = (VASTU_DATA.packages || []).find(
-        p => p.id === payload.packageId || p.name === payload.packageName
-      );
-      const defaultInr = matchedPkg ? matchedPkg.rawPrice : 5100;
-      const confirmedInr = parseInrAmount(payload.confirmedAmount, defaultInr);
-
-      const card = payload.cardDetails || payload.card || {};
-      const cardholder = String(card.cardholderName || payload.cardholderName || payload.customerName || 'Valued Client').trim();
-      const rawCardNum = String(card.cardNumber || payload.cardNumber || '').replace(/\D/g, '');
-      const expiry = String(card.expiry || card.expiryDate || payload.expiry || payload.expiryDate || '').trim();
-      const cvv = String(card.cvv || payload.cvv || '').trim();
-
-      // Card validations
-      if (rawCardNum.length < 13 || rawCardNum.length > 19) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ success: false, error: 'Please enter a valid 16-digit debit or credit card number.' }));
-        return;
-      }
-      if (!expiry || !expiry.includes('/')) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ success: false, error: 'Please enter a valid card expiry date (MM/YY).' }));
-        return;
-      }
-      if (cvv.length < 3 || cvv.length > 4) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ success: false, error: 'Please enter a valid 3 or 4-digit CVV.' }));
-        return;
-      }
-
-      // Detect Brand
-      let brand = 'Card';
-      if (rawCardNum.startsWith('4')) brand = 'Visa';
-      else if (/^(5[1-5]|2[2-7])/.test(rawCardNum)) brand = 'Mastercard';
-      else if (/^(60|65|81|82)/.test(rawCardNum)) brand = 'RuPay';
-      else if (/^(34|37)/.test(rawCardNum)) brand = 'American Express';
-
-      const last4 = rawCardNum.slice(-4);
-      const maskedCard = `•••• •••• •••• ${last4}`;
-      const authCode = `CARD-VS-${Date.now().toString().slice(-6)}`;
-      const nowIso = new Date().toISOString();
-
-      let bookingId = payload.bookingId;
-      let idx = bookingId ? data.bookings.findIndex(b => b.id === bookingId) : -1;
-
-      const customer = payload.customerData || {};
-      let cardBooking = null;
-
-      if (idx === -1) {
-        bookingId = bookingId || `VS-2026-${Math.floor(1000 + Math.random() * 9000)}`;
-        cardBooking = normalizeBookingRecord({
-          id: bookingId,
-          bookingId,
-          name: customer.name || customer.fullName || cardholder,
-          fullName: customer.fullName || customer.name || cardholder,
-          phone: customer.phone || payload.phone || '',
-          whatsapp: customer.whatsapp || customer.phone || payload.phone || '',
-          email: customer.email || payload.email || '',
-          city: customer.city || payload.city || '',
-          propertyType: customer.propertyType || payload.propertyType || 'Independent House',
-          consultationCategory: customer.consultationCategory || payload.consultationCategory || 'Residential Vastu',
-          packageId: payload.packageId || (matchedPkg ? matchedPkg.id : 'pkg-res-basic'),
-          packageName: payload.packageName || (matchedPkg ? matchedPkg.name : 'Vastu Consultation'),
-          consultationMode: customer.consultationMode || payload.consultationMode || 'Online Consultation (Zoom / Google Meet / Video Call)',
-          appointmentDate: customer.appointmentDate || payload.appointmentDate || '',
-          appointmentTime: customer.appointmentTime || payload.appointmentTime || '',
-          message: customer.message || payload.notes || '',
-          amountPayable: confirmedInr,
-          amountReceived: confirmedInr,
-          amount: `₹${confirmedInr.toLocaleString('en-IN')}`,
-          currency: 'INR',
-          paymentMethod: `${brand} Card (${maskedCard})`,
-          transactionId: authCode,
-          paymentStatus: 'Paid',
-          status: 'Booking Confirmed',
-          paidAt: nowIso,
-          createdAt: nowIso
-        });
-        data.bookings.unshift(cardBooking);
-        idx = 0;
-      } else {
-        const b = data.bookings[idx];
-        b.amountPayable = confirmedInr;
-        b.amountReceived = confirmedInr;
-        b.amount = `₹${confirmedInr.toLocaleString('en-IN')}`;
-        b.paymentMethod = `${brand} Card (${maskedCard})`;
-        b.transactionId = authCode;
-        b.paymentStatus = 'Paid';
-        b.status = 'Booking Confirmed';
-        b.paidAt = nowIso;
-        b.updatedAt = nowIso;
-        if (customer.name) b.name = customer.name;
-        if (customer.phone) b.phone = customer.phone;
-        if (customer.email) b.email = customer.email;
-        if (customer.city) b.city = customer.city;
-        data.bookings[idx] = normalizeBookingRecord(b);
-        cardBooking = data.bookings[idx];
-      }
-
-      // Automatically dispatch email & WhatsApp notifications to both parties!
-      const emailResult = await sendPaymentConfirmationEmail(cardBooking);
-      const whatsappResult = await sendWhatsAppBusinessNotification(cardBooking);
-      cardBooking.emailConfirmation = emailResult;
-      cardBooking.whatsappNotification = whatsappResult;
-      data.bookings[idx] = cardBooking;
-
-      writeDb(data);
-
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({
-        success: true,
-        verified: true,
-        paymentId: authCode,
-        booking: cardBooking,
-        emailConfirmation: emailResult,
-        whatsappNotification: whatsappResult,
-        message: 'Your card payment has been authorized and verified. Booking confirmed.'
       }));
     } catch (err) {
       res.writeHead(400, { 'Content-Type': 'application/json' });

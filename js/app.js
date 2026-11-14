@@ -2359,7 +2359,7 @@ ${currentPayload.message ? currentPayload.message : 'Standard spatial evaluation
     }
   }
 
-  // 13. VASTU SUTRAM CONSULTATION PAYMENT SYSTEM (SBI UPI & QR + DEBIT/CREDIT CARD)
+  // 13. VASTU SUTRAM CONSULTATION PAYMENT SYSTEM (SBI UPI & QR)
   initRazorpayPayment() {
     this.initPaymentModal();
   }
@@ -2539,24 +2539,6 @@ ${currentPayload.message ? currentPayload.message : 'Standard spatial evaluation
             </div>
           </div>
 
-          <!-- Payment Method Tabs: UPI & QR (Primary) vs Debit/Credit Card -->
-          <div class="grid grid-cols-2 gap-2 p-1 rounded-2xl bg-[#12080B] border border-[#C6A15B]/30 text-xs font-serif">
-            <button
-              type="button"
-              id="tab-select-upi"
-              class="py-2.5 px-3 rounded-xl font-bold transition-all bg-[#481C25] text-[#F9E29B] border border-[#F9E29B]/60 shadow"
-            >
-              📲 State Bank UPI &amp; QR
-            </button>
-            <button
-              type="button"
-              id="tab-select-card"
-              class="py-2.5 px-3 rounded-xl font-bold transition-all text-[#DCCBB0] hover:text-[#F8F3E9]"
-            >
-              💳 Debit / Credit Card
-            </button>
-          </div>
-
           <!-- TAB 1: UPI & QR PAYMENT CARD -->
           <div id="card-pay-upi" class="p-6 rounded-2xl bg-[#FFFDF8] text-[#171717] border-2 border-[#C6A15B]/60 shadow-2xl space-y-4">
             <div class="text-center">
@@ -2634,82 +2616,6 @@ ${currentPayload.message ? currentPayload.message : 'Standard spatial evaluation
             </div>
           </div>
 
-          <!-- TAB 2: DEBIT / CREDIT CARD DETAILS (Clean & Secure Card Option) -->
-          <div id="card-pay-card" class="hidden p-6 rounded-2xl bg-[#FFFDF8] text-[#171717] border-2 border-[#C6A15B]/60 shadow-2xl space-y-4">
-            <div class="text-center">
-              <h3 class="font-serif text-lg font-bold text-[#171717]">Pay with Debit or Credit Card</h3>
-              <p class="text-xs text-[#481C25]/85 mt-0.5">Visa, Mastercard, RuPay, and American Express accepted</p>
-            </div>
-
-            <form id="form-card-details" class="space-y-3 text-xs">
-              <div>
-                <label class="block font-semibold text-[#481C25] mb-1">Cardholder Name *</label>
-                <input
-                  type="text"
-                  id="card-name-input"
-                  value="${customerName}"
-                  placeholder="Full Name as on Card"
-                  class="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#C6A15B] text-xs text-[#171717] outline-none focus:ring-2 focus:ring-[#C6A15B]"
-                  required
-                />
-              </div>
-
-              <div>
-                <div class="flex justify-between items-center mb-1">
-                  <label class="font-semibold text-[#481C25]">16-Digit Card Number *</label>
-                  <span id="card-brand-badge" class="font-mono text-[10px] font-bold text-[#C6A15B] uppercase">Card</span>
-                </div>
-                <input
-                  type="text"
-                  id="card-number-input"
-                  maxlength="19"
-                  placeholder="4000 1234 5678 9010"
-                  class="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#C6A15B] font-mono text-sm text-[#171717] outline-none focus:ring-2 focus:ring-[#C6A15B]"
-                  required
-                />
-              </div>
-
-              <div class="grid grid-cols-2 gap-3">
-                <div>
-                  <label class="block font-semibold text-[#481C25] mb-1">Expiry Date (MM/YY) *</label>
-                  <input
-                    type="text"
-                    id="card-expiry-input"
-                    maxlength="5"
-                    placeholder="12/28"
-                    class="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#C6A15B] font-mono text-xs text-[#171717] outline-none focus:ring-2 focus:ring-[#C6A15B]"
-                    required
-                  />
-                </div>
-                <div>
-                  <label class="block font-semibold text-[#481C25] mb-1">CVV / CVC *</label>
-                  <input
-                    type="password"
-                    id="card-cvv-input"
-                    maxlength="4"
-                    placeholder="•••"
-                    class="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#C6A15B] font-mono text-xs text-[#171717] outline-none focus:ring-2 focus:ring-[#C6A15B]"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div class="pt-2">
-                <button
-                  type="submit"
-                  id="btn-submit-card-payment"
-                  class="vastu-pkg-cta-btn w-full py-3.5 px-4 rounded-full font-serif text-xs font-bold uppercase tracking-[0.16em] flex items-center justify-center gap-2 text-center shadow-lg"
-                >
-                  <span>Pay ₹${confirmedAmount.toLocaleString('en-IN')} via Card</span>
-                  <span>➔</span>
-                </button>
-              </div>
-              <p class="text-[10px] text-center text-[#171717]/70">
-                🔒 Protected by 256-bit encryption. Card credentials are authenticated securely.
-              </p>
-            </form>
-          </div>
-
           <!-- Back button -->
           <div class="text-center pt-1">
             <button type="button" id="btn-back-to-step-1" class="text-xs text-[#F9E29B] hover:underline font-serif">
@@ -2780,29 +2686,6 @@ ${currentPayload.message ? currentPayload.message : 'Standard spatial evaluation
       });
     }
 
-    // Toggle UPI vs Card Tabs
-    const tabUpi = document.getElementById('tab-select-upi');
-    const tabCard = document.getElementById('tab-select-card');
-    const cardUpi = document.getElementById('card-pay-upi');
-    const cardPay = document.getElementById('card-pay-card');
-
-    if (tabUpi && tabCard && cardUpi && cardPay) {
-      tabUpi.addEventListener('click', () => {
-        clearAlert();
-        cardUpi.classList.remove('hidden');
-        cardPay.classList.add('hidden');
-        tabUpi.className = 'py-2.5 px-3 rounded-xl font-bold transition-all bg-[#481C25] text-[#F9E29B] border border-[#F9E29B]/60 shadow';
-        tabCard.className = 'py-2.5 px-3 rounded-xl font-bold transition-all text-[#DCCBB0] hover:text-[#F8F3E9]';
-      });
-      tabCard.addEventListener('click', () => {
-        clearAlert();
-        cardPay.classList.remove('hidden');
-        cardUpi.classList.add('hidden');
-        tabCard.className = 'py-2.5 px-3 rounded-xl font-bold transition-all bg-[#481C25] text-[#F9E29B] border border-[#F9E29B]/60 shadow';
-        tabUpi.className = 'py-2.5 px-3 rounded-xl font-bold transition-all text-[#DCCBB0] hover:text-[#F8F3E9]';
-      });
-    }
-
     // Copy UPI ID button
     const copyBtn = document.getElementById('copy-upi-btn');
     if (copyBtn) {
@@ -2812,37 +2695,6 @@ ${currentPayload.message ? currentPayload.message : 'Standard spatial evaluation
         }
         copyBtn.textContent = 'Copied ✓';
         setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2000);
-      });
-    }
-
-    // Card Input Auto-Formatting & Brand Detection
-    const cardNumInput = document.getElementById('card-number-input');
-    const cardBrandBadge = document.getElementById('card-brand-badge');
-    if (cardNumInput) {
-      cardNumInput.addEventListener('input', (e) => {
-        let val = e.target.value.replace(/\D/g, '').substring(0, 16);
-        const parts = val.match(/.{1,4}/g);
-        e.target.value = parts ? parts.join(' ') : val;
-
-        if (cardBrandBadge) {
-          if (val.startsWith('4')) cardBrandBadge.textContent = 'Visa';
-          else if (/^(5[1-5]|2[2-7])/.test(val)) cardBrandBadge.textContent = 'Mastercard';
-          else if (/^(60|65|81|82)/.test(val)) cardBrandBadge.textContent = 'RuPay';
-          else if (/^(34|37)/.test(val)) cardBrandBadge.textContent = 'Amex';
-          else cardBrandBadge.textContent = 'Card';
-        }
-      });
-    }
-
-    const cardExpiryInput = document.getElementById('card-expiry-input');
-    if (cardExpiryInput) {
-      cardExpiryInput.addEventListener('input', (e) => {
-        let val = e.target.value.replace(/\D/g, '').substring(0, 4);
-        if (val.length >= 3) {
-          e.target.value = val.substring(0, 2) + '/' + val.substring(2);
-        } else {
-          e.target.value = val;
-        }
       });
     }
 
@@ -2908,84 +2760,6 @@ ${currentPayload.message ? currentPayload.message : 'Standard spatial evaluation
       });
     }
 
-    // STEP 2: Submit Card Payment Details
-    const formCard = document.getElementById('form-card-details');
-    if (formCard) {
-      formCard.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        clearAlert();
-
-        const cardholder = document.getElementById('card-name-input').value.trim();
-        const cardNum = document.getElementById('card-number-input').value.trim();
-        const expiry = document.getElementById('card-expiry-input').value.trim();
-        const cvv = document.getElementById('card-cvv-input').value.trim();
-
-        const btnSubmitCard = document.getElementById('btn-submit-card-payment');
-        btnSubmitCard.disabled = true;
-        btnSubmitCard.textContent = 'Authorizing Card Payment...';
-
-        try {
-          const res = await fetch('/api/payments/card-submit', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              bookingId: bookingRef,
-              packageId,
-              packageName,
-              confirmedAmount,
-              customerName: customerName || cardholder,
-              phone: customerPhone,
-              email: customerEmail,
-              cardDetails: {
-                cardholderName: cardholder,
-                cardNumber: cardNum,
-                expiry,
-                cvv
-              },
-              customerData: {
-                name: customerName || cardholder,
-                phone: customerPhone,
-                email: customerEmail,
-                city: customerCity,
-                propertyType: propertyTypeVal,
-                consultationCategory,
-                consultationMode: booking.consultationMode,
-                appointmentDate: booking.appointmentDate,
-                appointmentTime: booking.appointmentTime,
-                message: requirementsVal
-              }
-            })
-          });
-
-          const data = await res.json();
-          if (!res.ok || !data.success) {
-            showAlert(data.error || 'Card payment was declined. Please check details.', 'rose');
-            btnSubmitCard.disabled = false;
-            btnSubmitCard.textContent = `Pay ₹${confirmedAmount.toLocaleString('en-IN')} via Card ➔`;
-            return;
-          }
-
-          stage2.classList.add('hidden');
-          stage3.classList.remove('hidden');
-
-          ind2.className = 'flex items-center gap-1.5 text-emerald-400 font-bold transition-colors';
-          ind2.innerHTML = `<span class="w-6 h-6 rounded-full bg-emerald-950 border border-emerald-400 flex items-center justify-center text-[11px]">✓</span><span>02. Payment</span>`;
-          ind3.className = 'flex items-center gap-1.5 font-bold text-[#F9E29B] transition-colors';
-          ind3.querySelector('span:first-child').className = 'w-6 h-6 rounded-full bg-[#481C25] border border-[#F9E29B] flex items-center justify-center text-[11px]';
-
-          this.renderPaymentConfirmationScreen(stage3, data.booking, {
-            isVerifiedPaid: true,
-            isManualUpi: false,
-            emailConfirmation: data.emailConfirmation,
-            whatsappNotification: data.whatsappNotification
-          });
-        } catch (err) {
-          showAlert('Network error while processing card payment. Please try again.', 'rose');
-          btnSubmitCard.disabled = false;
-          btnSubmitCard.textContent = `Pay ₹${confirmedAmount.toLocaleString('en-IN')} via Card ➔`;
-        }
-      });
-    }
   }
 
   // STEP 3: PAYMENT CONFIRMATION SCREEN
